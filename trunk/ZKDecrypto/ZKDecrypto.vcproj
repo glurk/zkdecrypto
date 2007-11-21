@@ -214,6 +214,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\z340.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ZKDecrypto.cpp"
 				>
 			</File>
@@ -241,6 +245,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\z340.h"
 				>
 			</File>
 			<File
@@ -288,5 +296,9 @@
 		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="ZKDecrypto.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

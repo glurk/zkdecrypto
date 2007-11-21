@@ -4,7 +4,7 @@
 
 #pragma once
 
-
+UINT hillclimb(LPVOID pParam);
 class CZKDecryptoView : public CFormView
 {
 protected: // create from serialization only
@@ -41,6 +41,8 @@ protected:
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedBeginghillclimber();
 };
 
 #ifndef _DEBUG  // debug version in ZKDecryptoView.cpp
