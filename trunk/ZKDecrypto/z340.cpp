@@ -28,29 +28,19 @@
 #include "stdafx.h"
 #define  _CRT_SECURE_NO_WARNINGS 1
 #include "z340.h"
-int freqs[26] =	{8167,1492,2782,4253,12702,2228,2015,6094,6966,153,772,4025,2406,6749,7507,1929,95,5987,6327,9056,2758,978,2360,150,1974,74};
-int lsocdata[26] = {0,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1};	
+#include "z340Globals.h"
+#include "mt19937ar-cok.cpp"
 
-z340::z340()
-{
-
-}
-
-z340::~z340()
-{
-
-}
-
-int z340::hillclimb(void)
+int hillclimb(char ciph[], char key[],int len, CFormView * cfv)
 {
 
 //	STARTING KEYS - CHOOSE ONE FROM BELOW, OR USE YOUR OWN.  UNCOMMENT ONLY ONE OR PROGRAM WILL NOT COMPILE!
 //	KEY *MUST* CONTAIN AT *LEAST* AS MANY LETTERS AS THE CIPHER CONTAINS UNIQUE CHARACTERS.  LONGER KEYS ARE OK!
-
+	//char key = ke;
 /*************************************************************************************************************************************************************/
 //	char key[ASCII_SIZE]="MILGLUITCEIOEBIEHEHTTWYTERRONFAPLEOOVNAESNSSKARSNDFAD";			//CORRECT 53-CHAR KEY FOR SOLVED ZODIAC 408 CIPHER
 //	char key[ASCII_SIZE]="LIMGLUITCEIOEBIEHEHTTOOVNAESWYTERRONFAPLENSSKARSNDFAD";			//MIXED 53-CHAR KEY FOR SOLVED ZODIAC 408 CIPHER
-	char key[ASCII_SIZE]="NUTAFOAIYRPECEDONAETSFEOSHKTMIEISEBLVNATGSHNLWDLIRREO";			//*REALLY* SCRAMBLED 408 KEY
+//	char key[ASCII_SIZE]="NUTAFOAIYRPECEDONAETSFEOSHKTMIEISEBLVNATGSHNLWDLIRREO";			//*REALLY* SCRAMBLED 408 KEY
 /*************************************************************************************************************************************************************/
 //	char key[ASCII_SIZE]="EYENAGMNDREEDNRSWREETFCTTHHTFILVTLOOOIHAOAASSSOBHUKPUPJ";		//CORRECT 55-CHAR KEY FOR SOLVED RAY_N 378 CIPHER
 //	char key[ASCII_SIZE]="EYENAGMNDREEDNRSWREETLOOOIHAOAASSSOBHTFCTTHHTFILVUKPUPJ";		//MIXED 55-CHAR KEY FOR SOLVED RAY_N 378 CIPHER
@@ -89,8 +79,9 @@ int z340::hillclimb(void)
 		for(int i=0;i<100000;i++)
 			shufflekey(key);
 
-//	if(argc==2) strcpy(filename,argv[1]);
-	clength = readcipher(filename);
+	strcpy(cipher,ciph);
+	//if(argc==2) strcpy(filename,argv[1]);
+	clength = len;//readcipher(filename);
 
 	for(int i=0;i<26;i++)
 		freqs[i]=(freqs[i]*clength+48999)/100000;
@@ -105,15 +96,14 @@ int z340::hillclimb(void)
 
 	cuniq=(int)strlen(uniqstr);
 	if(keylength < cuniq)
-		{ //printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); 
-	}
+		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); }
 
-	//printf("\nZodiac Code Decipher v%s\n-------------------------\n\n",VERSION);					//PRINT VERSION NUMBER
-	//printf("Parsing Cipher: %s\n",filename);											//PRINT FILENAME
-	//printf("Cipher Length:  %d characters\n",clength);									//PRINT CIPHER LENGTH
-	//printf("Cipher Uniques: %d unique characters\n\n",cuniq);								//PRINT NUMBER OF UNIQUE CHARACTERS
+	printf("\nZodiac Code Decipher v%s\n-------------------------\n\n",VERSION);					//PRINT VERSION NUMBER
+	printf("Parsing Cipher: %s\n",filename);											//PRINT FILENAME
+	printf("Cipher Length:  %d characters\n",clength);									//PRINT CIPHER LENGTH
+	printf("Cipher Uniques: %d unique characters\n\n",cuniq);								//PRINT NUMBER OF UNIQUE CHARACTERS
 	read_ngraphs();															//READ IN THE N-GRAPH DATA
-	//printfrequency(clength,uniqarr,uniqstr);
+	printfrequency(clength,uniqarr,uniqstr);
 
 	SETSOLVED;
 
@@ -131,7 +121,9 @@ int z340::hillclimb(void)
 		if((score=(calcscore(clength,solved)))>bestscore) {
 			printcipher(clength,cipher,solved);
 			printvowels(clength,solved);
-			//printf("Best Score = %d\n",bestscore=score);
+			printf("Best Score = %d\n",bestscore=score);
+			cfv->PostMessageA(WM_USER_THREAD_UPDATE_BESTSCORE,score,0);
+			cfv->PostMessageA(WM_USER_THREAD_UPDATE_PLAINTEXT,(WPARAM)solved,0);
 			strcpy(bestkey,key);
 			printf("\nKey: '%s'\n\n",key); 
 			}
@@ -165,7 +157,7 @@ int z340::hillclimb(void)
 //          Calculate a 'fitness' score for the solution based on the N-Graph counts            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline int z340::calcscore(const int length_of_cipher,const char *solv) {
+inline int calcscore(const int length_of_cipher,const char *solv) {
 
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
@@ -197,7 +189,7 @@ inline int z340::calcscore(const int length_of_cipher,const char *solv) {
 //                       Calculate the "Longest String Of Consonants"                           //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline int z340::calclsoc(const int length_of_cipher,const char *solv) {
+inline int calclsoc(const int length_of_cipher,const char *solv) {
 
 	int lsoc=0,lsocmax=0;
 
@@ -213,7 +205,7 @@ inline int z340::calclsoc(const int length_of_cipher,const char *solv) {
 //                                Mutate the char array "key[]"                                 //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline void z340::shufflekey(char *key) {
+inline void shufflekey(char *key) {
 
 	int x,y,z;
 
@@ -227,9 +219,9 @@ inline void z340::shufflekey(char *key) {
 //                        Print ERROR MESSAGE when file can not be opened                       //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void z340::printferror(char *name_of_file) {
+void printferror(char *name_of_file) {
 
-	//printf("ERROR - File '%s' does not exist, or could not be opened!!\n\n",name_of_file);
+	printf("ERROR - File '%s' does not exist, or could not be opened!!\n\n",name_of_file);
 
 }
 
@@ -237,7 +229,7 @@ void z340::printferror(char *name_of_file) {
 //                        Print the cipher "block" and the solution "block"                     //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void z340::printcipher(int length_of_cipher,char *ciph,char *solv) {
+void printcipher(int length_of_cipher,char *ciph,char *solv) {
 
 	int c=0;
 	int s=0;
@@ -249,15 +241,15 @@ void z340::printcipher(int length_of_cipher,char *ciph,char *solv) {
 		case 340: { width=17; height=20; } break;
 		case 378: { width=18; height=21; } break;
 		case 408: { width=17; height=24; } break;
-		default: { /*printf("Sorry, this program will (currently) only work on 330, 340, 378, and 408 ciphers\n");*/ exit(1); } }
+		default: { printf("Sorry, this program will (currently) only work on 330, 340, 378, and 408 ciphers\n"); exit(1); } }
 
 	printf("\n--------------------------------------------------------------------------------------------------------------------\n\n");
 
-	/*for(int y=0;y<height;y++) { 
+	for(int y=0;y<height;y++) { 
 		for(int x=0;x<width;x++) printf("%c",ciph[c++]);
 		printf("   =   ");
 		for(int x=0;x<width;x++) printf("%c",solv[s++]);
-		printf("\n"); }*/
+		printf("\n"); }
 
 }
 
@@ -265,12 +257,12 @@ void z340::printcipher(int length_of_cipher,char *ciph,char *solv) {
 //            Print the character frequency table of the cipher and a few statistics            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void z340::printfrequency(int length_of_cipher, int *unique_array,char *unique_string) {
+void printfrequency(int length_of_cipher, int *unique_array,char *unique_string) {
 
 	int f=0;
 	int z=(int)strlen(unique_string);
 	char zee[10];
-/*
+
 	printf("Frequency Table for Cipher:\n");
 	for(int i=0;i<z;i++) printf("-"); printf("\n");
 	for(int i=0;i<z;i++) if(unique_array[i]/100 != 0) printf("%1d",unique_array[i]/100); if(unique_array[0]>=100) printf("\n");
@@ -284,7 +276,6 @@ void z340::printfrequency(int length_of_cipher, int *unique_array,char *unique_s
 	printf("Phi(P) = %f\n",(.0675) * length_of_cipher * (length_of_cipher - 1));
 	printf("Phi(R) = %f\n\n",(.0385) * length_of_cipher * (length_of_cipher - 1));
 	printf("DeltIC = %f\n\n",f/((.0385) * length_of_cipher * (length_of_cipher - 1)));
-	*/
 
 }
 
@@ -293,9 +284,8 @@ void z340::printfrequency(int length_of_cipher, int *unique_array,char *unique_s
 //                NOTE: Normal English text normally contains approx. 40% vowels                //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void	z340::printvowels(int length_of_cipher, char *solv) {
+void	printvowels(int length_of_cipher, char *solv) {
 
-	/*
 	int y,solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	int diff_tot=0;
 	for(int i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;
@@ -307,7 +297,6 @@ void	z340::printvowels(int length_of_cipher, char *solv) {
 	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
 
 	printf("Longest String Of Consonants: %d\n\n",calclsoc(length_of_cipher,solv));
-	*/
 
 }
 
@@ -316,7 +305,7 @@ void	z340::printvowels(int length_of_cipher, char *solv) {
 //                  RETURN: The length of the cipher that has been read                         //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-int z340::readcipher(char *filename) {
+int readcipher(char *filename) {
 
 	FILE *ifptr;
 	ifptr=fopen(filename,"rb");
@@ -331,7 +320,7 @@ int z340::readcipher(char *filename) {
 //  Read the N-Graph data into global arrays "bi...", "tri...", "tetra..." and "pentagraphs[]"  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void z340::read_ngraphs(void) {
+void read_ngraphs(void) {
 
 	FILE *ifptr;
 	int t1,t2,t3,t4,t5,gtemp;
@@ -350,9 +339,9 @@ void z340::read_ngraphs(void) {
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
 		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
 		if(t1+'A'=='*') break;
-		if(0) printf("\nBiGraph: %c%c  Count: %4i  Index: %i",t1+'A',t2+'A',gtemp,(t1*26+t2));
+		if(_DEB) printf("\nBiGraph: %c%c  Count: %4i  Index: %i",t1+'A',t2+'A',gtemp,(t1*26+t2));
 		bigraphs[t1*26+t2]=(int)(10*log((double)gtemp)); }
-	if(0) //printf("\n");
+	if(_DEB) printf("\n");
 	fclose(ifptr);
 	
 	// READ "TRIGRAPHS.TXT"
@@ -362,9 +351,9 @@ void z340::read_ngraphs(void) {
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
 		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
 		if(t1+'A'=='*') break;
-		if(0) printf("\nTriGraph: %c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',gtemp,(t1*676+t2*26+t3));
+		if(_DEB) printf("\nTriGraph: %c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',gtemp,(t1*676+t2*26+t3));
 		trigraphs[t1*676+t2*26+t3]=(int)(10*log((double)gtemp)); }
-	if(0)// printf("\n");
+	if(_DEB) printf("\n");
 	fclose(ifptr);
 
 	// READ "TETRAGRAPHS.TXT"
@@ -374,9 +363,9 @@ void z340::read_ngraphs(void) {
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
 		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
 		if(t1+'A'=='*') break;
-		if(0) printf("\nTetraGraph: %c%c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',t4+'A',gtemp,(t1*17576+t2*676+t3*26+t4));
+		if(_DEB) printf("\nTetraGraph: %c%c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',t4+'A',gtemp,(t1*17576+t2*676+t3*26+t4));
 		tetragraphs[t1*17576+t2*676+t3*26+t4]=(int)(10*log((double)gtemp)); }
-	if(0)// printf("\n");
+	if(_DEB) printf("\n");
 	fclose(ifptr);
 
 	// READ "PENTAGRAPHS.TXT"
@@ -386,55 +375,9 @@ void z340::read_ngraphs(void) {
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
 		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
 		if(t1+'A'=='*') break;
-		if(0) printf("\nPentaGraph: %c%c%c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',t4+'A',t5+'A',gtemp,(t1*456976+t2*17576+t3*676+t4*26+t5));
+		if(_DEB) printf("\nPentaGraph: %c%c%c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',t4+'A',t5+'A',gtemp,(t1*456976+t2*17576+t3*676+t4*26+t5));
 		pentagraphs[t1*456976+t2*17576+t3*676+t4*26+t5]=(int)(10*log((double)gtemp)); }
-	//if(0) printf("\n");
+	if(_DEB) printf("\n");
 	fclose(ifptr);
 
-}
-
-/* initializes state[N] with a seed */
-void z340::init_genrand(unsigned long s)
-{
-    int j;
-    state[0]= s & 0xffffffffUL;
-    for (j=1; j<N; j++) {
-        state[j] = (1812433253UL * (state[j-1] ^ (state[j-1] >> 30)) + j); 
-        state[j] &= 0xffffffffUL; 
-    }
-    left = 1; initf = 1;
-}
-
-inline void z340::next_state(void)
-{
-    unsigned long *p=state;
-    int j;
-
-    /* if init_genrand() has not been called, */
-    /* a default initial seed is used         */
-    if (initf==0) init_genrand(5489UL);
-
-    left = N;
-    next = state;
-    
-    for (j=N-M+1; --j; p++) *p = p[M] ^ TWIST(p[0], p[1]);
-
-    for (j=M; --j; p++) *p = p[M-N] ^ TWIST(p[0], p[1]);
-
-    *p = p[M-N] ^ TWIST(p[0], state[0]);
-}
-
-/* generates a random number on [0,0xffffffff]-interval */
-inline unsigned long z340::genrand_int32(void)
-{
-    unsigned long y;
-
-    if (--left == 0) next_state();
-    y = *next++;
-
-    /* Tempering */
-    y ^= (y >> 11); y ^= (y << 7) & 0x9d2c5680UL;
-    y ^= (y << 15) & 0xefc60000UL; y ^= (y >> 18);
-
-    return y;
 }

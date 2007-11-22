@@ -21,7 +21,8 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="2"
-			CharacterSet="1"
+			CharacterSet="0"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -103,7 +104,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="2"
-			CharacterSet="1"
+			CharacterSet="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -194,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mt19937ar-cok.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -219,6 +224,10 @@
 			</File>
 			<File
 				RelativePath=".\ZKDecrypto.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ZKDECRYPTO_FORM.cpp"
 				>
 			</File>
 			<File
@@ -252,7 +261,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\z340Globals.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ZKDecrypto.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ZKDECRYPTO_FORM.h"
 				>
 			</File>
 			<File
