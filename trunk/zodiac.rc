@@ -1,0 +1,280 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAIN_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Open &Cipher",                IDM_FILE_OPEN_MSG
+        MENUITEM "Edit C&ipher",                IDM_EDIT_MSG
+		MENUITEM SEPARATOR
+        MENUITEM "Open &Key",                   IDM_FILE_OPEN_MAP
+        MENUITEM "Edit K&ey",                   IDM_EDIT_MAP
+        MENUITEM "&Save Key",                   IDM_FILE_SAVE_MAP
+        MENUITEM SEPARATOR
+        MENUITEM "&Exit",                       IDM_FILE_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo",                       IDM_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Init Key",                   IDM_EDIT_INIT
+        MENUITEM "&Scramble Key",               IDM_EDIT_SCRAMBLE
+        MENUITEM "&Clear Key",                  IDM_EDIT_CLEAR
+        MENUITEM SEPARATOR
+        MENUITEM "&Lock All",                   IDM_EDIT_LOCK
+        MENUITEM "&Unlock All",                 IDM_EDIT_UNLOCK
+    END
+    POPUP "&Solve"
+    BEGIN
+        MENUITEM "&Word Plug",                  IDM_SOLVE_WORD
+        MENUITEM SEPARATOR
+        POPUP "&Thread Priority"
+        BEGIN
+            MENUITEM "&High",                       IDM_SOLVE_TP_HIGH
+            MENUITEM "&Normal",                     IDM_SOLVE_TP_NORM
+            MENUITEM "&Low",                        IDM_SOLVE_TP_LOW
+        END
+        MENUITEM "&Options",                    IDM_SOLVE_OPTIONS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      IDM_HELP_ABOUT
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN_DLG DIALOGEX 0, 0, 400, 410
+STYLE DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_ACCEPTFILES
+MENU IDR_MAIN_MENU
+FONT 9, "Lucida Console"
+BEGIN
+    GROUPBOX        "Cipher Text",IDC_CIPHER_TITLE,108,7,281,161,BS_CENTER 
+    //GROUPBOX        "Plain Text",IDC_STATIC,250,7,139,161,BS_CENTER
+    //EDITTEXT        IDC_CIPHER,116,20,123,140,ES_MULTILINE | ES_AUTOHSCROLL | 
+    //                ES_READONLY | WS_VSCROLL
+    //EDITTEXT        IDC_PLAIN,258,20,123,140,ES_MULTILINE | ES_AUTOHSCROLL | 
+    //                ES_READONLY | WS_VSCROLL
+
+	//GROUPBOX         "",IDC_SCROLL,380,14,275,147,WS_VSCROLL
+	SCROLLBAR		IDC_SCROLL,372,20,10,140,SB_VERT
+	
+    GROUPBOX        "Key",IDC_MAP_TITLE,108,174,80,226,BS_CENTER
+    LISTBOX         IDC_MAP,116,188,64,185,WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_MAP_VALUE,116,376,24,15,ES_UPPERCASE | 
+                    ES_AUTOHSCROLL
+    PUSHBUTTON      "&Change",IDC_CHANGE,146,376,35,15
+    GROUPBOX        "Letter Frequency",IDC_STATIC,191,174,115,226,BS_CENTER
+    LISTBOX         IDC_LTRFREQ,198,188,100,164,WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Total Difference",IDC_STATIC,201,354,64,11,
+                    SS_CENTERIMAGE
+    CTEXT           "",IDC_DIFF,271,354,26,11,SS_CENTERIMAGE
+    CTEXT           "Vowel Percentage",IDC_STATIC,216,370,64,11,
+                    SS_CENTERIMAGE
+    CTEXT           "",IDC_VOWEL,216,384,64,11,SS_CENTERIMAGE
+    GROUPBOX        "Solve",IDC_STATIC,309,174,80,226,BS_CENTER
+    CTEXT           "Time",IDC_STATIC,320,193,59,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_TIME,320,205,59,11,SS_CENTERIMAGE
+    CTEXT           "Iterations",IDC_STATIC,320,231,59,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_TRY,320,243,59,11,SS_CENTERIMAGE
+    CTEXT           "Failures",IDC_STATIC,320,269,59,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_FAIL,320,282,59,11,SS_CENTERIMAGE
+    CTEXT           "Best Score",IDC_STATIC,320,307,59,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_SCORE,320,319,59,11,SS_CENTERIMAGE
+    PUSHBUTTON      "&Start",IDC_SOLVE,324,351,51,15
+    PUSHBUTTON      "&Reset",IDC_RESET,324,372,51,15
+    LTEXT           "A\r\nB\r\nC\r\nD\r\nE\r\nF\r\nG\r\nH\r\nI\r\nJ\r\nK\r\nL\r\nM\r\nN\r\nO\r\nP\r\nQ\r\nR\r\nS\r\nT\r\nU\r\nV\r\nW\r\nX\r\nY\r\nZ",
+                    IDC_TABLE,19,186,78,208
+    GROUPBOX        "Key Table",IDC_STATIC,11,174,94,226,BS_CENTER
+    LISTBOX         IDC_PATTERNS,17,20,81,140,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Patterns",IDC_PAT_TITLE,11,7,94,161,BS_CENTER
+    
+    //LTEXT           "",IDC_CIPHER,116,20,123,140,SS_SUNKEN
+END
+
+IDD_OPTIONS DIALOG DISCARDABLE  0, 0, 210, 148
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,153,109,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,153,127,50,14
+    GROUPBOX        "Algorithm Parameters",IDC_STATIC,7,7,115,76,BS_CENTER
+    LTEXT           "Max Failure",IDC_STATIC,16,25,60,8
+    LTEXT           "Random Swaps",IDC_STATIC,16,45,60,8
+    LTEXT           "Revert Period",IDC_STATIC,16,65,60,8
+    EDITTEXT        IDC_MAXFAIL,81,22,30,14,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_SWAPS,81,42,30,14,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_REVERT,81,62,30,14,ES_RIGHT | ES_NUMBER
+    CONTROL         "Bigraphs",IDC_USEBI,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,139,22,43,10
+    CONTROL         "Trigraphs",IDC_USETRI,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,139,37,45,10
+    CONTROL         "Tetragraphs",IDC_USETETRA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,139,52,54,10
+    CONTROL         "Pentagraphs",IDC_USEPENTA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,139,67,56,10
+    GROUPBOX        "Include in score",IDC_STATIC,127,7,76,76,BS_CENTER
+    GROUPBOX        "Misc Options",IDC_STATIC,7,87,137,54,BS_CENTER
+    LTEXT           "Characters per Line",IDC_STATIC,16,105,62,8
+    EDITTEXT        IDC_LINECHARS,92,102,40,14,ES_RIGHT | ES_NUMBER
+    LTEXT           "Language",IDC_STATIC,16,124,33,8
+    COMBOBOX        IDC_LANG,59,122,73,59,CBS_DROPDOWNLIST | 
+                    CBS_NOINTEGRALHEIGHT | WS_TABSTOP
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 168, 94
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 9, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    ICON            IDI_ZODIAC,IDC_STATIC,12,12,20,20
+    LTEXT           "",IDC_PROG,46,16,109,13,SS_CENTERIMAGE
+    CTEXT           "",IDC_ABOUT1,13,42,142,8
+    CTEXT           "",IDC_ABOUT2,13,58,142,8
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,7,154,80
+    CTEXT           "",IDC_ABOUT3,13,74,142,8
+END
+
+IDD_WORD DIALOG DISCARDABLE  0, 0, 150, 44
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Word to Find"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,93,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,93,23,50,14
+    EDITTEXT        IDC_WORD,10,14,75,14,ES_UPPERCASE | ES_AUTOHSCROLL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MAIN_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 392
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 403
+    END
+
+    IDD_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 141
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 161
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+
+    IDD_WORD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 143
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 37
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ZODIAC              ICON    DISCARDABLE     "zodiac.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// 24
+//
+
+1                       24      DISCARDABLE     "manifest.xml"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

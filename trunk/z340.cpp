@@ -1,0 +1,457 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Written by Brax Sisco (Developed starting 9/14/2006)                                                                                                     //
+// This program attempts to solve the November 8th, 1969 unsolved Zodiac 340 character cipher                                                               //
+//                                                                                                                                                          //
+// Big thanks to Chris McCarthy for many good ideas and saving me a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                      //
+// Also thanks to Glen from the ZK message board (http://www.zodiackiller.com/mba/zc/121.html) for an ASCII encoding of the solved 408 cipher.              //
+//                                                                                                                                                          //
+// This variant of my zodiac program uses a "genetic algorithm" of my own design to solve homophonic substitution ciphers.  It works, eventually.           //
+// Program has been adapted to use the "Mersenne Twister" PRNG because of its speed and long period.                                                        //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) 2007 Brax Sisco
+//
+//    This program is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License along
+//    with this program; if not, write to the Free Software Foundation, Inc.,
+//    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+
+#include "z340.h"
+#include "z340Globals.h"
+#include "mt19937ar-cok.cpp"
+
+int hillclimb(const char ciph[],int len,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
+{
+	int i,j,x,y,clength,cuniq;
+	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
+	char solved[MAX_CIPH_LENGTH],solvedsav[MAX_CIPH_LENGTH];
+	char keysav[ASCII_SIZE],uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
+
+	for(i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedsav[i]=0;				//INITIALIZE (ZERO) ARRAYS
+	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
+
+	strcpy(bestkey,key);
+	keylength=(int)strlen(key);
+
+	init_genrand((unsigned long)time(NULL));											//SEED RANDOM GENERATOR
+
+	if(SCRAMBLESTARTKEY)
+		for(int i=0;i<100000;i++)
+			shufflekey(key,locked);
+
+	strcpy(cipher,ciph);
+	clength = len;
+
+	for(i=0;i<26;i++) freqs[i]=(E_freqs[i]*clength+48999)/100000;					// CALCULATE EXPECTED LETT. FREQS
+
+	for(i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
+
+	i=255;j=0;
+	for(y=0;y<255;y++) { 
+		for(x=255;x>0;x--)
+			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
+
+	cuniq=(int)strlen(uniqstr);
+	if(keylength < cuniq)
+		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); }
+
+	printf("\nZodiac Code Decipher v%s\n-------------------------\n\n",VERSION);		//PRINT VERSION NUMBER
+	printf("Cipher Length:  %d characters\n",clength);									//PRINT CIPHER LENGTH
+	printf("Cipher Uniques: %d unique characters\n\n",cuniq);							//PRINT NUMBER OF UNIQUE CHARACTERS
+	//if(!read_ngraphs()) exit(0); //only load on program startup						//READ IN THE N-GRAPH DATA
+	printfrequency(clength,uniqarr,uniqstr);
+
+	SETSOLVED;
+
+/****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
+
+	int score = 0;
+	int bestscore = 0;
+	int iterations = 0;
+	
+	long start_time=0, end_time=0;
+	int improve=0;
+	info.cur_try=0;
+	info.cur_fail=0;
+	
+	/*go until max number of iterations or stop is pressed*/
+	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
+		
+		/*feedback info*/
+		info.cur_try=iterations;
+		info.last_time=float(end_time-start_time)/1000;
+		start_time=info.time_func();
+		info.disp_info();
+		
+		improve=0;
+		
+		for(int p1=0;p1<keylength;p1++) {
+
+			if(locked[p1]) continue; //skip if symbol is locked
+
+			for(int p2=0;p2<keylength;p2++) {
+				
+			/*stop*/
+			if(!info.running) return bestscore;
+			if(locked[p2]) continue; //skip if symbol is locked
+	
+			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
+				bestscore = score;
+				strcpy(bestkey,key);
+				printcipher(clength,cipher,solved);
+				printf("Best Score = %d\n",bestscore);
+				printf("\nKey: '%s'\n\n",key); 
+				
+				//updateGUI(solved,bestkey,bestscore,frm);
+				
+				/*feedback info*/
+				info.best_score=bestscore;
+				improve=1;
+				info.cur_fail=0;
+				memcpy(info.best_key,bestkey,256);
+				info.disp_all();	
+				}
+	
+			strcpy(keysav,key); strcpy(solvedsav,solved);
+			int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp;
+			SETSOLVED;
+	
+			if((calcscore(clength,solved,use_graphs))<score) { strcpy(key,keysav); strcpy(solved,solvedsav); }
+			}
+		}
+
+	for(i=0;i<info.swaps/*5*/;i++) shufflekey(key,locked);	// THE '5' IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	
+	iterations++; if(iterations>info.revert/*120*5-1*/) { printf("*"); strcpy(key,bestkey); iterations=0; }
+	SETSOLVED;
+	
+	if(!improve) info.cur_fail++;
+	
+	end_time=info.time_func();
+
+//	printf(".");
+	}
+
+	return bestscore;
+}
+
+/******************************* END_MAIN_HILLCLIMBER_ALGORITHM ***********************************/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      Update the GUI                                          //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+void updateGUI(char *solved,char *bestkey,int bestscore,wxFrame *frm) {
+
+			wxCommandEvent upt1(EVT_UpdatePlainText,Plain_Text);
+			upt1.SetString(wxString(solved));
+			frm->AddPendingEvent(upt1);
+
+			wxCommandEvent upt2(EVT_UpdateBestKey,Best_Key);
+			upt2.SetString(bestkey);
+			frm->AddPendingEvent(upt2);
+
+			wxCommandEvent upt3(EVT_UpdateScore,Score_);
+			upt3.SetInt(bestscore);
+			frm->AddPendingEvent(upt3);
+}
+*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//          Calculate a 'fitness' score for the solution based on the N-Graph counts            //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define IS_LETTER(L) ((L<0 || L>25)? 0:1)
+
+inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs) {
+
+	int t1,t2,t3,t4,t5;
+	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
+
+	t1=solv[0]-'A'; t2=solv[1]-'A'; t3=solv[2]-'A'; t4=solv[3]-'A'; t5=solv[4]-'A';
+
+	for(int c=0; c<length_of_cipher; c++) {
+
+		//allow to score incomple decoding (one with --- in it)
+		if(IS_LETTER(t1) && IS_LETTER(t2)) {
+			if(c<length_of_cipher-1 && (use_graphs & USE_BI)) 
+				{ biscore += bigraphs[t1*26+t2]; }
+
+			if(IS_LETTER(t3)) {
+				if(c<length_of_cipher-2 && (use_graphs & USE_TRI))
+					{ triscore += trigraphs[t1*676+t2*26+t3]; }
+		
+				if(IS_LETTER(t4)) {
+					if(c<length_of_cipher-3 && (use_graphs & USE_TETRA))
+						{ tetrascore += tetragraphs[t1*17576+t2*676+t3*26+t4]; }
+		
+					if(IS_LETTER(t5)) {
+						if(c<length_of_cipher-4 && (use_graphs & USE_PENTA)) 
+							{ pentascore += pentagraphs[t1*456976+t2*17576+t3*676+t4*26+t5]; }
+					}
+				}
+			}
+		}
+
+		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
+	}
+
+	biscore=biscore>>3;
+	triscore=triscore>>2;
+	tetrascore=tetrascore>>1;
+//	pentascore=pentascore>>0;
+
+//	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
+
+	return((pentascore+tetrascore+triscore+biscore));
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                       Calculate the "Longest String Of Consonants"                           //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+inline int calclsoc(const int length_of_cipher,const char *solv) {
+
+	int lsoc=0,lsocmax=0;
+
+	for(int i=0;i<length_of_cipher;i++) {
+		if(lsocdata[solv[i]-'A']) { lsoc++; if(lsoc>lsocmax) lsocmax=lsoc; }
+		else lsoc=0; }
+
+	return(lsocmax);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                Mutate the char array "key[]"                                 //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+inline void shufflekey(char *key,const char locked[]) {
+
+	int x,y,z,canswap=0;
+
+	for(int l=0; l<keylength; l++) if(!locked[1]) canswap=1;
+
+	if(canswap)
+	{
+		do {x=genrand_int32()%keylength;} while(locked[x]);
+		do {y=genrand_int32()%keylength;} while(locked[y]);
+		
+		z=key[x]; key[x]=key[y]; key[y]=z;
+	}
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                        Print ERROR MESSAGE when file can not be opened                       //
+//           **** This should be replaced with some sort of GUI Error Dialog Box ****           //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+void printferror(char *name_of_file) {
+
+	printf("ERROR - File '%s' does not exist, or could not be opened!!\n\n",name_of_file);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                        Print the cipher "block" and the solution "block"                     //
+//----------------------------------------------------------------------------------------------//
+//  ALSO:             Calculate and print the percentage of vowels in the solution              //
+//                   NOTE: Normal English text normally contains approx. 40% vowels             //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+void printcipher(int length_of_cipher,char *ciph,char *solv) {
+
+	int c=0;
+	int s=0;
+	int width;
+	int height;
+	int i,x,y;
+
+	switch(length_of_cipher) {
+		case 153: { width=17; height=9;  } break;
+		case 318: { width=53; height=6;  } break;
+		case 330: { width=30; height=11; } break;
+		case 340: { width=17; height=20; } break;
+		case 378: { width=18; height=21; } break;
+		case 408: { width=17; height=24; } break;
+		default: { return; } }//printf("Sorry, this program will (currently) only work on 318, 330, 340, 378, and 408 ciphers\n"); exit(1); } }
+
+	printf("\n--------------------------------------------------------------------------------------------------------------------\n\n");
+
+	for(y=0;y<height;y++) { 
+		for(x=0;x<width;x++) printf("%c",ciph[c++]);
+		printf("   =   ");
+		for(x=0;x<width;x++) printf("%c",solv[s++]);
+		printf("\n"); }
+
+//	printvowels section
+
+	int solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int diff_tot=0;
+	for(i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;
+	printf("\n\n              'A   B   C   D  'E   F   G   H  'I   J   K   L   M   N  'O   P   Q   R   S   T  'U   V   W   X   Y   Z");
+	printf("\n  Expected: ");	for(i=0;i<26;i++) printf("%4d",freqs[i]);
+	printf("\n     Found: ");	for(i=0;i<26;i++) printf("%4d",solv_freqs[i]);
+	printf("\nDifference: ");	for(i=0;i<26;i++) { printf("%4d",y=abs(freqs[i]-solv_freqs[i])); diff_tot+=y; }
+	printf("\n\nDifference Total: %d    --    Deviation From Expected: %f",diff_tot,100*((float)diff_tot/length_of_cipher));
+	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
+
+	printf("Longest String Of Consonants: %d\n\n",calclsoc(length_of_cipher,solv));
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//            Print the character frequency table of the cipher and a few statistics            //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+void printfrequency(int length_of_cipher, int *unique_array,char *unique_string) {
+
+	int f=0,i;
+	int z=(int)strlen(unique_string);
+	char zee[10];
+
+	printf("Frequency Table for Cipher:\n");
+	for(i=0;i<z;i++) printf("-"); printf("\n");
+	for(i=0;i<z;i++) if(unique_array[i]/100 != 0) printf("%1d",unique_array[i]/100); if(unique_array[0]>=100) printf("\n");
+	for(i=0;i<z;i++) { sprintf(zee,"%d",unique_array[i]); if(unique_array[i]/10 != 0) printf("%c",zee[strlen(zee)-2]); } printf("\n");
+	for(i=0;i<z;i++) { printf("%1d",unique_array[i] % 10); f = f + (unique_array[i] * (unique_array[i]-1)); } printf("\n");
+	for(i=0;i<z;i++) printf("-");
+
+	printf("\n%s\n\n",unique_string);
+
+	printf("Phi(O) = %i\n",f);
+	printf("Phi(P) = %f\n",(.0675) * length_of_cipher * (length_of_cipher - 1));
+	printf("Phi(R) = %f\n\n",(.0385) * length_of_cipher * (length_of_cipher - 1));
+	printf("DeltIC = %f\n\n",f/((.0385) * length_of_cipher * (length_of_cipher - 1)));
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//  Read the N-Graph data into global arrays "bi...", "tri...", "tetra..." and "pentagraphs[]"  //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+int read_ngraphs(char *dir="", char *lang="eng") {
+
+	FILE *ifptr;
+	int t1,t2,t3,t4,t5,gtemp;
+	char temp_string[500], filename[1024];
+	int i;
+
+	// INITIALIZE (ZERO) N-GRAPH ARRAYS
+	for(i=0;i<(26*26);i++) bigraphs[i]=0;
+	for(i=0;i<(26*26*26);i++) trigraphs[i]=0;
+	for(i=0;i<(26*26*26*26);i++) tetragraphs[i]=0;
+	for(i=0;i<(26*26*26*26*26);i++) pentagraphs[i]=0;
+
+	// READ "BIGRAPHS.TXT"
+	sprintf(filename,"%s/%s/bigraphs.txt",dir,lang);
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("bigraphs.txt"); return 0; }
+	while(!feof(ifptr)) {
+		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A';
+		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
+		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
+		if(t1+'A'=='*') break;
+		if(_DEB) printf("\nBiGraph: %c%c  Count: %4i  Index: %i",t1+'A',t2+'A',gtemp,(t1*26+t2));
+		bigraphs[t1*26+t2]=(int)(10*log((double)gtemp)); }
+	if(_DEB) printf("\n");
+	fclose(ifptr);
+	
+	// READ "TRIGRAPHS.TXT"
+	sprintf(filename,"%s/%s/trigraphs.txt",dir,lang);
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("trigraphs.txt"); return 0; }
+	while(!feof(ifptr)) {
+		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A';
+		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
+		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
+		if(t1+'A'=='*') break;
+		if(_DEB) printf("\nTriGraph: %c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',gtemp,(t1*676+t2*26+t3));
+		trigraphs[t1*676+t2*26+t3]=(int)(10*log((double)gtemp)); }
+	if(_DEB) printf("\n");
+	fclose(ifptr);
+
+	// READ "TETRAGRAPHS.TXT"
+	sprintf(filename,"%s/%s/tetragraphs.txt",dir,lang);
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("tetragraphs.txt"); return 0; }
+	while(!feof(ifptr)) {
+		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A'; t4=fgetc(ifptr)-'A';
+		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
+		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
+		if(t1+'A'=='*') break;
+		if(_DEB) printf("\nTetraGraph: %c%c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',t4+'A',gtemp,(t1*17576+t2*676+t3*26+t4));
+		tetragraphs[t1*17576+t2*676+t3*26+t4]=(int)(10*log((double)gtemp)); }
+	if(_DEB) printf("\n");
+	fclose(ifptr);
+
+	// READ "PENTAGRAPHS.TXT"
+	sprintf(filename,"%s/%s/pentagraphs.txt",dir,lang);
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("pentagraphs.txt"); return 0; }
+	while(!feof(ifptr)) {
+		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A'; t4=fgetc(ifptr)-'A'; t5=fgetc(ifptr)-'A';
+		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
+		fscanf(ifptr,"%i",&gtemp); fgets(temp_string,500,ifptr);
+		if(t1+'A'=='*') break;
+		if(_DEB) printf("\nPentaGraph: %c%c%c%c%c  Count: %4i  Index: %i",t1+'A',t2+'A',t3+'A',t4+'A',t5+'A',gtemp,(t1*456976+t2*17576+t3*676+t4*26+t5));
+		pentagraphs[t1*456976+t2*17576+t3*676+t4*26+t5]=(int)(10*log((double)gtemp)); }
+	if(_DEB) printf("\n");
+	fclose(ifptr);
+	
+	return 1;
+}
+
+
+int WordPlug(Message &msg, const char *word, int use_graphs)
+{
+ 	const char *cipher, *plain;
+	int word_len, msg_len, cur_score=0, best_score=0;
+	SYMBOL symbol;
+	Map org_map, best_map;
+
+	word_len=strlen(word);
+	cipher=msg.GetCipher();
+	msg_len=msg.GetLength();
+
+	org_map=msg.cur_map;
+	best_map=msg.cur_map;
+
+	for(int position=0; position<=msg_len-word_len; position++)
+	{
+		msg.cur_map=org_map;
+
+		//set word in current position
+		for(int chr=0; chr<word_len; chr++)
+		{
+			symbol.cipher=cipher[position+chr];
+			symbol.plain=word[chr];
+			msg.cur_map.AddSymbol(symbol,0);
+		}
+
+		//check validity	
+		plain=msg.GetPlain();
+		if(memcmp(word,plain+position,word_len)) continue;
+		
+		//compare score
+		cur_score=calcscore(msg_len,plain,use_graphs);
+		
+		if(cur_score>best_score)
+		{
+			best_score=cur_score;
+			best_map=msg.cur_map;
+		}
+	}
+
+	msg.cur_map=best_map;
+	
+	return best_score;
+}
