@@ -25,56 +25,28 @@
 //    with this program; if not, write to the Free Software Foundation, Inc.,
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
+
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
 #	include <wx/wx.h>
 #endif 
-#define  _CRT_SECURE_NO_WARNINGS 1
+
 #include "z340.h"
 #include "z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
 int hillclimb(char ciph[], char key[],int len, wxFrame * frm)
 {
-
-//	STARTING KEYS - CHOOSE ONE FROM BELOW, OR USE YOUR OWN.  UNCOMMENT ONLY ONE OR PROGRAM WILL NOT COMPILE!
-//	KEY *MUST* CONTAIN AT *LEAST* AS MANY LETTERS AS THE CIPHER CONTAINS UNIQUE CHARACTERS.  LONGER KEYS ARE OK!
-	//char key = ke;
-/*************************************************************************************************************************************************************/
-//	char key[ASCII_SIZE]="MILGLUITCEIOEBIEHEHTTWYTERRONFAPLEOOVNAESNSSKARSNDFAD";			//CORRECT 53-CHAR KEY FOR SOLVED ZODIAC 408 CIPHER
-//	char key[ASCII_SIZE]="LIMGLUITCEIOEBIEHEHTTOOVNAESWYTERRONFAPLENSSKARSNDFAD";			//MIXED 53-CHAR KEY FOR SOLVED ZODIAC 408 CIPHER
-//	char key[ASCII_SIZE]="NUTAFOAIYRPECEDONAETSFEOSHKTMIEISEBLVNATGSHNLWDLIRREO";			//*REALLY* SCRAMBLED 408 KEY
-/*************************************************************************************************************************************************************/
-//	char key[ASCII_SIZE]="EYENAGMNDREEDNRSWREETFCTTHHTFILVTLOOOIHAOAASSSOBHUKPUPJ";		//CORRECT 55-CHAR KEY FOR SOLVED RAY_N 378 CIPHER
-//	char key[ASCII_SIZE]="EYENAGMNDREEDNRSWREETLOOOIHAOAASSSOBHTFCTTHHTFILVUKPUPJ";		//MIXED 55-CHAR KEY FOR SOLVED RAY_N 378 CIPHER
-//	char key[ASCII_SIZE]="TAESMOIEOVETANSLIRPFTENNDDUUSELRYLIASETWOBCHGJKMNYOHCTR";           //*REALLY* SCRAMBLED 378 KEY
-//	char key[ASCII_SIZE]="ESENADESTREETNRSNNOITFSTDHRTWALVCLBOOAHIOEIKYCYMLUGMUPJ";		//PROGRAM-IMPROVED KEY (4416)
-//	char key[ASCII_SIZE]="BCFGJKMPQVWXYZELEEEETTTTTAAAAELOOLOIIIINNNNSOSSOHHRRRDDDASUU";      //KEY THAT WORKED IN SOLVING 378
-/*************************************************************************************************************************************************************/
-//                          +BpcOIFz2R5lMK(^WVLG<.!ykdUTNC4-)#tfZYSJHD>98b_PE;761/qjXA:3&%@
-//	char key[ASCII_SIZE]="BCFFGJKMPWVWNYIELTAOTTTSTTAAAELOOLOIIIINNNNSOSSOHHRRRDDDASUUYEA";   //VARIOUS 340 KEY ATTEMPTS
-//	char key[ASCII_SIZE]="BCFFGJKMPQVWNYIELEEETTTTTTAAAELOOLOIIIINNNNSOSSOHHRRRDDDASUUYEA";
-//	char key[ASCII_SIZE]="TTAAISTISEOMTITAIENAESDOSSENWLLHRNSRAPEHNUBUIODSDFYATLKUFSGRLYC";
-//	char key[ASCII_SIZE]="LNAESNSTRONFAPLSTOMGNDFAUSHTTWYTTRISDDASILULICEIOEBIEHSKARSOYEA";
-//	char key[ASCII_SIZE]="ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPRSTUWYEEETTTAAAOOIINN";
-//	char key[ASCII_SIZE]="TSREEESTNEISNOTAATSRAITSIDTSIDNOHAIHLLLDAEWNYPSFLUSKMGFARCBUOYU";
-//	char key[ASCII_SIZE]="ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPRSTUVWYADEGHILMNOPRSTUWEEETTAAOOII";
-/*************************************************************************************************************************************************************/
-//	char key[ASCII_SIZE]="TNSSNSTRONFAPASEMIEDFAUHHLEWYILTRIDDVHGLULICOIORBWAHMKPRCOYUBETAOSHDLUBCFGJKMEE"; //330 KEY
-//	char key[ASCII_SIZE]="AAAABCDDEEEEEEEFFGHHHHIIIIJKLLLMNNNNOOOOOPPRRRSSSSTTTTTUUVWY";	//ONE KEY FOR 378 AND 408
-/*************************************************************************************************************************************************************/
-
 	int x,y,clength,cuniq;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
 	char solved[MAX_CIPH_LENGTH],solvedsav[MAX_CIPH_LENGTH];
 	char keysav[ASCII_SIZE],uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
 
-	for(int i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedsav[i]=0;						//INITIALIZE (ZERO) ARRAYS
+	for(int i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedsav[i]=0;				//INITIALIZE (ZERO) ARRAYS
 	for(int i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	strcpy(bestkey,key);
 	keylength=(int)strlen(key);
-	char filename[1024]="408.ascii.txt";
 
 	init_genrand((unsigned long)time(NULL));											//SEED RANDOM GENERATOR
 
@@ -83,12 +55,9 @@ int hillclimb(char ciph[], char key[],int len, wxFrame * frm)
 			shufflekey(key);
 
 	strcpy(cipher,ciph);
-	//if(argc==2) strcpy(filename,argv[1]);
-	clength = len;//readcipher(filename);
+	clength = len;
 
-	for(int i=0;i<26;i++)
-		freqs[i]=(freqs[i]*clength+48999)/100000;
-
+	for(int i=0;i<26;i++) freqs[i]=(E_freqs[i]*clength+48999)/100000;					// CALCULATE EXPECTED LETT. FREQS
 
 	for(int i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
 
@@ -101,11 +70,10 @@ int hillclimb(char ciph[], char key[],int len, wxFrame * frm)
 	if(keylength < cuniq)
 		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); }
 
-	printf("\nZodiac Code Decipher v%s\n-------------------------\n\n",VERSION);					//PRINT VERSION NUMBER
-	printf("Parsing Cipher: %s\n",filename);											//PRINT FILENAME
+	printf("\nZodiac Code Decipher v%s\n-------------------------\n\n",VERSION);		//PRINT VERSION NUMBER
 	printf("Cipher Length:  %d characters\n",clength);									//PRINT CIPHER LENGTH
-	printf("Cipher Uniques: %d unique characters\n\n",cuniq);								//PRINT NUMBER OF UNIQUE CHARACTERS
-	read_ngraphs();															//READ IN THE N-GRAPH DATA
+	printf("Cipher Uniques: %d unique characters\n\n",cuniq);							//PRINT NUMBER OF UNIQUE CHARACTERS
+	read_ngraphs();																		//READ IN THE N-GRAPH DATA
 	printfrequency(clength,uniqarr,uniqstr);
 
 	SETSOLVED;
@@ -116,34 +84,18 @@ int hillclimb(char ciph[], char key[],int len, wxFrame * frm)
 	int bestscore = 0;
 	int iterations = 0;
 
-	while(1) {
+	while(1) {		//Mike - This while(1) can be changed so this will actually exit "Stop Cracking" button etc...
 
 	for(int p1=0;p1<keylength;p1++) {
 		for(int p2=0;p2<keylength;p2++) {
 
 		if((score=(calcscore(clength,solved)))>bestscore) {
-			printcipher(clength,cipher,solved);
-			printvowels(clength,solved);
-			printf("Best Score = %d\n",bestscore=score);
-			//pnl->Pos
-			//cfv->PostMessageA(WM_USER_THREAD_UPDATE_BESTSCORE,score,0);
-			//cfv->PostMessageA(WM_USER_THREAD_UPDATE_PLAINTEXT,(WPARAM)solved,0);
-
-			wxCommandEvent upt(EVT_UpdatePlainText,Plain_Text);
-			upt.SetString(wxString(solved));
-			frm->AddPendingEvent(upt);
-
-			wxCommandEvent upt2(EVT_UpdateBestKey,Best_Key);
-			upt2.SetString(key);
-			frm->AddPendingEvent(upt2);
-
-			wxCommandEvent upt3(EVT_UpdateScore,Score_);
-			upt3.SetInt(score);
-			frm->AddPendingEvent(upt3);
-
-
+			bestscore = score;
 			strcpy(bestkey,key);
+			printcipher(clength,cipher,solved);
+			printf("Best Score = %d\n",bestscore);
 			printf("\nKey: '%s'\n\n",key); 
+			updateGUI(solved,bestkey,bestscore,frm);
 			}
 
 		strcpy(keysav,key); strcpy(solvedsav,solved);
@@ -153,12 +105,7 @@ int hillclimb(char ciph[], char key[],int len, wxFrame * frm)
 		if((calcscore(clength,solved))<score) { strcpy(key,keysav); strcpy(solved,solvedsav); }
 
 		}
-
 	}
-
-//	int z=key[0] ; for(int x=0;x<strlen(key)-1;x++) key[x]=key[x+1];		// THIS IS JUST EXPERIMENTAL
-//	key[strlen(key)-1]=z; // shufflekey(key); 					//
-//	printf("\n%s",key);									//
 
 	for(int i=0;i<5;i++) shufflekey(key);	// THE '5' IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 
@@ -170,6 +117,25 @@ int hillclimb(char ciph[], char key[],int len, wxFrame * frm)
 }
 
 /******************************* END_MAIN_HILLCLIMBER_ALGORITHM ***********************************/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      Update the GUI                                          //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+void updateGUI(char *solved,char *bestkey,int bestscore,wxFrame *frm) {
+
+			wxCommandEvent upt1(EVT_UpdatePlainText,Plain_Text);
+			upt1.SetString(wxString(solved));
+			frm->AddPendingEvent(upt1);
+
+			wxCommandEvent upt2(EVT_UpdateBestKey,Best_Key);
+			upt2.SetString(bestkey);
+			frm->AddPendingEvent(upt2);
+
+			wxCommandEvent upt3(EVT_UpdateScore,Score_);
+			upt3.SetInt(bestscore);
+			frm->AddPendingEvent(upt3);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //          Calculate a 'fitness' score for the solution based on the N-Graph counts            //
@@ -192,10 +158,10 @@ inline int calcscore(const int length_of_cipher,const char *solv) {
 		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
 	}
 
-	biscore=biscore>>5;
-	triscore=triscore>>4;
-	tetrascore=tetrascore>>3;
-	pentascore=pentascore>>2;
+	biscore=biscore>>3;
+	triscore=triscore>>2;
+	tetrascore=tetrascore>>1;
+//	pentascore=pentascore>>0;
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 
@@ -235,6 +201,7 @@ inline void shufflekey(char *key) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                        Print ERROR MESSAGE when file can not be opened                       //
+//           **** This should be replaced with some sort of GUI Error Dialog Box ****           //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void printferror(char *name_of_file) {
@@ -245,6 +212,9 @@ void printferror(char *name_of_file) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                        Print the cipher "block" and the solution "block"                     //
+//----------------------------------------------------------------------------------------------//
+//  ALSO:             Calculate and print the percentage of vowels in the solution              //
+//                   NOTE: Normal English text normally contains approx. 40% vowels             //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void printcipher(int length_of_cipher,char *ciph,char *solv) {
@@ -255,11 +225,12 @@ void printcipher(int length_of_cipher,char *ciph,char *solv) {
 	int height;
 
 	switch(length_of_cipher) {
+		case 318: { width=53; height=6;  } break;
 		case 330: { width=30; height=11; } break;
 		case 340: { width=17; height=20; } break;
 		case 378: { width=18; height=21; } break;
 		case 408: { width=17; height=24; } break;
-		default: { printf("Sorry, this program will (currently) only work on 330, 340, 378, and 408 ciphers\n"); exit(1); } }
+		default: { printf("Sorry, this program will (currently) only work on 318, 330, 340, 378, and 408 ciphers\n"); exit(1); } }
 
 	printf("\n--------------------------------------------------------------------------------------------------------------------\n\n");
 
@@ -268,6 +239,20 @@ void printcipher(int length_of_cipher,char *ciph,char *solv) {
 		printf("   =   ");
 		for(int x=0;x<width;x++) printf("%c",solv[s++]);
 		printf("\n"); }
+
+//	printvowels section
+
+	int y,solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int diff_tot=0;
+	for(int i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;
+	printf("\n\n              'A   B   C   D  'E   F   G   H  'I   J   K   L   M   N  'O   P   Q   R   S   T  'U   V   W   X   Y   Z");
+	printf("\n  Expected: ");	for(int i=0;i<26;i++) printf("%4d",freqs[i]);
+	printf("\n     Found: ");	for(int i=0;i<26;i++) printf("%4d",solv_freqs[i]);
+	printf("\nDifference: ");	for(int i=0;i<26;i++) { printf("%4d",y=abs(freqs[i]-solv_freqs[i])); diff_tot+=y; }
+	printf("\n\nDifference Total: %d    --    Deviation From Expected: %f",diff_tot,100*((float)diff_tot/length_of_cipher));
+	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
+
+	printf("Longest String Of Consonants: %d\n\n",calclsoc(length_of_cipher,solv));
 
 }
 
@@ -298,43 +283,6 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                 Calculate and print the percentage of vowels in the solution                 //
-//                NOTE: Normal English text normally contains approx. 40% vowels                //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-void	printvowels(int length_of_cipher, char *solv) {
-
-	int y,solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	int diff_tot=0;
-	for(int i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;
-	printf("\n\n              'A   B   C   D  'E   F   G   H  'I   J   K   L   M   N  'O   P   Q   R   S   T  'U   V   W   X   Y   Z");
-	printf("\n  Expected: ");	for(int i=0;i<26;i++) printf("%4d",freqs[i]);
-	printf("\n     Found: ");	for(int i=0;i<26;i++) printf("%4d",solv_freqs[i]);
-	printf("\nDifference: ");	for(int i=0;i<26;i++) { printf("%4d",y=abs(freqs[i]-solv_freqs[i])); diff_tot+=y; }
-	printf("\n\nDifference Total: %d    --    Deviation From Expected: %f",diff_tot,100*((float)diff_tot/length_of_cipher));
-	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
-
-	printf("Longest String Of Consonants: %d\n\n",calclsoc(length_of_cipher,solv));
-
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//                  Read in the ciphertext into global array "cipher[]"                         //
-//                  RETURN: The length of the cipher that has been read                         //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-int readcipher(char *filename) {
-
-	FILE *ifptr;
-	ifptr=fopen(filename,"rb");
-	if(ifptr==NULL) { printferror(filename); exit(1); }
-	fgets(cipher,MAX_CIPH_LENGTH,ifptr);
-	fclose(ifptr);
-	return((int)strlen(cipher));
-
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 //  Read the N-Graph data into global arrays "bi...", "tri...", "tetra..." and "pentagraphs[]"  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -351,7 +299,7 @@ void read_ngraphs(void) {
 	for(int i=0;i<(26*26*26*26*26);i++) pentagraphs[i]=0;
 
 	// READ "BIGRAPHS.TXT"
-	ifptr=fopen("eng/bigraphs.txt","r"); if(ifptr==NULL) { printferror("bigraphs.txt"); exit(1); }
+	ifptr=fopen("language/eng/bigraphs.txt","r"); if(ifptr==NULL) { printferror("bigraphs.txt"); exit(1); }
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
@@ -363,7 +311,7 @@ void read_ngraphs(void) {
 	fclose(ifptr);
 	
 	// READ "TRIGRAPHS.TXT"
-	ifptr=fopen("eng/trigraphs.txt","r"); if(ifptr==NULL) { printferror("trigraphs.txt"); exit(1); }
+	ifptr=fopen("language/eng/trigraphs.txt","r"); if(ifptr==NULL) { printferror("trigraphs.txt"); exit(1); }
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
@@ -375,7 +323,7 @@ void read_ngraphs(void) {
 	fclose(ifptr);
 
 	// READ "TETRAGRAPHS.TXT"
-	ifptr=fopen("eng/tetragraphs.txt","r"); if(ifptr==NULL) { printferror("tetragraphs.txt"); exit(1); }
+	ifptr=fopen("language/eng/tetragraphs.txt","r"); if(ifptr==NULL) { printferror("tetragraphs.txt"); exit(1); }
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A'; t4=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
@@ -387,7 +335,7 @@ void read_ngraphs(void) {
 	fclose(ifptr);
 
 	// READ "PENTAGRAPHS.TXT"
-	ifptr=fopen("eng/pentagraphs.txt","r"); if(ifptr==NULL) { printferror("pentagraphs.txt"); exit(1); }
+	ifptr=fopen("language/eng/pentagraphs.txt","r"); if(ifptr==NULL) { printferror("pentagraphs.txt"); exit(1); }
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A'; t4=fgetc(ifptr)-'A'; t5=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);

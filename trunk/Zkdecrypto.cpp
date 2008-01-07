@@ -1,7 +1,9 @@
 #include <wx/wxprec.h>
+
 #ifndef WX_PRECOMP
 #	include <wx/wx.h>
 #endif 
+
 #include "Zkdecrypto.h"
 #include "wx/thread.h"
 #include <string>
@@ -14,9 +16,7 @@ DEFINE_EVENT_TYPE(EVT_UpdateScore)
 
 
 BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
-	EVT_MENU(MENU_New, MainFrame::NewFile)
 	EVT_MENU(MENU_Open, MainFrame::OpenFile)
-	EVT_MENU(MENU_Close, MainFrame::CloseFile)
 	EVT_MENU(MENU_Save, MainFrame::SaveFile)
 	EVT_MENU(MENU_SaveAs, MainFrame::SaveFileAs)
 	EVT_MENU(MENU_Quit, MainFrame::Quit)
@@ -32,11 +32,10 @@ IMPLEMENT_APP(MainApp) // A macro that tells wxWidgets to create an instance of 
 bool MainApp::OnInit() 
 {
 	// Create an instance of our frame, or window 
-	MainFrame *MainWin = new MainFrame(_("Zodiac Decrypto v1.0 By Michael Eaton and Brax Sisco"), wxPoint(1, 1), wxSize(640, 520));
+	MainFrame *MainWin = new MainFrame(_("ZKDecrypto v1.0 By Brax Sisco and Michael Eaton"), wxPoint(1, 1), wxSize(640, 520));
 	MainWin->Show(true); // show the window 
 	SetTopWindow(MainWin); // and finally, set it as the main window 
 	
-
 	return true;
 } 
  
@@ -46,19 +45,15 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     CreateStatusBar(2);
     MainMenu = new wxMenuBar();
     wxMenu *FileMenu = new wxMenu();
- 
-    FileMenu->Append(MENU_New, wxT("&New"),
-      wxT("Create a new file"));
+
     FileMenu->Append(MENU_Open, wxT("&Open"),
       wxT("Open an existing file"));
-    FileMenu->Append(MENU_Close, wxT("&Close"),
-      wxT("Close the current document"));
     FileMenu->Append(MENU_Save, wxT("&Save"),
       wxT("Save the current document"));
     FileMenu->Append(MENU_SaveAs, wxT("Save &As"),
       wxT("Save the current document under a new file name"));
     FileMenu->Append(MENU_Quit, wxT("&Quit"),
-      wxT("Quit the editor"));
+      wxT("Quit ZKDecrypto"));
  
     MainMenu->Append(FileMenu, wxT("File"));
     SetMenuBar(MainMenu);
@@ -68,7 +63,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     wxEmptyString, wxPoint(15,30),wxSize(180,250),
     wxTE_MULTILINE , wxDefaultValidator, wxTextCtrlNameStr);
 
-	CipherText->LoadFile("408.ascii.txt");
+	CipherText->LoadFile("cipher/340.ascii.txt");
 
 	PlainText = new wxTextCtrl(panel, Plain_Text,
     wxEmptyString, wxPoint(225,30),wxSize(180,250),
@@ -87,11 +82,11 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     "Start Cracking", wxPoint(500,310),wxSize(100,50), wxTE_READONLY, wxDefaultValidator, wxButtonNameStr);
 	
 	lblCipherText = new wxStaticText(panel, lblCipher_Text,
-    "Cipher Text", wxPoint(15,5),wxSize(60,20),
+    "Ciphertext", wxPoint(15,5),wxSize(60,20),
     0 ,  wxStaticTextNameStr); 
 
 	lblPlainText = new wxStaticText(panel, lblPlain_Text,
-    "Plain Text", wxPoint(225,5),wxSize(60,20),
+    "Plaintext", wxPoint(225,5),wxSize(60,20),
     0 ,  wxStaticTextNameStr); 
 
 	lblStartKey = new wxStaticText(panel, lblStart_Key,
@@ -106,26 +101,16 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     "Score", wxPoint(15,390),wxSize(60,20),
     0 ,  wxStaticTextNameStr); 
 
-
 }
 
-  void MainFrame::NewFile(wxCommandEvent& WXUNUSED(event))
-  {
-  }
- 
   void MainFrame::OpenFile(wxCommandEvent& WXUNUSED(event))
   {
-    CipherText->LoadFile(wxT("base.h"));
-  }
- 
-  void MainFrame::CloseFile(wxCommandEvent& WXUNUSED(event))
-  {
-    CipherText->Clear();
+    CipherText->LoadFile(wxT("cipher/base.h"));
   }
  
   void MainFrame::SaveFile(wxCommandEvent& WXUNUSED(event))
   {
-    CipherText->SaveFile(wxT("base.h"));
+    CipherText->SaveFile(wxT("cipher/base.h"));
   }
  
   void MainFrame::SaveFileAs(wxCommandEvent& WXUNUSED(event))
@@ -153,12 +138,12 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	 //mwt->Create();
 	 for(int i=0;i<MAX_CIPH_LENGTH;i++) mwt->ciphertext[i]=0;
 	 for(int i=0;i<ASCII_SIZE;i++) mwt->startkey[i]=0;
-	 for(int i = 0; i < CipherText->GetValue().Length(); i++)
+	 for(unsigned int i = 0; i < CipherText->GetValue().Length(); i++)
 	 {
 		mwt->ciphertext[i] = CipherText->GetValue().c_str()[i];
 	 }
 
-	  for(int i = 0; i < StartKey->GetValue().Length(); i++)
+	  for(unsigned int i = 0; i < StartKey->GetValue().Length(); i++)
 	 {
 		mwt->startkey[i] = StartKey->GetValue().c_str()[i];
 	 }

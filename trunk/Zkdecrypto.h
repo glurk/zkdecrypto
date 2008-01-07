@@ -33,11 +33,9 @@ public:
 	wxStaticText *lblBestKey;
 	wxStaticText *lblScore;
 	void Quit(wxCommandEvent& event);
-    void NewFile(wxCommandEvent& event);
     void OpenFile(wxCommandEvent& event);
     void SaveFile(wxCommandEvent& event);
     void SaveFileAs(wxCommandEvent& event);
-    void CloseFile(wxCommandEvent& event);
 	void StartButton_Click(wxCommandEvent& event);
 	void StartCracking();
 	void UpdatePlainText(wxCommandEvent& event);
