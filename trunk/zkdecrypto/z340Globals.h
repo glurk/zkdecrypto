@@ -1,4 +1,6 @@
 /////////////////////////////////////////////////////////////////// GLOBAL VARIABLES //////////////////////////////////////////////////////////////
+#ifndef Z340_GLOBALS_H
+#define Z340_GLOBALS_H
 
 int		freqs[26]			=		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -11,11 +13,18 @@ int		G_freqs[26]			=		{6506,2566,2837,5414,16693,2044,3647,4064,7812,191,1879,28
 
 int		lsocdata[26]		=		{0,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1};				//LONGEST STRING OF CONSONANTS DATA
 
-int		bigraphs[26*26];
-int		trigraphs[26*26*26];
-int		tetragraphs[26*26*26*26];
-int		pentagraphs[26*26*26*26*26];
+float unigraphs[UNI_SIZE];
+/*{
+8.167, 1.492, 2.782, 4.253, 12.702, 2.228, 2.015, 6.094, 6.966, 0.153, 0.772, 4.025, 2.406,
+6.749, 7.507, 1.929, 0.095, 5.987, 6.327, 9.056, 2.758, 0.978, 2.360, 0.150, 1.974, 0.0749
+};*/
+
+int bigraphs[BI_SIZE];
+int	trigraphs[TRI_SIZE];
+int	tetragraphs[TETRA_SIZE];
+int	pentagraphs[PENTA_SIZE];
 
 char	cipher[MAX_CIPH_LENGTH];
 int		keylength;
 
+#endif

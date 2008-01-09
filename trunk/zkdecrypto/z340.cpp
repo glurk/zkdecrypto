@@ -241,7 +241,8 @@ inline void shufflekey(char *key,const char locked[]) {
 
 	int x,y,z,canswap=0;
 
-	for(int l=0; l<keylength; l++) if(!locked[1]) canswap=1;
+	//check if all characters are locked to avoid infinite loop
+	for(int symbol=0; symbol<keylength; symbol++) if(!locked[symbol]) canswap=1;
 
 	if(canswap)
 	{
@@ -410,6 +411,49 @@ int read_ngraphs(char *dir="", char *lang="eng") {
 	return 1;
 }
 
+
+void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
+
+int ReadNGraphs(const char *filename, int n) 
+{
+	FILE *tgfile;
+	char ngraph[8];
+	int *ngraphs;
+	int nsize, freq, index;
+	float percent;
+
+	if(!(tgfile=fopen(filename,"r"))) return 0;
+
+	if(n==1) {/*ngraphs=unigraphs;*/ nsize=UNI_SIZE;}
+	if(n==2) {ngraphs=bigraphs; nsize=BI_SIZE;}
+	if(n==3) {ngraphs=trigraphs; nsize=TRI_SIZE;}
+	if(n==4) {ngraphs=tetragraphs; nsize=TETRA_SIZE;}
+	if(n==5) {ngraphs=pentagraphs; nsize=PENTA_SIZE;}
+
+	//init to zero
+	if(n>1) memset(ngraphs,0,nsize*sizeof(long));
+
+	//read file
+	while(fscanf(tgfile,"%s : %i %f",ngraph,&freq,&percent)!=EOF) 
+	{
+		//calculate index
+		index=(ngraph[n-1]-'A');
+		if(n>1) index+=(ngraph[n-2]-'A')*UNI_SIZE;
+		if(n>2) index+=(ngraph[n-3]-'A')*BI_SIZE;
+		if(n>3) index+=(ngraph[n-4]-'A')*TRI_SIZE;
+		if(n>4) index+=(ngraph[n-5]-'A')*TETRA_SIZE; 
+		
+		if(index<0 || index>nsize) continue;
+		
+		//set ngraph
+		if(n==1) unigraphs[index]=percent;
+		else ngraphs[index]=int(10*log(freq));
+	}
+
+	fclose(tgfile); 
+
+	return 1;
+}
 
 int WordPlug(Message &msg, const char *word, int use_graphs)
 {

@@ -10,7 +10,8 @@
 #define IDD_WORD                        109
 #define IDD_PATTERNS                    111
 #define IDD_ABOUT                       114
-#define IDD_CIPHER						115
+#define IDD_CIPHER                      115
+#define IDD_MERGE                       116
 #define IDC_PLAIN                       1000
 #define IDC_CIPHER                      1001
 #define IDC_SOLVE                       1002
@@ -46,7 +47,14 @@
 #define IDC_TABLE                       1038
 #define IDC_CIPHER_TITLE                1039
 #define IDC_PAT_TITLE                   1040
-#define IDC_SCROLL						1041
+#define IDC_SCROLL                      1041
+#define IDC_SLIDER1                     1042
+#define IDC_SCROLLBAR1                  1043
+#define IDC_TS_UP                       1045
+#define IDC_TS_DOWN                     1046
+#define IDC_MERSYM1                     1047
+#define IDC_MERSYM2                     1048
+#define IDC_TEXTINFO                    1048
 #define IDM_FILE_OPEN                   40001
 #define IDM_FILE_OPEN_MSG               40001
 #define IDM_FILE_SAVE                   40002
@@ -73,6 +81,7 @@
 #define IDM_EDIT_LOCK                   40019
 #define IDM_EDIT_UNLOCK                 40020
 #define IDM_EDIT_MSG                    40021
+#define IDM_EDIT_MERGE                  40022
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 
@@ -80,9 +89,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        112
+#define _APS_NEXT_RESOURCE_VALUE        113
 #define _APS_NEXT_COMMAND_VALUE         40021
-#define _APS_NEXT_CONTROL_VALUE         1041
+#define _APS_NEXT_CONTROL_VALUE         1049
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
