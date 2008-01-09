@@ -2,64 +2,6 @@
 
 /*Map*/
 
-#define BLANK 0x97
-
-void Map::Clear(int mode)
-{
-	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++) 
-	{
-		if(locked[cur_symbol]) continue;
-		
-		if(mode & CLR_CIPHER) symbols[cur_symbol].cipher=0;
-		if(mode & CLR_PLAIN) symbols[cur_symbol].plain=0;
-		if(mode & CLR_FREQ) symbols[cur_symbol].freq=0;
-		if(mode==CLR_ALL) 
-		{
-			num_symbols=0;
-			SetAllLock(0);
-		}
-	}
-}
-
-int Map::AddSymbol(SYMBOL symbol, int inc_freq)
-{
-	if(num_symbols>=MAX_SYM) return 0;
-
-	//search for symbol, and update if it does
-	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
-		if(symbols[cur_symbol].cipher==symbol.cipher)
-		{
-			if(locked[cur_symbol]) return num_symbols;
-			if(IS_ASCII(symbol.plain)) symbols[cur_symbol].plain=symbol.plain;
-			if(inc_freq) symbols[cur_symbol].freq++;
-			return num_symbols;
-		}
-
-	symbols[num_symbols].cipher=symbol.cipher;
-	symbols[num_symbols].plain=symbol.plain;
-	symbols[num_symbols].freq=1;
-	num_symbols++;
-
-	return 1;
-
-}
-
-void Map::SwapSymbols(int swap1, int swap2)
-{
-	if(locked[swap1] || locked[swap2]) return;
-	
-	char temp=symbols[swap1].plain;
-	symbols[swap1].plain=symbols[swap2].plain;
-	symbols[swap2].plain=temp;
-}
-
-int Map::GetSymbol(int index, SYMBOL *symbol)
-{
-	if(index<0 || index>num_symbols) return 0;
-	memcpy(symbol,&symbols[index],sizeof(SYMBOL));
-	return 1;
-}
-
 int Map::Read(const char *filename)
 {
 	FILE *mapfile;
@@ -123,63 +65,25 @@ int Map::Write(const char *filename)
 	return 1;
 }
 
-void Map::SortByFreq()
+//clear map data, you can | together mode values, or use CLR_ALL
+void Map::Clear(int mode)
 {
-	SYMBOL temp;
-	int freq1, freq2;
-	char cipher1, cipher2;
-	int next, swap;
-
-	do
+	if(mode==CLR_ALL) 
 	{
-		next=false;
-
-		for(int cur_symbol=0; cur_symbol<num_symbols-1; cur_symbol++)
-		{
-			cipher1=symbols[cur_symbol].cipher;
-			cipher2=symbols[cur_symbol+1].cipher;
-			freq1=symbols[cur_symbol].freq;
-			freq2=symbols[cur_symbol+1].freq;
-			
-			if(freq1<freq2) swap=true;
-			else if(freq1==freq2 && cipher1<cipher2) swap=true;
-			else swap=false;
-			
-			if(swap)
-			{
-				memcpy(&temp,&symbols[cur_symbol],sizeof(SYMBOL));
-				memcpy(&symbols[cur_symbol],&symbols[cur_symbol+1],sizeof(SYMBOL));
-				memcpy(&symbols[cur_symbol+1],&temp,sizeof(SYMBOL));
-				next=true;
-			}
-		}
-	} 
-	while(next);
-}
-
-void Map::SymbolTable(char *dest)
-{
-	SYMBOL symbol;
-	int cur_char=0;
-
-	for(int letter=0; letter<26; letter++)
-	{
-		dest[cur_char++]=letter+'A'; dest[cur_char++]=' ';
-		
-		for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
-		{
-			GetSymbol(cur_symbol,&symbol);
-			if(symbol.plain==letter+'A') 
-				dest[cur_char++]=symbol.cipher;
-		}
-
-		dest[cur_char++]='\r'; dest[cur_char++]='\n';
+		num_symbols=0;
+		memset(symbols,0,MAX_SYM*sizeof(SYMBOL));
+		return;
 	}
-
-	dest[cur_char++]='\0';
+	
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++) 
+	{
+		if(symbols[cur_symbol].locked) continue;
+		
+		if(mode & CLR_CIPHER) symbols[cur_symbol].cipher=0;
+		if(mode & CLR_PLAIN) symbols[cur_symbol].plain=0;
+		if(mode & CLR_FREQ) symbols[cur_symbol].freq=0;
+	}
 }
-
-#define DECIMAL(N) (N-int(N))
 
 void Map::Init()
 {
@@ -220,6 +124,137 @@ void Map::Init()
 	SetAllLock(0);
 }
 
+//add/update a symbol; if inc_freq is true, 
+//when an existing symbol is updated its frequency is incremented
+int Map::AddSymbol(SYMBOL symbol, int inc_freq)
+{
+	int index;
+
+	if(num_symbols>=MAX_SYM) return 0;
+
+	//search for symbol, and update if it exists
+	index=FindByCipher(symbol.cipher);
+	
+	if(index>-1)
+	{
+		if(symbols[index].locked) return num_symbols;
+		if(IS_ASCII(symbol.plain)) symbols[index].plain=symbol.plain;
+		symbols[index].locked=symbol.locked;
+		if(inc_freq) symbols[index].freq++;
+		return num_symbols;
+	}
+
+	symbols[num_symbols].cipher=symbol.cipher;
+	symbols[num_symbols].plain=symbol.plain;
+	symbols[num_symbols].freq=1;
+	num_symbols++;
+
+	return 1;
+}
+
+//return index of symbol with specified cipher character
+int Map::FindByCipher(char cipher)
+{
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		if(symbols[cur_symbol].cipher==cipher)
+			return cur_symbol;
+
+	return -1;
+}
+
+//get symbol at index
+int Map::GetSymbol(int index, SYMBOL *symbol)
+{
+	if(index<0 || index>num_symbols) return 0;
+	memcpy(symbol,&symbols[index],sizeof(SYMBOL));
+	return 1;
+}
+
+//swap the plain text letters for two symbols
+void Map::SwapSymbols(int swap1, int swap2)
+{
+	if(symbols[swap1].locked || symbols[swap2].locked) return;
+	
+	char temp=symbols[swap1].plain;
+	symbols[swap1].plain=symbols[swap2].plain;
+	symbols[swap2].plain=temp;
+}
+
+//sort the symbols in the same order that hillclimber expects
+void Map::SortByFreq()
+{
+	SYMBOL temp;
+	int freq1, freq2;
+	char cipher1, cipher2;
+	int next, swap;
+
+	do //buble sort
+	{
+		next=false;
+
+		for(int cur_symbol=0; cur_symbol<num_symbols-1; cur_symbol++)
+		{
+			cipher1=symbols[cur_symbol].cipher;
+			cipher2=symbols[cur_symbol+1].cipher;
+			freq1=symbols[cur_symbol].freq;
+			freq2=symbols[cur_symbol+1].freq;
+			
+			if(freq1<freq2) swap=true;
+			else if(freq1==freq2 && cipher1<cipher2) swap=true;
+			else swap=false;
+			
+			if(swap)
+			{
+				memcpy(&temp,&symbols[cur_symbol],sizeof(SYMBOL));
+				memcpy(&symbols[cur_symbol],&symbols[cur_symbol+1],sizeof(SYMBOL));
+				memcpy(&symbols[cur_symbol+1],&temp,sizeof(SYMBOL));
+				next=true;
+			}
+		}
+	} 
+	while(next);
+}
+
+//get string for the symbols table
+void Map::SymbolTable(char *dest)
+{
+	SYMBOL symbol;
+	int cur_char=0;
+
+	for(int letter=0; letter<26; letter++)
+	{
+		dest[cur_char++]=letter+'A'; dest[cur_char++]=' ';
+		
+		for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		{
+			GetSymbol(cur_symbol,&symbol);
+			if(symbol.plain==letter+'A') 
+				dest[cur_char++]=symbol.cipher;
+		}
+
+		dest[cur_char++]='\r'; dest[cur_char++]='\n';
+	}
+
+	dest[cur_char++]='\0';
+}
+
+//hillclimb key <-> Map class conversion
+void Map::ToKey(char *key)
+{
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	{
+		if(symbols[cur_symbol].plain) key[cur_symbol]=symbols[cur_symbol].plain;
+		else key[cur_symbol]=BLANK;
+	}	
+	
+	key[num_symbols]='\0';
+}
+
+void Map::FromKey(char *key)
+{
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		symbols[cur_symbol].plain=key[cur_symbol];
+}
 
 /*Message*/
 int Message::Read(const char *filename)
@@ -241,6 +276,8 @@ int Message::Read(const char *filename)
 	cipher=new char[size];
 	plain=new char[size];
 
+	if(!cipher || !plain) return 0;
+
 	//read from file
 	msg_len=0;
 
@@ -253,16 +290,18 @@ int Message::Read(const char *filename)
 	cipher[msg_len]='\0';
 	fclose(msgfile);
 	
-	CipherInfo();
+	SetInfo();
 
 	return msg_len;
 }
 
-void Message::CipherInfo()
+//set all info for new cipher data
+void Message::SetInfo()
 {
 	SYMBOL symbol;
 	
 	//create map
+	memset(&symbol,0,sizeof(SYMBOL));
 	cur_map.Clear(CLR_ALL);
 	symbol.plain='\0';
 	
@@ -277,12 +316,13 @@ void Message::CipherInfo()
 
 	//set expected frequencies
 	for(int letter=0; letter<26; letter++)
-		exp_freq[letter]=ROUNDTOINT((unigraphs[letter]/100)*msg_len);
+		exp_freq[letter]=ROUNDTOINT((cur_map.GetUnigraph(letter)/100)*msg_len);
 	
 	//patterns
 	FindPatterns();
 }
 
+//decode cipher into plain
 void Message::Decode()
 {
 	int cur_symbol, num_symbols;
@@ -322,7 +362,22 @@ void Message::GetActFreq(int *freq)
 		freq[plain[chr]-'A']++;
 }
 
-inline int patcmp(const char *pat1, const char *pat2, char *pat3)
+//replace all instances of symbol2 with symbol1, and update map
+void Message::MergeSymbols(char symbol1, char symbol2)
+{
+	Map old_map;
+
+	for(int index=0; index<msg_len; index++)
+		if(cipher[index]==symbol2) cipher[index]=symbol1;
+
+	//save old map, init new map and then reset symbols from old map
+	old_map=cur_map;
+	SetInfo();
+	cur_map+=old_map;
+}
+
+//check if pat1 & pat2 are more than 50% similar, put pattern string into pat3
+inline int Message::PatternMatch(const char *pat1, const char *pat2, char *pat3)
 {
 	int len1=strlen(pat1);
 	int len2=strlen(pat2);
@@ -343,8 +398,8 @@ inline int patcmp(const char *pat1, const char *pat2, char *pat3)
 	
 	pat3[len]='\0';
 	
-	if(!diff) return 0;
-	if((float(diff)/len)>=.5) return 0;
+	if(!diff) return 0; //exactly the same
+	if((float(diff)/len)>=.5) return 0; //<50% the same
 	return 1;
 }
 
@@ -373,13 +428,14 @@ int Message::AddPattern(NGRAM *pattern, int inc_freq)
 void Message::FindPatterns()
 {
 	char *cur_pos;
-	int found, next;
+	int length, found, next;
 	NGRAM pattern;
 
 	num_patterns=0;
 	next=true;
 
-	for(int length=2; next; length++)
+	//exact patterns
+	for(length=2; length<MAX_PAT_LEN; length++)
 	{
 		next=false;
 		
@@ -389,14 +445,15 @@ void Message::FindPatterns()
 			memcpy(pattern.string,cipher+index,length);
 			pattern.string[length]='\0';
 			pattern.length=length;
-			pattern.freq=0;				
+			pattern.freq=0;
 			
 			//count pattern
-			cur_pos=cipher;
-			while(cur_pos=strstr(cur_pos+index,pattern.string)) 
+			cur_pos=cipher+index;
+			while(cur_pos=strstr(cur_pos,pattern.string)) 
 			{
 				pattern.positions[pattern.freq]=cur_pos-cipher;
 				pattern.freq++;
+				//cur_pos++;
 				cur_pos+=length;
 			}
 		
@@ -408,31 +465,13 @@ void Message::FindPatterns()
 			}
 		}
 	}
-
-	//sort patterns
-	do
-	{
-		found=false;
-
-		for(int cur_pat=0; cur_pat<num_patterns-1; cur_pat++)
-			if(patterns[cur_pat].freq<patterns[cur_pat+1].freq)
-			{
-				memcpy(&pattern,&patterns[cur_pat],sizeof(NGRAM));
-				memcpy(&patterns[cur_pat],&patterns[cur_pat+1],sizeof(NGRAM));
-				memcpy(&patterns[cur_pat+1],&pattern,sizeof(NGRAM));
-				found=true;
-			}
-	} 
-	while(found);
 	
 	//near patterns
 	NGRAM pattern1, pattern2, pattern3;
 	next=true;
 	
-	for(int length=5; next && length<=MAX_PAT_LEN; length++)
+	for(length=4; length<=MAX_PAT_LEN; length++)
 	{
-		next=false;
-		
 		pattern3.length=length;
 		pattern3.freq=2;
 		
@@ -447,17 +486,40 @@ void Message::FindPatterns()
 			{
 				memcpy(pattern2.string,cipher+index2,length);
 				
-				if(patcmp(pattern1.string,pattern2.string,pattern3.string))
+				if(PatternMatch(pattern1.string,pattern2.string,pattern3.string))
 				{
 					pattern3.positions[0]=index1;
 					pattern3.positions[1]=index2;					
 					
 					AddPattern(&pattern3,true);
-					next=true;
 				}
 			}			
 		}
 	}
+
+	//sort patterns
+	int swap;
+	do
+	{
+		found=false;
+
+		for(int cur_pat=0; cur_pat<num_patterns-1; cur_pat++)
+		{
+			swap=false;
+
+			//if(patterns[cur_pat].freq<patterns[cur_pat+1].freq) swap=true;
+			if(strcmp(patterns[cur_pat].string,patterns[cur_pat+1].string)>0) swap=true;
+			
+			if(swap)
+			{
+				memcpy(&pattern,&patterns[cur_pat],sizeof(NGRAM));
+				memcpy(&patterns[cur_pat],&patterns[cur_pat+1],sizeof(NGRAM));
+				memcpy(&patterns[cur_pat+1],&pattern,sizeof(NGRAM));
+				found=true;
+			}
+		}
+	} 
+	while(found);
 }
 
 int Message::GetPattern(int index, NGRAM *pattern) 

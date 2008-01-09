@@ -75,6 +75,12 @@ struct SOLVEINFO
 #define		GERMAN						1
 #define		SPANISH						2
 
+#define UNI_SIZE	26
+#define BI_SIZE		676
+#define TRI_SIZE	17576
+#define TETRA_SIZE	456976
+#define PENTA_SIZE	11881376
+
 #define USE_BI		0x01
 #define USE_TRI		0x02
 #define USE_TETRA	0x04
@@ -94,4 +100,6 @@ void			printfrequency(int,int *,char *);
 //void			updateGUI(char *,char *,int,wxFrame *);
 int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&);
 
+void 			GetUnigraphs(double*);
+int 			ReadNGraphs(const char*,int);
 int 			WordPlug(Message&, const char *, int);
