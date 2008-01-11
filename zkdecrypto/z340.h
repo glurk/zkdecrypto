@@ -40,11 +40,11 @@ struct SOLVEINFO
 #define		MAX_CIPH_LENGTH 			4096
 #define		SETSOLVED					for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; }
 
-#define UNI_SIZE	26
-#define BI_SIZE		676
-#define TRI_SIZE	17576
-#define TETRA_SIZE	456976
-#define PENTA_SIZE	11881376
+#define UNI_SIZE	26					// THIS IS EASIER TO UNDERSTAND THAN 26, 676, 17576
+#define BI_SIZE		26*26				// HARD-CODED MYSTERY NUMBERS SUCK!
+#define TRI_SIZE	26*26*26
+#define TETRA_SIZE	26*26*26*26
+#define PENTA_SIZE	26*26*26*26*26
 
 #define USE_BI		0x01
 #define USE_TRI		0x02
@@ -57,7 +57,6 @@ inline int		calcscore(const int,const char *,int&);
 inline int		calclsoc(const int,const char *);
 inline void		shufflekey(char *,const char *);
 int				readcipher(char *);
-int				read_ngraphs(char*,char*);
 
 void			printcipher(int,char *,char *);
 void			printfrequency(int,int *,char *);

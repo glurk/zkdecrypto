@@ -46,9 +46,9 @@ LeftChar=1
 [Editor_5]
 Open=1
 Top=0
-CursorCol=2
-CursorRow=463
-TopLine=429
+CursorCol=1
+CursorRow=393
+TopLine=356
 LeftChar=1
 
 [Editor_6]
@@ -63,8 +63,8 @@ LeftChar=1
 Open=1
 Top=0
 CursorCol=1
-CursorRow=70
-TopLine=32
+CursorRow=69
+TopLine=31
 LeftChar=1
 
 [Editor_8]
