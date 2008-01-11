@@ -36,15 +36,9 @@ struct SOLVEINFO
 //////////////////////////////////////////////////////////////////////// DEFINES //////////////////////////////////////////////////////////////////
 
 #define		_DEB						0
-#define		VERSION 					"0.7"
 #define		ASCII_SIZE 					256
 #define		MAX_CIPH_LENGTH 			4096
-#define		SCRAMBLESTARTKEY 			0				// 0 or 1 : Determines whether to pre-scramble the starting KEY
-#define		SETSOLVED					for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; }
-
-#define		ENGLISH						0
-#define		GERMAN						1
-#define		SPANISH						2
+#define		SETSOLVED					for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; }
 
 #define UNI_SIZE	26
 #define BI_SIZE		676
