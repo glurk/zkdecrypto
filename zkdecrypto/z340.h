@@ -59,7 +59,6 @@ inline void		shufflekey(char *,const char *);
 int				readcipher(char *);
 int				read_ngraphs(char*,char*);
 
-void			printferror(char *);
 void			printcipher(int,char *,char *);
 void			printfrequency(int,int *,char *);
 //void			updateGUI(char *,char *,int,wxFrame *);

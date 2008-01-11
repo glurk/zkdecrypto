@@ -93,4 +93,16 @@ enum
 */
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                        Print ERROR MESSAGE when file can not be opened                       //
+//           **** This should be replaced with some sort of GUI Error Dialog Box ****           //
+//     --DEAD CODE: It is now in GUI                                                            //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+void printferror(char *name_of_file) {
+
+	printf("ERROR - File '%s' does not exist, or could not be opened!!\n\n",name_of_file);
+
+}
+
 
