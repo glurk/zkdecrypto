@@ -143,6 +143,8 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //          Calculate a 'fitness' score for the solution based on the N-Graph counts            //
+//                        I, Glurk, am unhappy with this code.  It's slow!                      //
+//                 The scorer should be the fastest routine in the whole program!               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define IS_LETTER(L) ((L<0 || L>25)? 0:1)
@@ -193,6 +195,7 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                       Calculate the "Longest String Of Consonants"                           //
+//                           This is actually a useful statistic.                               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline int calclsoc(const int length_of_cipher,const char *solv) {
@@ -209,6 +212,7 @@ inline int calclsoc(const int length_of_cipher,const char *solv) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                Mutate the char array "key[]"                                 //
+// wouldn't if(!locked[symbol]) { canswap=1; break; } be more efficient?                        //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline void shufflekey(char *key,const char locked[]) {
