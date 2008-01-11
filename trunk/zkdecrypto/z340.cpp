@@ -230,17 +230,6 @@ inline void shufflekey(char *key,const char locked[]) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                        Print ERROR MESSAGE when file can not be opened                       //
-//           **** This should be replaced with some sort of GUI Error Dialog Box ****           //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-void printferror(char *name_of_file) {
-
-	printf("ERROR - File '%s' does not exist, or could not be opened!!\n\n",name_of_file);
-
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 //                        Print the cipher "block" and the solution "block"                     //
 //----------------------------------------------------------------------------------------------//
 //  ALSO:             Calculate and print the percentage of vowels in the solution              //
@@ -333,7 +322,7 @@ int read_ngraphs(char *dir="", char *lang="eng") {
 
 	// READ "BIGRAPHS.TXT"
 	sprintf(filename,"%s/%s/bigraphs.txt",dir,lang);
-	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("bigraphs.txt"); return 0; }
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) return 0;
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
@@ -346,7 +335,7 @@ int read_ngraphs(char *dir="", char *lang="eng") {
 	
 	// READ "TRIGRAPHS.TXT"
 	sprintf(filename,"%s/%s/trigraphs.txt",dir,lang);
-	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("trigraphs.txt"); return 0; }
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) return 0;
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
@@ -359,7 +348,7 @@ int read_ngraphs(char *dir="", char *lang="eng") {
 
 	// READ "TETRAGRAPHS.TXT"
 	sprintf(filename,"%s/%s/tetragraphs.txt",dir,lang);
-	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("tetragraphs.txt"); return 0; }
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) return 0;
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A'; t4=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
@@ -372,7 +361,7 @@ int read_ngraphs(char *dir="", char *lang="eng") {
 
 	// READ "PENTAGRAPHS.TXT"
 	sprintf(filename,"%s/%s/pentagraphs.txt",dir,lang);
-	ifptr=fopen(filename,"r"); if(ifptr==NULL) { printferror("pentagraphs.txt"); return 0; }
+	ifptr=fopen(filename,"r"); if(ifptr==NULL) return 0;
 	while(!feof(ifptr)) {
 		t1=fgetc(ifptr)-'A'; t2=fgetc(ifptr)-'A'; t3=fgetc(ifptr)-'A'; t4=fgetc(ifptr)-'A'; t5=fgetc(ifptr)-'A';
 		fgetc(ifptr); fgetc(ifptr); fgetc(ifptr);
