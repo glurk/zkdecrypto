@@ -63,7 +63,6 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 
 	printf("Cipher Length:  %d characters\n",clength);									//PRINT CIPHER LENGTH
 	printf("Cipher Uniques: %d unique characters\n\n",cuniq);							//PRINT NUMBER OF UNIQUE CHARACTERS
-	//if(!read_ngraphs()) exit(0); //only load on program startup						//READ IN THE N-GRAPH DATA
 	printfrequency(clength,uniqarr,uniqstr);
 
 	SETSOLVED;
@@ -125,7 +124,7 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 			}
 		}
 
-	for(i=0;i<info.swaps/*5*/;i++) shufflekey(key,locked);	// THE '5' IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	for(i=0;i<info.swaps;i++) shufflekey(key,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert/*120*5-1*/) { printf("*"); strcpy(key,bestkey); iterations=0; }
 	SETSOLVED;
