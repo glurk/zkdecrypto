@@ -41,3 +41,56 @@ int readcipher(char *filename) {
 	return((int)strlen(cipher));
 
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      Update the GUI       --DEAD CODE: wxWidgets is out      //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+void updateGUI(char *solved,char *bestkey,int bestscore,wxFrame *frm) {
+
+			wxCommandEvent upt1(EVT_UpdatePlainText,Plain_Text);
+			upt1.SetString(wxString(solved));
+			frm->AddPendingEvent(upt1);
+
+			wxCommandEvent upt2(EVT_UpdateBestKey,Best_Key);
+			upt2.SetString(bestkey);
+			frm->AddPendingEvent(upt2);
+
+			wxCommandEvent upt3(EVT_UpdateScore,Score_);
+			upt3.SetInt(bestscore);
+			frm->AddPendingEvent(upt3);
+}
+*/
+
+/*
+BEGIN_DECLARE_EVENT_TYPES()
+DECLARE_EVENT_TYPE(EVT_UpdatePlainText, -1)
+DECLARE_EVENT_TYPE(EVT_UpdateBestKey, -1)
+DECLARE_EVENT_TYPE(EVT_UpdateScore, -1)
+END_DECLARE_EVENT_TYPES()
+
+enum
+{
+	Cipher_Text = wxID_HIGHEST + 1, // declares an id which will be used to call our button
+	Plain_Text,
+	Start_Key,
+	Best_Key,
+	Start_Button,
+	MENU_New,
+	MENU_Open,
+	MENU_Close,
+	MENU_Save,
+	MENU_SaveAs,
+	MENU_Quit,
+	lblCipher_Text,
+	lblPlain_Text,
+	lblStart_Key,
+	lblBest_Key,
+	lblScore_,
+	Score_
+};
+*/
+
+
+
