@@ -148,26 +148,6 @@ int hillclimb(const char ciph[],int len,char key[],const char locked[],SOLVEINFO
 /******************************* END_MAIN_HILLCLIMBER_ALGORITHM ***********************************/
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      Update the GUI                                          //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-void updateGUI(char *solved,char *bestkey,int bestscore,wxFrame *frm) {
-
-			wxCommandEvent upt1(EVT_UpdatePlainText,Plain_Text);
-			upt1.SetString(wxString(solved));
-			frm->AddPendingEvent(upt1);
-
-			wxCommandEvent upt2(EVT_UpdateBestKey,Best_Key);
-			upt2.SetString(bestkey);
-			frm->AddPendingEvent(upt2);
-
-			wxCommandEvent upt3(EVT_UpdateScore,Score_);
-			upt3.SetInt(bestscore);
-			frm->AddPendingEvent(upt3);
-}
-*/
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 //          Calculate a 'fitness' score for the solution based on the N-Graph counts            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
