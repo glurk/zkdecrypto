@@ -30,42 +30,37 @@
 #include "z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
-int hillclimb(const char ciph[],int len,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
+int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
 {
-	int i,j,x,y,clength,cuniq;
+	int cuniq;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
 	char solved[MAX_CIPH_LENGTH],solvedsav[MAX_CIPH_LENGTH];
 	char keysav[ASCII_SIZE],uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
 
-	for(i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedsav[i]=0;				//INITIALIZE (ZERO) ARRAYS
-	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
+	for(int i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedsav[i]=0;				//INITIALIZE (ZERO) ARRAYS
+	for(int i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	strcpy(bestkey,key);
 	keylength=(int)strlen(key);
 
 	init_genrand((unsigned long)time(NULL));											//SEED RANDOM GENERATOR
 
-	if(SCRAMBLESTARTKEY)
-		for(int i=0;i<100000;i++)
-			shufflekey(key,locked);
-
 	strcpy(cipher,ciph);
-	clength = len;
 
-	for(i=0;i<26;i++) freqs[i]=(E_freqs[i]*clength+48999)/100000;					// CALCULATE EXPECTED LETT. FREQS
+	for(int i=0;i<26;i++) freqs[i]=(E_freqs[i]*clength+48999)/100000;					// CALCULATE EXPECTED LETT. FREQS
 
-	for(i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
+	for(int i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
 
-	i=255;j=0;
-	for(y=0;y<255;y++) { 
-		for(x=255;x>0;x--)
+	int i=255;
+	int j=0;
+	for(int y=0;y<255;y++) { 
+		for(int x=255;x>0;x--)
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
 
 	cuniq=(int)strlen(uniqstr);
 	if(keylength < cuniq)
 		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); }
 
-	printf("\nZodiac Code Decipher v%s\n-------------------------\n\n",VERSION);		//PRINT VERSION NUMBER
 	printf("Cipher Length:  %d characters\n",clength);									//PRINT CIPHER LENGTH
 	printf("Cipher Uniques: %d unique characters\n\n",cuniq);							//PRINT NUMBER OF UNIQUE CHARACTERS
 	//if(!read_ngraphs()) exit(0); //only load on program startup						//READ IN THE N-GRAPH DATA
