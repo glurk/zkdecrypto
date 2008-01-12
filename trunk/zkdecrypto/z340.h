@@ -58,8 +58,8 @@ inline int		calclsoc(const int,const char *);
 inline void		shufflekey(char *,const char *);
 int				readcipher(char *);
 
-void			printcipher(int,char *,char *);
-void			printfrequency(int,int *,char *);
+void			printcipher(int,char *,char *,int,char *);
+void			printfrequency(int,int *,char *,int);
 int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&);
 
 void 			GetUnigraphs(double*);

@@ -298,7 +298,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_EDIT_SCRAMBLE:
 					SetUndo();
 					num_symbols=message.cur_map.GetNumSymbols();
-					for(swap=0; swap<3000; swap++)
+					for(swap=0; swap<3000000; swap++) 				// MORE SWAPS MAKE BETTER SCRAMBLED KEYS - glurk
 						message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 					SetDlgInfo();
 					return 0;

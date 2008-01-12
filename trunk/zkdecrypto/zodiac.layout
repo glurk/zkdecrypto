@@ -38,17 +38,17 @@ LeftChar=1
 [Editor_3]
 Open=1
 Top=1
-CursorCol=1
-CursorRow=347
-TopLine=406
+CursorCol=27
+CursorRow=301
+TopLine=301
 LeftChar=1
 
 [Editor_5]
 Open=1
 Top=0
 CursorCol=1
-CursorRow=393
-TopLine=356
+CursorRow=121
+TopLine=103
 LeftChar=1
 
 [Editor_6]
@@ -63,8 +63,8 @@ LeftChar=1
 Open=1
 Top=0
 CursorCol=1
-CursorRow=68
-TopLine=30
+CursorRow=42
+TopLine=12
 LeftChar=1
 
 [Editor_8]
