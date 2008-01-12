@@ -113,7 +113,7 @@ public:
 	int GetPattern(int,NGRAM*);
 	int GetNumPatterns() {return num_patterns;}
 		
-	float GetStrength() {return float(cur_map.GetNumSymbols() / ((log(msg_len)*(num_patterns+1)/10.0)));}	
+	float GetStrength() {return float(cur_map.GetNumSymbols() / ((log((double)msg_len)*(num_patterns+1)/10.0)));}	
 	
 	void MergeSymbols(char,char);
 	
