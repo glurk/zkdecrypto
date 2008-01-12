@@ -106,8 +106,6 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 				printf("Best Score = %d\n",bestscore);
 				printf("\nKey: '%s'\n\n",key); 
 				
-				//updateGUI(solved,bestkey,bestscore,frm);
-				
 				/*feedback info*/
 				info.best_score=bestscore;
 				improve=1;
@@ -126,14 +124,13 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 
 	for(i=0;i<info.swaps;i++) shufflekey(key,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
-	iterations++; if(iterations>info.revert/*120*5-1*/) { printf("*"); strcpy(key,bestkey); iterations=0; }
+	iterations++; if(iterations>info.revert) { strcpy(key,bestkey); iterations=0; }
 	SETSOLVED;
 	
 	if(!improve) info.cur_fail++;
 	
 	end_time=info.time_func();
 
-//	printf(".");
 	}
 
 	return bestscore;
@@ -143,8 +140,6 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //          Calculate a 'fitness' score for the solution based on the N-Graph counts            //
-//                        I, Glurk, am unhappy with this code.  It's slow!                      //
-//                 The scorer should be the fastest routine in the whole program!               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define IS_LETTER(L) ((L<0 || L>25)? 0:1)
@@ -243,8 +238,7 @@ void printcipher(int length_of_cipher,char *ciph,char *solv) {
 
 	int c=0;
 	int s=0;
-	int width;
-	int height;
+	int width,height;
 	int i,x,y;
 
 	switch(length_of_cipher) {
@@ -254,7 +248,7 @@ void printcipher(int length_of_cipher,char *ciph,char *solv) {
 		case 340: { width=17; height=20; } break;
 		case 378: { width=18; height=21; } break;
 		case 408: { width=17; height=24; } break;
-		default: { return; } }//printf("Sorry, this program will (currently) only work on 318, 330, 340, 378, and 408 ciphers\n"); exit(1); } }
+		default: { return; } }
 
 	printf("\n--------------------------------------------------------------------------------------------------------------------\n\n");
 
@@ -306,8 +300,15 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string)
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      COMMENT GOES HERE                                       //
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      COMMENT GOES HERE                                       //
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ReadNGraphs(const char *filename, int n) 
 {
@@ -349,6 +350,10 @@ int ReadNGraphs(const char *filename, int n)
 
 	return 1;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      COMMENT GOES HERE                                       //
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 int WordPlug(Message &msg, const char *word, int use_graphs)
 {

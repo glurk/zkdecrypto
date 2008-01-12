@@ -41,7 +41,7 @@ struct SOLVEINFO
 #define		SETSOLVED					for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; }
 
 #define UNI_SIZE	26					// THIS IS EASIER TO UNDERSTAND THAN 26, 676, 17576
-#define BI_SIZE		26*26				// HARD-CODED MYSTERY NUMBERS SUCK!
+#define BI_SIZE		26*26
 #define TRI_SIZE	26*26*26
 #define TETRA_SIZE	26*26*26*26
 #define PENTA_SIZE	26*26*26*26*26
@@ -60,7 +60,6 @@ int				readcipher(char *);
 
 void			printcipher(int,char *,char *);
 void			printfrequency(int,int *,char *);
-//void			updateGUI(char *,char *,int,wxFrame *);
 int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&);
 
 void 			GetUnigraphs(double*);
