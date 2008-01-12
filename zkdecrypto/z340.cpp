@@ -32,10 +32,12 @@
 
 int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
 {
+	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
+
 	int cuniq;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
 	char solved[MAX_CIPH_LENGTH],solvedsav[MAX_CIPH_LENGTH];
-	char keysav[ASCII_SIZE],uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
+	char uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
 
 	for(int i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedsav[i]=0;				//INITIALIZE (ZERO) ARRAYS
 	for(int i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
@@ -61,17 +63,13 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 	if(keylength < cuniq)
 		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); }
 
-	printf("Cipher Length:  %d characters\n",clength);									//PRINT CIPHER LENGTH
-	printf("Cipher Uniques: %d unique characters\n\n",cuniq);							//PRINT NUMBER OF UNIQUE CHARACTERS
-	printfrequency(clength,uniqarr,uniqstr);
+	if (_DEB) printfrequency(clength,uniqarr,uniqstr,cuniq);
 
 	SETSOLVED;
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
-	int score = 0;
-	int bestscore = 0;
-	int iterations = 0;
+	int score = 0, bestscore = 0, iterations = 0;
 	
 	long start_time=0, end_time=0;
 	int improve=0;
@@ -97,14 +95,12 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 				
 			/*stop*/
 			if(!info.running) return bestscore;
-			if(locked[p2]) continue; //skip if symbol is locked
+			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or doubled
 	
 			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
 				bestscore = score;
 				strcpy(bestkey,key);
-				printcipher(clength,cipher,solved);
-				printf("Best Score = %d\n",bestscore);
-				printf("\nKey: '%s'\n\n",key); 
+				if (_DEB) printcipher(clength,cipher,solved,bestscore,key);
 				
 				/*feedback info*/
 				info.best_score=bestscore;
@@ -114,11 +110,9 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 				info.disp_all();	
 				}
 	
-			strcpy(keysav,key); strcpy(solvedsav,solved);
-			int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp;
-			SETSOLVED;
-	
-			if((calcscore(clength,solved,use_graphs))<score) { strcpy(key,keysav); strcpy(solved,solvedsav); }
+			strcpy(solvedsav,solved); DO_SWAP; SETSOLVED;
+			if((calcscore(clength,solved,use_graphs))<score) { DO_SWAP; strcpy(solved,solvedsav); }
+
 			}
 		}
 
@@ -177,14 +171,11 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
 	}
 
-	biscore=biscore>>3;
-	triscore=triscore>>2;
-	tetrascore=tetrascore>>1;
-//	pentascore=pentascore>>0;
+	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 
-	return((pentascore+tetrascore+triscore+biscore));
+	return(pentascore+tetrascore+triscore+biscore);
 
 }
 
@@ -207,7 +198,6 @@ inline int calclsoc(const int length_of_cipher,const char *solv) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                Mutate the char array "key[]"                                 //
-// wouldn't if(!locked[symbol]) { canswap=1; break; } be more efficient?                        //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline void shufflekey(char *key,const char locked[]) {
@@ -215,7 +205,7 @@ inline void shufflekey(char *key,const char locked[]) {
 	int x,y,z,canswap=0;
 
 	//check if all characters are locked to avoid infinite loop
-	for(int symbol=0; symbol<keylength; symbol++) if(!locked[symbol]) canswap=1;
+	for(int symbol=0; symbol<keylength; symbol++) if(!locked[symbol]) { canswap=1; break; }
 
 	if(canswap)
 	{
@@ -234,7 +224,7 @@ inline void shufflekey(char *key,const char locked[]) {
 //                   NOTE: Normal English text normally contains approx. 40% vowels             //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void printcipher(int length_of_cipher,char *ciph,char *solv) {
+void printcipher(int length_of_cipher,char *ciph,char *solv,int bestscore,char *key) {
 
 	int c=0;
 	int s=0;
@@ -271,6 +261,8 @@ void printcipher(int length_of_cipher,char *ciph,char *solv) {
 	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
 
 	printf("Longest String Of Consonants: %d\n\n",calclsoc(length_of_cipher,solv));
+	printf("Best Score = %d\n",bestscore);
+	printf("\nKey: '%s'\n\n",key); 
 
 }
 
@@ -278,11 +270,14 @@ void printcipher(int length_of_cipher,char *ciph,char *solv) {
 //            Print the character frequency table of the cipher and a few statistics            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void printfrequency(int length_of_cipher, int *unique_array,char *unique_string) {
+void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,int cipher_uniques) {
 
 	int f=0,i;
 	int z=(int)strlen(unique_string);
 	char zee[10];
+
+	printf("Cipher Length:  %d characters\n",length_of_cipher);									//PRINT CIPHER LENGTH
+	printf("Cipher Uniques: %d unique characters\n\n",cipher_uniques);							//PRINT NUMBER OF UNIQUE CHARACTERS
 
 	printf("Frequency Table for Cipher:\n");
 	for(i=0;i<z;i++) printf("-"); printf("\n");
