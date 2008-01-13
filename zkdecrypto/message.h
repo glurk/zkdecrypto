@@ -21,6 +21,8 @@
 #define IS_ASCII(C) (C>0x1F && C<0x7F)
 #define DECIMAL(N) (N-int(N))
 
+#pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
+
 /*Symbol*/
 struct SYMBOL
 {

@@ -1,3 +1,5 @@
+#pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
+
 #include "message.h"
 
 /*Map*/
@@ -379,8 +381,8 @@ void Message::MergeSymbols(char symbol1, char symbol2)
 //check if pat1 & pat2 are more than 50% similar, put pattern string into pat3
 inline int Message::PatternMatch(const char *pat1, const char *pat2, char *pat3)
 {
-	int len1=strlen(pat1);
-	int len2=strlen(pat2);
+	int len1=(int)strlen(pat1);
+	int len2=(int)strlen(pat2);
 	int len=(len1<len2? len1:len2);
 	int diff=0;
 	
