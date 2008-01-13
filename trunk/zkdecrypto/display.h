@@ -1,3 +1,5 @@
+#pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
+
 /*Dialog Info Functions*/
 
 //get subset of string needed for display, based on scroll position & chars/line

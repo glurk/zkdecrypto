@@ -116,7 +116,7 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 			}
 		}
 
-	for(i=0;i<info.swaps;i++) shufflekey(key,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	for(int i=0;i<info.swaps;i++) shufflekey(key,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert) { strcpy(key,bestkey); iterations=0; }
 	SETSOLVED;
@@ -357,7 +357,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	SYMBOL symbol;
 	Map org_map, best_map;
 
-	word_len=strlen(word);
+	word_len=(int)strlen(word);
 	cipher=msg.GetCipher();
 	msg_len=msg.GetLength();
 
