@@ -9,9 +9,11 @@
 #define IDB_ZODIAC                      108
 #define IDD_WORD                        109
 #define IDD_PATTERNS                    111
+#define IDD_ANAGRAM                     113
 #define IDD_ABOUT                       114
 #define IDD_CIPHER                      115
 #define IDD_MERGE                       116
+#define IDD_INIT	                    117
 #define IDC_PLAIN                       1000
 #define IDC_CIPHER                      1001
 #define IDC_SOLVE                       1002
@@ -55,6 +57,8 @@
 #define IDC_MERSYM1                     1047
 #define IDC_MERSYM2                     1048
 #define IDC_TEXTINFO                    1048
+#define IDC_ANAGRAM                     1050
+#define IDC_INIT	                    1051
 #define IDM_FILE_OPEN                   40001
 #define IDM_FILE_OPEN_MSG               40001
 #define IDM_FILE_SAVE                   40002
@@ -63,25 +67,27 @@
 #define IDM_EDIT_MAP                    40004
 #define IDM_HELP_ABOUT                  40005
 #define IDM_FILE_OPEN_MAP               40006
-#define IDM_EDIT_RELOAD                 40008
+#define IDM_FILE_RELOAD                 40008
 #define IDM_EDIT_OPTIONS                40009
 #define IDM_SOLVE_OPTIONS               40009
-#define IDM_EDIT_TP_LOW                 40010
 #define IDM_SOLVE_TP_LOW                40010
-#define IDM_EDIT_TP_NORM                40011
 #define IDM_SOLVE_TP_NORM               40011
-#define IDM_EDIT_TP_HIGH                40012
 #define IDM_SOLVE_TP_HIGH               40012
-#define IDM_EDIT_INIT                   40013
+#define IDM_KEY_INIT                    40013
 #define IDM_SOLVE_WORD                  40014
 #define IDM_EDIT_UNDO                   40015
-#define IDM_EDIT_CLEAR                  40016
+#define IDM_KEY_CLEAR                   40016
 #define IDM_SOLVE_PATTERNS              40017
-#define IDM_EDIT_SCRAMBLE               40018
-#define IDM_EDIT_LOCK                   40019
-#define IDM_EDIT_UNLOCK                 40020
+#define IDM_KEY_SCRAMBLE                40018
+#define IDM_KEY_LOCK                    40019
+#define IDM_KEY_UNLOCK                  40020
 #define IDM_EDIT_MSG                    40021
-#define IDM_EDIT_MERGE                  40022
+#define IDM_CIPHER_MERGE                40022
+#define IDM_CIPHER_SIMPLIFY             40023
+#define IDM_CIPHER_POLYIC               40024
+#define IDM_CIPHER_RC_IOC               40025
+#define IDM_FILE_SAVE_PLAIN             40026
+#define IDM_CIPHER_ANAGRAM              40027
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 
@@ -89,9 +95,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        113
-#define _APS_NEXT_COMMAND_VALUE         40021
-#define _APS_NEXT_CONTROL_VALUE         1049
+#define _APS_NEXT_RESOURCE_VALUE        114
+#define _APS_NEXT_COMMAND_VALUE         40028
+#define _APS_NEXT_CONTROL_VALUE         1051
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

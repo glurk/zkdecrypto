@@ -13,6 +13,17 @@
 #define LANG_SPA	"spa"
 #define LANG_GER	"ger"
 
+//index of coincidence for languages
+#define ENG_IOC		.0665 //float(1.73/26) 
+#define SPA_IOC 	.0746 //float(1.94/26) 
+#define GER_IOC 	.0788 //float(2.05/26) 
+
+#define FRE_IOC		.0777 
+#define ITA_IOC 	.0746
+#define POR_IOC 	.0746
+#define RUS_IOC 	.0677
+
+
 //position and size for the cipher and plain text displays, 
 //used to calculate #lines for display and click position
 #define CIPHER_X	202
@@ -35,7 +46,6 @@ char szCipherName[1024], szKeyName[1024], szGraphName[1024]; //filenames
 char *szCipherBase, *szKeyBase; //file basenames
 int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
-int iCipherLength=0, iSymbols=0; 
 
 //GUI data
 char szTitle[512], szText[1024], szExeDir[1024];
@@ -68,6 +78,49 @@ char szFileFilter[]=
 inline void disp_all()  {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPALL,0);}
 inline void disp_info() {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPINFO,0);}
 inline DWORD GetTime()	{return GetTickCount();}
+
+float IoC(const char *string)
+{
+	int freqs[256], length;
+	float ic=0;
+
+	length=strlen(string);
+	if(length<2) return 0;
+	memset(freqs,0,256*sizeof(int));
+
+	//count frequencies
+	for(int index=0; index<length; index++)
+		freqs[string[index]]++;
+
+	//calculate index of conincidence
+	for(int sym_index=0; sym_index<256; sym_index++)
+		if(freqs[sym_index]>1) 
+			ic+=(freqs[sym_index])*(freqs[sym_index]-1); 
+
+	ic/=(length)*(length-1);
+
+	return ic;
+}
+
+int unique(const char *string)
+{
+	int freqs[256], length, uniq=0;
+
+	length=strlen(string);
+
+	memset(freqs,0,256*sizeof(int));
+
+	//count frequencies
+	for(int index=0; index<length; index++)
+		freqs[string[index]]++;
+
+	//calculate index of conincidence
+	for(int sym_index=0; sym_index<256; sym_index++)
+		if(freqs[sym_index]) 
+			uniq++;
+
+	return uniq;
+}
 
 #endif
 

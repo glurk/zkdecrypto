@@ -2,7 +2,7 @@
 
 void GetBaseName(const char *filename, char *&basename) 
 {
-	if(filename[0]!='\0') basename=(char *)strrchr(filename,'\\')+1;
+	if(filename[0]!='\0') basename=strrchr(filename,'\\')+1;
 	else basename=NULL;
 }
 
@@ -70,8 +70,6 @@ int LoadMessage(char *filename)
 
 	//get info
 	szCipher=message.GetCipher();
-	iCipherLength=message.GetLength();
-	iSymbols=message.cur_map.GetNumSymbols();
 	iBestScore=0;
 	iCurPat=-1;
 	bMsgLoaded=true;
@@ -108,7 +106,6 @@ int LoadMap(char *filename)
 	//get map filename
 	strcpy(szKeyName,filename);
 	GetBaseName(szKeyName,szKeyBase);
-	iSymbols=message.cur_map.GetNumSymbols();
 
 	//get info
 	iBestScore=0;
@@ -118,6 +115,21 @@ int LoadMap(char *filename)
 	bUndo=false;
 	MapEnable(true);
 	SetDlgInfo();
+
+	return 1;
+}
+
+int SavePlain(char *filename)
+{
+	FILE *pfPlain;
+
+	pfPlain=fopen(filename,"w");
+
+	if(!pfPlain) return 0;
+	
+	if(!fprintf(pfPlain,message.GetPlain())) return 0;
+
+	fclose(pfPlain);
 
 	return 1;
 }

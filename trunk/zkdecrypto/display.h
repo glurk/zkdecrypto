@@ -9,7 +9,7 @@ int GetDisplayText(const char *src, char *dest)
 	
 	if(!src || !dest) return 0;
 
-	for(int cur_char=iScrollPos*iLineChars; cur_char<iCipherLength; cur_char++)
+	for(int cur_char=iScrollPos*iLineChars; cur_char<message.GetLength(); cur_char++)
 	{
 		if(line>=iDispLines) break;
 		
@@ -35,7 +35,7 @@ void SetTitle()
 
 	if(bMsgLoaded) 
 	{
-		sprintf(szText," - %s (%i characters)",szCipherBase,iCipherLength);
+		sprintf(szText," - %s (%i characters)",szCipherBase,message.GetLength());
 		strcat(szTitle,szText);
 	}
 	
@@ -49,8 +49,8 @@ void SetScrollBar()
 	iDispLines=TEXT_HEIGHT/iCharHeight;
 	
 	//total lines required for line width
-	iLines=iCipherLength/iLineChars;
-	if(iCipherLength%iLineChars) iLines++;	
+	iLines=message.GetLength()/iLineChars;
+	if(message.GetLength()%iLineChars) iLines++;	
 	
 	//scroll range
 	iMaxScroll=iLines-iDispLines;
@@ -118,7 +118,7 @@ void DrawOutlines()
 	
 	//symbol outlines
 	if(hCipherDC && hPlainDC && message.cur_map.GetSymbol(iCurSymbol,&symbol))
-		for(int cur_symbol=0; cur_symbol<iCipherLength; cur_symbol++)
+		for(int cur_symbol=0; cur_symbol<message.GetLength(); cur_symbol++)
 		{
 			if(szCipher[cur_symbol]==symbol.cipher)
 			{
@@ -128,7 +128,7 @@ void DrawOutlines()
 		}
 
 	//selected character
-	if(IS_BETWEEN(iTextSel,0,iCipherLength))
+	if(IS_BETWEEN(iTextSel,0,message.GetLength()))
 	{
 		OutlineChars(hCipherDC,hRedPen,iTextSel,iTextSel+1);
 		OutlineChars(hPlainDC,hRedPen,iTextSel,iTextSel+1);
@@ -182,7 +182,7 @@ int TextClick(int click_x, int click_y)
 	text_index=(text_row+iScrollPos)*iLineChars+text_col;
 	
 	//check array bounds & get cipher character
-	if(!IS_BETWEEN(text_index,0,iCipherLength)) return 0;
+	if(!IS_BETWEEN(text_index,0,message.GetLength())) return 0;
 	click_char=szCipher[text_index];
 
 	//get the symbol for this cipher character
@@ -194,7 +194,7 @@ int TextClick(int click_x, int click_y)
 
 	//set selection info
 	iTextSel=text_index;
-	sprintf(szText,"Row %i, Column %i, Character %i",text_row+1,text_col+1,iTextSel+1);
+	sprintf(szText,"Row %i, Column %i, Character %i",text_row+iScrollPos+1,text_col+1,iTextSel+1);
 	SetDlgItemText(hMainWnd,IDC_TEXTINFO,szText);
 
 	SetText();
@@ -289,7 +289,7 @@ void SetKey()
 	SYMBOL symbol;
 
 	//title
-	sprintf(szText,"Key (%i symbols)",iSymbols);
+	sprintf(szText,"Key (%i symbols)",message.cur_map.GetNumSymbols());
 	SetDlgItemText(hMainWnd,IDC_MAP_TITLE,szText);
 
 	//clear list
@@ -297,7 +297,7 @@ void SetKey()
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_RESETCONTENT,0,0);
 	
 	//add symbols
-	for(int cur_symbol=0; cur_symbol<iSymbols; cur_symbol++)
+	for(int cur_symbol=0; cur_symbol<message.cur_map.GetNumSymbols(); cur_symbol++)
 	{
 		message.cur_map.GetSymbol(cur_symbol,&symbol);
 		if(!symbol.plain) symbol.plain='-';
@@ -358,7 +358,7 @@ void SetFreq()
 
 	//vowel percentage
 	act_vowel=float(lprgiActFreq[0]+lprgiActFreq[4]+lprgiActFreq[8]+lprgiActFreq[14]+lprgiActFreq[20]);
-	act_vowel=(100*act_vowel)/iCipherLength;
+	act_vowel=(100*act_vowel)/message.GetLength();
 	exp_vowel=message.cur_map.GetUnigraph(0);
 	exp_vowel+=message.cur_map.GetUnigraph(4);
 	exp_vowel+=message.cur_map.GetUnigraph(8);
@@ -410,10 +410,9 @@ void SetDlgInfo()
 //call when the cipher is changed, i.e. symbol merge
 void SetCipher()
 {	
-	sprintf(szText,"Cipher Text (Strength: %.2f)",message.GetStrength());
+	sprintf(szText,"Cipher Text (Strength - %.2f, IoC - %.3f)",message.GetStrength(),IoC(message.GetCipher()));
 	SetDlgItemText(hMainWnd,IDC_CIPHER_TITLE,szText);
 
-	iSymbols=message.cur_map.GetNumSymbols();
 	szCipher=message.GetCipher();
 	
 	SetPatterns();
