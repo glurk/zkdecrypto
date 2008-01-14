@@ -9,6 +9,7 @@
 #include		<math.h>
 #include		"message.h"
 
+
 //parameters for solve function
 struct SOLVEINFO
 {
@@ -40,16 +41,18 @@ struct SOLVEINFO
 #define		MAX_CIPH_LENGTH 			4096
 #define		SETSOLVED					for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; }
 
-#define UNI_SIZE	26					// THIS IS EASIER TO UNDERSTAND THAN 26, 676, 17576
-#define BI_SIZE		26*26
-#define TRI_SIZE	26*26*26
-#define TETRA_SIZE	26*26*26*26
-#define PENTA_SIZE	26*26*26*26*26
+//having multiply operations in definitions could slow down algorithms
+#define UNI_SIZE	26			//26
+#define BI_SIZE		676			//26*26
+#define TRI_SIZE	17576		//26*26*26
+#define TETRA_SIZE	456976		//26*26*26*26
+#define PENTA_SIZE	11881376	//26*26*26*26*26
 
 #define USE_BI		0x01
 #define USE_TRI		0x02
 #define USE_TETRA	0x04
 #define USE_PENTA	0x08
+#define USE_ALL		0x0F
 
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
 

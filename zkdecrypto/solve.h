@@ -13,12 +13,15 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_MSG,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_MAP,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_MAP,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_EDIT_MERGE,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_EDIT_INIT,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_EDIT_SCRAMBLE,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_EDIT_CLEAR,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_EDIT_LOCK,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_EDIT_UNLOCK,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_PLAIN,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_MERGE,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_POLYIC,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_RC_IOC,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_KEY_INIT,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_KEY_SCRAMBLE,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_KEY_CLEAR,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_KEY_LOCK,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_KEY_UNLOCK,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_SOLVE_WORD,MF_BYCOMMAND | menu_state);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_CHANGE),enabled);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_RESET),enabled);
@@ -40,7 +43,7 @@ void MapEnable(int enabled)
 			
 	if(enabled==false || bMapLoaded)
 	{
-		EnableMenuItem(hMainMenu,IDM_EDIT_RELOAD,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_FILE_RELOAD,MF_BYCOMMAND | menu_state);
 	}
 
 	if(enabled && bUndo) menu_state=MF_ENABLED;
@@ -98,10 +101,10 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 	
 	//convert map to key to pass
 	message.cur_map.ToKey(key);
-	locked=new char[iSymbols];
+	locked=new char[message.cur_map.GetNumSymbols()];
 	message.cur_map.GetLocked(locked);
 	
-	hillclimb(szCipher,iCipherLength,key,locked,siSolveInfo,iUseGraphs);
+	hillclimb(szCipher,message.GetLength(),key,locked,siSolveInfo,iUseGraphs);
 
 	delete[] locked;
 
@@ -141,26 +144,26 @@ void SetPriority(int iNewPriority)
 	if(iNewPriority==3)
 	{
 		iPriority=THREAD_PRIORITY_ABOVE_NORMAL;//TTHREAD_PRIORITY_HIGHEST;
-		CheckMenuItem(hMainMenu,IDM_EDIT_TP_HIGH,MF_BYCOMMAND | MF_CHECKED);
+		CheckMenuItem(hMainMenu,IDM_SOLVE_TP_HIGH,MF_BYCOMMAND | MF_CHECKED);
 	}
 
-	else CheckMenuItem(hMainMenu,IDM_EDIT_TP_HIGH,MF_BYCOMMAND | MF_UNCHECKED);
+	else CheckMenuItem(hMainMenu,IDM_SOLVE_TP_HIGH,MF_BYCOMMAND | MF_UNCHECKED);
 
 	if(iNewPriority==2)
 	{
 		iPriority=THREAD_PRIORITY_NORMAL;
-		CheckMenuItem(hMainMenu,IDM_EDIT_TP_NORM,MF_BYCOMMAND | MF_CHECKED);
+		CheckMenuItem(hMainMenu,IDM_SOLVE_TP_NORM,MF_BYCOMMAND | MF_CHECKED);
 	}
 
-	else CheckMenuItem(hMainMenu,IDM_EDIT_TP_NORM,MF_BYCOMMAND | MF_UNCHECKED);
+	else CheckMenuItem(hMainMenu,IDM_SOLVE_TP_NORM,MF_BYCOMMAND | MF_UNCHECKED);
 
 	if(iNewPriority==1)
 	{
 		iPriority=THREAD_PRIORITY_BELOW_NORMAL;//THREAD_PRIORITY_IDLE;
-		CheckMenuItem(hMainMenu,IDM_EDIT_TP_LOW,MF_BYCOMMAND | MF_CHECKED);
+		CheckMenuItem(hMainMenu,IDM_SOLVE_TP_LOW,MF_BYCOMMAND | MF_CHECKED);
 	}
 
-	else CheckMenuItem(hMainMenu,IDM_EDIT_TP_LOW,MF_BYCOMMAND | MF_UNCHECKED);
+	else CheckMenuItem(hMainMenu,IDM_SOLVE_TP_LOW,MF_BYCOMMAND | MF_UNCHECKED);
 
 	if(hSolveThread) 
 		if(!SetThreadPriority(hSolveThread,iPriority))

@@ -31,30 +31,36 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "Open &Cipher",                IDM_FILE_OPEN_MSG
-        MENUITEM "Edit C&ipher",                IDM_EDIT_MSG
         MENUITEM SEPARATOR
         MENUITEM "Open &Key",                   IDM_FILE_OPEN_MAP
-        MENUITEM "Edit K&ey",                   IDM_EDIT_MAP
         MENUITEM "&Save Key",                   IDM_FILE_SAVE_MAP
+        MENUITEM SEPARATOR
+        MENUITEM "Save &Plain Text",            IDM_FILE_SAVE_PLAIN
         MENUITEM SEPARATOR
         MENUITEM "&Exit",                       IDM_FILE_EXIT
     END
     POPUP "&Edit"
     BEGIN
         MENUITEM "&Undo",                       IDM_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Edit &Cipher",                IDM_EDIT_MSG
+        MENUITEM "Edit &Key",                   IDM_EDIT_MAP
     END
     POPUP "&Cipher"
     BEGIN
-        MENUITEM "&Merge Symbols",              IDM_EDIT_MERGE
+        MENUITEM "&Merge Symbols",              IDM_CIPHER_MERGE
+        MENUITEM "&Simplify",                   IDM_CIPHER_SIMPLIFY
+        MENUITEM "&Polyalphabet Analysis",      IDM_CIPHER_POLYIC
+        MENUITEM "&Row/Column IoC",             IDM_CIPHER_RC_IOC
     END
     POPUP "&Key"
     BEGIN
-        MENUITEM "&Init Key",                   IDM_EDIT_INIT
-        MENUITEM "&Scramble Key",               IDM_EDIT_SCRAMBLE
-        MENUITEM "&Clear Key",                  IDM_EDIT_CLEAR
+        MENUITEM "&Init Key",                   IDM_KEY_INIT
+        MENUITEM "&Scramble Key",               IDM_KEY_SCRAMBLE
+        MENUITEM "&Clear Key",                  IDM_KEY_CLEAR
         MENUITEM SEPARATOR
-        MENUITEM "&Lock All",                   IDM_EDIT_LOCK
-        MENUITEM "&Unlock All",                 IDM_EDIT_UNLOCK
+        MENUITEM "&Lock All",                   IDM_KEY_LOCK
+        MENUITEM "&Unlock All",                 IDM_KEY_UNLOCK
     END
     POPUP "&Solve"
     BEGIN
@@ -110,7 +116,7 @@ IDD_MAIN_DLG DIALOGEX 0, 0, 399, 425
 STYLE DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_ACCEPTFILES
 MENU IDR_MAIN_MENU
-FONT 9, "Lucida Console"
+FONT 9, "Lucida Console", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Cipher Text",IDC_CIPHER_TITLE,108,7,281,174,BS_CENTER
     GROUPBOX        "",IDC_STATIC,113,15,270,148,BS_CENTER
@@ -174,7 +180,7 @@ BEGIN
                     WS_TABSTOP,139,52,54,10
     CONTROL         "Pentagraphs",IDC_USEPENTA,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,139,67,56,10
-    GROUPBOX        "Include in score",IDC_STATIC,127,7,76,76,BS_CENTER
+    GROUPBOX        "Include in Score",IDC_STATIC,127,7,76,76,BS_CENTER
     GROUPBOX        "Misc Options",IDC_STATIC,7,87,137,54,BS_CENTER
     LTEXT           "Characters per Line",IDC_STATIC,16,105,62,8
     EDITTEXT        IDC_LINECHARS,92,102,40,14,ES_RIGHT | ES_NUMBER
@@ -196,9 +202,19 @@ BEGIN
     CTEXT           "",IDC_ABOUT3,13,74,142,8
 END
 
+IDD_INIT DIALOG DISCARDABLE  0, 0, 150, 44
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "# of Symbols to Set"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,93,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,93,23,50,14
+    EDITTEXT        IDC_INIT,10,14,75,14,ES_NUMBER | ES_AUTOHSCROLL
+END
+
 IDD_WORD DIALOG DISCARDABLE  0, 0, 150, 44
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Enter Word to Find"
+CAPTION "Word to Insert"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,93,7,50,14
@@ -218,6 +234,14 @@ BEGIN
     CTEXT           "and",IDC_STATIC,50,10,16,8
     COMBOBOX        IDC_MERSYM2,70,7,41,59,CBS_DROPDOWNLIST | 
                     CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_ANAGRAM DIALOG DISCARDABLE  0, 0, 244, 182
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Anagram"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_ANAGRAM,7,7,230,150,ES_AUTOHSCROLL
 END
 
 
@@ -267,6 +291,14 @@ BEGIN
         RIGHTMARGIN, 111
         TOPMARGIN, 7
         BOTTOMMARGIN, 39
+    END
+
+    IDD_ANAGRAM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 237
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
     END
 END
 #endif    // APSTUDIO_INVOKED

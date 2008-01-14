@@ -8,7 +8,7 @@
 
 #define MAX_SYM		256
 #define MAX_PAT 	1024
-#define MAX_PAT_LEN	16
+#define MAX_PAT_LEN	10
 
 #define CLR_CIPHER	0x01
 #define CLR_PLAIN	0x02
@@ -20,6 +20,8 @@
 #define ROUNDTOINT(F) (F-int(F)>=.5? int(F)+1:int(F))
 #define IS_ASCII(C) (C>0x1F && C<0x7F)
 #define DECIMAL(N) (N-int(N))
+#define ABS(X) (X<0? (-1*X):X)
+#define CLOSER(A,B,C) (ABS(A-C)<ABS(B-C)) //TRUE if A is closer to C than B is
 
 #pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
 
@@ -40,7 +42,7 @@ public:
 	int Read(const char*);
 	int Write(const char*);
 	void Clear(int);
-	void Init();
+	void Init(int);
 
 	int AddSymbol(SYMBOL,int);
 	int GetSymbol(int,SYMBOL*);
@@ -52,6 +54,8 @@ public:
 	float GetUnigraph(int letter) {return unigraphs[letter];}
 	void SwapSymbols(int,int);
 	void SymbolTable(char*);
+
+	void MergeSymbols(char,char);
 	
 	void ToKey(char*);
 	void FromKey(char*);
@@ -104,10 +108,13 @@ public:
 	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain;}
 
 	int Read(const char*);
+	void SetCipher(const char*);
 	
 	const char * GetCipher() {return cipher;}
 	const char * GetPlain() {Decode(); return plain;}
 	int GetLength() {return msg_len;}
+	int GetRow(int,int,char*);
+	int GetColumn(int,int,char*);
 	
 	void GetExpFreq(int*);
 	void GetActFreq(int*);
@@ -115,9 +122,10 @@ public:
 	int GetPattern(int,NGRAM*);
 	int GetNumPatterns() {return num_patterns;}
 		
-	float GetStrength() {return float(cur_map.GetNumSymbols() / ((log((double)msg_len)*(num_patterns+1)/10.0)));}	
+	float GetStrength() {return float(cur_map.GetNumSymbols() / ((log(msg_len)*(num_patterns+1)/10.0)));}	
 	
 	void MergeSymbols(char,char);
+	int Simplify(char&,char&);
 	
 	void operator = (Message &src_msg)
 	{
@@ -146,7 +154,6 @@ private:
 	void Decode();
 	void SetInfo();
 	void FindPatterns();
-	int PatternMatch(const char*,const char*,char*);
 	int AddPattern(NGRAM*,int);
 	
 	char *cipher, *plain;

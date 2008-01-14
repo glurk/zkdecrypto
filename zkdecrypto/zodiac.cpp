@@ -11,6 +11,140 @@
 #include "solve.h"
 #include "files.h"
 
+//do coincidence counting on possible monoalphabets to find polyalphabet key size
+void PolyKeySize(int max_len)
+{
+	int msg_len, key_len, best_len, key_index;
+	float avg_ic, best_ic=0;
+	
+	//allocate column string
+	char *ma=new char[message.GetLength()+1];
+	
+	//get average ic for each key size
+	for(key_len=2; key_len<=max_len; key_len++)
+	{
+		//average ics for each mono alphabet
+		avg_ic=0;
+		
+		for(key_index=0; key_index<key_len; key_index++)
+		{
+			//add this column's IoC to average
+			message.GetColumn(key_index,key_len,ma);
+			avg_ic+=IoC(ma);
+		}
+		
+		//average
+		avg_ic/=key_len;
+		
+		//this average is the best so far
+		if(CLOSER(avg_ic,best_ic,ENG_IOC))
+		{
+			best_ic=avg_ic;
+			best_len=key_len;
+		}
+	}
+
+	delete[] ma;
+
+	sprintf(szText,"Key Size\t%i\r\n\r\nIoC\t%.3f",best_len,best_ic);
+	MessageBox(hMainWnd,szText,"Polyalphbetic IoC",MB_OK);
+}
+/*
+void FindBestSec()
+{
+	int msg_len, sec_len, best_start, best_end;
+	const char *cipher;
+	char *section;
+	float cur_ic, best_ic=0;
+
+	//get cipher
+	cipher=message.GetCipher();
+	msg_len=message.GetLength();
+
+	section=new char[msg_len+1];
+
+	for(int start=0; start<msg_len; start++)
+		for(int end=start; end<msg_len; end++)
+		{
+			sec_len=end-start+1;
+			if(sec_len<20) continue;
+			memcpy(section,cipher+start,sec_len);
+			section[sec_len]='\0';
+			cur_ic=ic(section);
+			
+			//if(CLOSER(cur_ic,best_ic,ENG_IOC))
+			if(cur_ic>best_ic)
+			{
+				best_ic=cur_ic;
+				best_start=start;
+				best_end=end;
+			}
+		}
+
+	
+
+	sprintf(szText,"Start: %i, End: %i, IoC %.3f",best_start,best_end,best_ic);
+	MessageBox(hMainWnd,szText,"Best Section",MB_OK);
+
+	sec_len=best_end-best_start+1;
+	memcpy(section,cipher+best_start,sec_len);
+	section[sec_len]='\0';
+	message.SetCipher(section);
+	SetCipher();
+	SetDlgInfo();
+
+	delete[] section;
+}
+*/
+
+//calculate IoC for each row and column, and averages
+void RowColIoC()
+{
+	int row, col, msg_len;
+	float cur_ic, row_avg=0, col_avg=0;
+	const char *cipher;
+	char rc_string[512], msg[1024];
+	
+	cipher=message.GetCipher();
+	msg_len=message.GetLength();
+	
+	sprintf(szText,"Row - Column IoC\r\n\r\n");
+	
+	//rows
+	for(row=0; message.GetRow(row,iLineChars,rc_string); row++)
+	{
+		cur_ic=IoC(rc_string);
+		row_avg+=cur_ic;
+		
+		sprintf(szText,"R%i\t%.3f\r\n",row+1,cur_ic);
+		strcat(msg,szText);
+	}
+	
+	//rows average
+	row_avg/=iLines;
+	
+	sprintf(szText,"\r\nRow Average\t%.3f\r\n\r\n\r\n",row_avg);
+	strcat(msg,szText);
+	
+	//columns
+	for(col=0; message.GetColumn(col,iLineChars,rc_string); col++)
+	{
+		cur_ic=IoC(rc_string);
+		col_avg+=cur_ic;
+		
+		sprintf(szText,"C%i\t%.3f\r\n",col+1,cur_ic);
+		strcat(msg,szText);
+	}
+	
+	//cols average
+	col_avg/=iLineChars;
+	
+	sprintf(szText,"\r\nColumn Average\t%.3f\r\n",col_avg);
+	strcat(msg,szText);
+	
+	MessageBox(hMainWnd,msg,"RC IoC",MB_OK);
+}
+
 /*Edit Functions*/
 
 void SetUndo()
@@ -77,6 +211,32 @@ LRESULT CALLBACK AboutProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
+/*
+LRESULT CALLBACK AnagramProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:
+			FindAnagram();
+			return 0;
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+
+					EndDialog(hWnd,0);
+					return 1;
+
+				case IDCANCEL:
+					EndDialog(hWnd,0);
+					return 0;
+			}
+	}
+
+	return 0;
+}
+*/
 
 //options dialog
 LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -210,6 +370,39 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+//init dialog
+LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int iInitSize;
+	
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:
+			SetFocus(GetDlgItem(hWnd,IDC_INIT));
+			SendDlgItemMessage(hWnd,IDC_INIT,EM_LIMITTEXT,3,0);
+			SetDlgItemInt(hWnd,IDC_INIT,message.cur_map.GetNumSymbols(),0);
+			return 0;
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+					iInitSize=GetDlgItemInt(hWnd,IDC_INIT,0,0);
+					SetUndo();
+					message.cur_map.Init(iInitSize);
+					SetDlgInfo();
+					EndDialog(hWnd,0);
+					return 1;
+
+				case IDCANCEL:
+					EndDialog(hWnd,0);
+					return 0;
+			}
+	}
+
+	return 0;
+}
+
 //word plug dialog
 LRESULT CALLBACK WordProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -244,7 +437,8 @@ LRESULT CALLBACK WordProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //message handler for main window
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	int swap, num_symbols;
+	int swap, num_symbols, new_pat;
+	char simp1,simp2;
 	SYMBOL symbol;
 	char filename[1024];
 	PAINTSTRUCT ps;
@@ -258,15 +452,11 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(!GetFilename(filename,szCipherName,0)) return 0;
 					LoadMessage(filename);				
 					return 0;
-					
-				case IDM_EDIT_MSG: if(bMsgLoaded) OpenWith(szCipherName); return 0;
 
 				case IDM_FILE_OPEN_MAP:
 					if(!GetFilename(filename,szKeyName,0)) return 0;
 					LoadMap(filename);
 					return 0;
-					
-				case IDM_EDIT_MAP: if(bMsgLoaded) OpenWith(szKeyName); return 0;
 
 				case IDM_FILE_SAVE_MAP:
 					if(!bMsgLoaded) return 0;
@@ -277,42 +467,75 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					bMapLoaded=true;
 					MapEnable(true);
 					return 0;
+
+				case IDM_FILE_SAVE_PLAIN:
+					if(!bMsgLoaded) return 0;
+					if(GetFilename(filename,szCipherName,1)!=1) return 0;
+					if(!SavePlain(filename))
+					{
+						sprintf(szText,"Could not save \"%s\"",filename);
+						MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
+					}
+					return 0;
 					
-				//case IDM_EDIT_RELOAD: LoadMap(szKeyName); return 0;
+				//case IDM_FILE_RELOAD: LoadMap(szKeyName); return 0;
 				
+				/*edit menu*/
+				case IDM_EDIT_UNDO: Undo(); SetCipher(); return 0;
+				case IDM_EDIT_MSG: if(bMsgLoaded) OpenWith(szCipherName); return 0;
+				case IDM_EDIT_MAP: if(bMsgLoaded) OpenWith(szKeyName); return 0;
 				
-				case IDM_EDIT_MERGE:
+				/*cipher menu*/
+				case IDM_CIPHER_MERGE:
 					SetUndo();
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_MERGE),hMainWnd,(DLGPROC)MergeProc);
 					return 0;
-				
-				
-				case IDM_EDIT_UNDO: Undo(); SetCipher(); return 0;
-
-				case IDM_EDIT_INIT:
+					
+				case IDM_CIPHER_SIMPLIFY:
 					SetUndo();
-					message.cur_map.Init();
+					new_pat=message.Simplify(simp1,simp2);
+					sprintf(szText,"Merged '%c' with '%c'\r\n\r\nFound %i new patterns",simp1,simp2,new_pat);
+					MessageBox(hMainWnd,szText,"Subsitution",MB_OK);
+					SetCipher();
 					SetDlgInfo();
 					return 0;
 
-				case IDM_EDIT_SCRAMBLE:
+				case IDM_CIPHER_POLYIC:
+					PolyKeySize(message.GetLength());
+					return 0;
+
+				case IDM_CIPHER_RC_IOC:
+					RowColIoC();
+					return 0;
+
+				/*case IDM_CIPHER_ANAGRAM:
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_ANAGRAM),hMainWnd,(DLGPROC)AnagramProc);
+					return 0;*/
+
+				/*key menu*/
+				case IDM_KEY_INIT:
+					SetUndo();
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_INIT),hMainWnd,(DLGPROC)InitProc);
+					return 0;
+
+				case IDM_KEY_SCRAMBLE:
 					SetUndo();
 					num_symbols=message.cur_map.GetNumSymbols();
-					for(swap=0; swap<3000000; swap++) 				// MORE SWAPS MAKE BETTER SCRAMBLED KEYS - glurk
+					for(swap=0; swap<3000; swap++)
 						message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 					SetDlgInfo();
 					return 0;
 
-				case IDM_EDIT_CLEAR:
+				case IDM_KEY_CLEAR:
 					SetUndo();
 					message.cur_map.Clear(CLR_PLAIN);
 					SetDlgInfo();
 					return 0;
 
-				case IDM_EDIT_LOCK: message.cur_map.SetAllLock(true); SetKey(); return 0;
-				case IDM_EDIT_UNLOCK: message.cur_map.SetAllLock(false); SetKey(); return 0;
+				case IDM_KEY_LOCK: message.cur_map.SetAllLock(true); SetKey(); return 0;
+				case IDM_KEY_UNLOCK: message.cur_map.SetAllLock(false); SetKey(); return 0;
 
-				
+				/*solve menu*/
 				case IDM_SOLVE_WORD:
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_WORD),hMainWnd,(DLGPROC)WordProc);
 					return 0;
@@ -325,13 +548,12 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_SOLVE_TP_NORM: SetPriority(2); return 0;	
 				case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;										
 
-				
-
+				/*help menu*/
 				case IDM_HELP_ABOUT:
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_ABOUT),hMainWnd,(DLGPROC)AboutProc);
 					return 0;
 
-
+				/*Controls*/
 				case IDC_CHANGE: ChangePlain(); return 0;
 
 				case IDC_SOLVE:

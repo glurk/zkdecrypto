@@ -167,21 +167,19 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 				}
 			}
 		}
-
+		
 		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
 	}
 
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
-
+	
 	return(pentascore+tetrascore+triscore+biscore);
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                       Calculate the "Longest String Of Consonants"                           //
-//                           This is actually a useful statistic.                               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline int calclsoc(const int length_of_cipher,const char *solv) {
@@ -295,14 +293,15 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 
 }
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      COMMENT GOES HERE                                       //
+//Return the value of a unigraph for use in other ares of the program                           //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      COMMENT GOES HERE                                       //
+//Read the specified ngram file, of size n, into the proper array                               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ReadNGraphs(const char *filename, int n) 
@@ -347,7 +346,7 @@ int ReadNGraphs(const char *filename, int n)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      COMMENT GOES HERE                                       //
+//find position where the word string inserted into the plain text produces the highest score   //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int WordPlug(Message &msg, const char *word, int use_graphs)
@@ -357,7 +356,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	SYMBOL symbol;
 	Map org_map, best_map;
 
-	word_len=(int)strlen(word);
+	word_len=strlen(word);
 	cipher=msg.GetCipher();
 	msg_len=msg.GetLength();
 
@@ -394,3 +393,4 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	
 	return best_score;
 }
+
