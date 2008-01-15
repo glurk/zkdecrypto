@@ -47,7 +47,7 @@ void PolyKeySize(int max_len)
 	delete[] ma;
 
 	sprintf(szText,"Key Size\t%i\r\n\r\nIoC\t%.3f",best_len,best_ic);
-	MessageBox(hMainWnd,szText,"Polyalphbetic IoC",MB_OK);
+	MessageBox(hMainWnd,szText,"Polyalphabetic IoC",MB_OK);
 }
 /*
 void FindBestSec()
@@ -104,6 +104,8 @@ void RowColIoC()
 	float cur_ic, row_avg=0, col_avg=0;
 	const char *cipher;
 	char rc_string[512], msg[1024];
+
+	memset(msg,0,1024*sizeof(char));
 	
 	cipher=message.GetCipher();
 	msg_len=message.GetLength();
@@ -188,7 +190,7 @@ void ChangePlain()
 
 /*Window Functions*/
 
-//about dalog
+//about dialog
 LRESULT CALLBACK AboutProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(iMsg)
@@ -495,7 +497,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					SetUndo();
 					new_pat=message.Simplify(simp1,simp2);
 					sprintf(szText,"Merged '%c' with '%c'\r\n\r\nFound %i new patterns",simp1,simp2,new_pat);
-					MessageBox(hMainWnd,szText,"Subsitution",MB_OK);
+					MessageBox(hMainWnd,szText,"Substitution",MB_OK);
 					SetCipher();
 					SetDlgInfo();
 					return 0;
@@ -521,7 +523,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_KEY_SCRAMBLE:
 					SetUndo();
 					num_symbols=message.cur_map.GetNumSymbols();
-					for(swap=0; swap<3000; swap++)
+					for(swap=0; swap<30000; swap++)
 						message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 					SetDlgInfo();
 					return 0;
