@@ -33,6 +33,7 @@
 int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
+	#define	SETSOLVED	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; }
 
 	int cuniq;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
@@ -43,18 +44,14 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 	for(int i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	strcpy(bestkey,key);
+	strcpy(cipher,ciph);
 	keylength=(int)strlen(key);
 
 	init_genrand((unsigned long)time(NULL));											//SEED RANDOM GENERATOR
 
-	strcpy(cipher,ciph);
-
-	for(int i=0;i<26;i++) freqs[i]=(E_freqs[i]*clength+48999)/100000;					// CALCULATE EXPECTED LETT. FREQS
-
 	for(int i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
 
-	int i=255;
-	int j=0;
+	int i=255,j=0;																		//CALCULATE AND SORT THE CIPHER UNIQUES
 	for(int y=0;y<255;y++) { 
 		for(int x=255;x>0;x--)
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
@@ -95,7 +92,7 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 				
 			/*stop*/
 			if(!info.running) return bestscore;
-			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or doubled
+			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical
 	
 			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
 				bestscore = score;
@@ -133,7 +130,7 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 /******************************* END_MAIN_HILLCLIMBER_ALGORITHM ***********************************/
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//          Calculate a 'fitness' score for the solution based on the N-Graph counts            //
+//          Calculate a 'fitness' score for the solution based on the N-Gram counts             //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define IS_LETTER(L) ((L<0 || L>25)? 0:1)
@@ -185,6 +182,7 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 inline int calclsoc(const int length_of_cipher,const char *solv) {
 
 	int lsoc=0,lsocmax=0;
+	int	lsocdata[26]={0,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1};				//LONGEST STRING OF CONSONANTS DATA
 
 	for(int i=0;i<length_of_cipher;i++) {
 		if(lsocdata[solv[i]-'A']) { lsoc++; if(lsoc>lsocmax) lsocmax=lsoc; }
@@ -195,7 +193,7 @@ inline int calclsoc(const int length_of_cipher,const char *solv) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                                Mutate the char array "key[]"                                 //
+//              Mutate the char array "key[]" by swapping two unlocked letters                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline void shufflekey(char *key,const char locked[]) {
@@ -227,7 +225,6 @@ void printcipher(int length_of_cipher,char *ciph,char *solv,int bestscore,char *
 	int c=0;
 	int s=0;
 	int width,height;
-	int i,x,y;
 
 	switch(length_of_cipher) {
 		case 153: { width=17; height=9;  } break;
@@ -240,24 +237,27 @@ void printcipher(int length_of_cipher,char *ciph,char *solv,int bestscore,char *
 
 	printf("\n--------------------------------------------------------------------------------------------------------------------\n\n");
 
-	for(y=0;y<height;y++) { 
-		for(x=0;x<width;x++) printf("%c",ciph[c++]);
+	for(int y=0;y<height;y++) { 
+		for(int x=0;x<width;x++) printf("%c",ciph[c++]);
 		printf("   =   ");
-		for(x=0;x<width;x++) printf("%c",solv[s++]);
+		for(int x=0;x<width;x++) printf("%c",solv[s++]);
 		printf("\n"); }
 
 //	printvowels section
 
-	int solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	int diff_tot=0;
-	for(i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;
+	int	freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	for(int i=0;i<26;i++) freqs[i]=(int)(unigraphs[i]*length_of_cipher)/100;					// CALCULATE EXPECTED LETT. FREQS
+	int solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	for(int i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;								// CALCULATE ACTUAL LETT. FREQS
+
 	printf("\n\n              'A   B   C   D  'E   F   G   H  'I   J   K   L   M   N  'O   P   Q   R   S   T  'U   V   W   X   Y   Z");
-	printf("\n  Expected: ");	for(i=0;i<26;i++) printf("%4d",freqs[i]);
-	printf("\n     Found: ");	for(i=0;i<26;i++) printf("%4d",solv_freqs[i]);
-	printf("\nDifference: ");	for(i=0;i<26;i++) { printf("%4d",y=abs(freqs[i]-solv_freqs[i])); diff_tot+=y; }
+	printf("\n  Expected: ");	for(int i=0;i<26;i++) printf("%4d",freqs[i]);
+	printf("\n     Found: ");	for(int i=0;i<26;i++) printf("%4d",solv_freqs[i]);
+	printf("\nDifference: ");	for(int i=0;i<26;i++) { int y=abs(freqs[i]-solv_freqs[i]); printf("%4d",y); diff_tot+=y; }
+
 	printf("\n\nDifference Total: %d    --    Deviation From Expected: %f",diff_tot,100*((float)diff_tot/length_of_cipher));
 	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
-
 	printf("Longest String Of Consonants: %d\n\n",calclsoc(length_of_cipher,solv));
 	printf("Best Score = %d\n",bestscore);
 	printf("\nKey: '%s'\n\n",key); 
@@ -270,7 +270,7 @@ void printcipher(int length_of_cipher,char *ciph,char *solv,int bestscore,char *
 
 void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,int cipher_uniques) {
 
-	int f=0,i;
+	int f=0;
 	int z=(int)strlen(unique_string);
 	char zee[10];
 
@@ -278,11 +278,11 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 	printf("Cipher Uniques: %d unique characters\n\n",cipher_uniques);							//PRINT NUMBER OF UNIQUE CHARACTERS
 
 	printf("Frequency Table for Cipher:\n");
-	for(i=0;i<z;i++) printf("-"); printf("\n");
-	for(i=0;i<z;i++) if(unique_array[i]/100 != 0) printf("%1d",unique_array[i]/100); if(unique_array[0]>=100) printf("\n");
-	for(i=0;i<z;i++) { sprintf(zee,"%d",unique_array[i]); if(unique_array[i]/10 != 0) printf("%c",zee[strlen(zee)-2]); } printf("\n");
-	for(i=0;i<z;i++) { printf("%1d",unique_array[i] % 10); f = f + (unique_array[i] * (unique_array[i]-1)); } printf("\n");
-	for(i=0;i<z;i++) printf("-");
+	for(int i=0;i<z;i++) printf("-"); printf("\n");
+	for(int i=0;i<z;i++) if(unique_array[i]/100 != 0) printf("%1d",unique_array[i]/100); if(unique_array[0]>=100) printf("\n");
+	for(int i=0;i<z;i++) { sprintf(zee,"%d",unique_array[i]); if(unique_array[i]/10 != 0) printf("%c",zee[strlen(zee)-2]); } printf("\n");
+	for(int i=0;i<z;i++) { printf("%1d",unique_array[i] % 10); f = f + (unique_array[i] * (unique_array[i]-1)); } printf("\n");
+	for(int i=0;i<z;i++) printf("-");
 
 	printf("\n%s\n\n",unique_string);
 
@@ -295,13 +295,13 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//Return the value of a unigraph for use in other ares of the program                           //
+//           Return the value of a unigraph for use in other ares of the program                //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//Read the specified ngram file, of size n, into the proper array                               //
+//            Read the specified N-gram file, of size n, into the proper array                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ReadNGraphs(const char *filename, int n) 
@@ -346,7 +346,7 @@ int ReadNGraphs(const char *filename, int n)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//find position where the word string inserted into the plain text produces the highest score   //
+//  Find position where the word string inserted into the plain text produces the highest score //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int WordPlug(Message &msg, const char *word, int use_graphs)
