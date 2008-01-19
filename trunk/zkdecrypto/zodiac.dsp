@@ -111,6 +111,14 @@ SOURCE=.\zodiac.rc
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\display.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\files.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\message.h
 # End Source File
 # Begin Source File
@@ -119,11 +127,19 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\solve.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\z340.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\z340Globals.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\zodiac.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

@@ -3,10 +3,10 @@
 <assemblyIdentity 
     version="6.0.0.1" 
     processorArchitecture="X86" 
-    name="SWFRIP"
+    name="ZKDECRYPTO"
     type="win32" 
 /> 
-<description>SWFRIP</description> 
+<description>ZKDECRYPTO</description> 
 <dependency> 
     <dependentAssembly> 
         <assemblyIdentity 

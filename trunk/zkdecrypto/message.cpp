@@ -29,7 +29,14 @@ int Map::Read(const char *filename)
 		}
 
 		if(!IS_ASCII(cur)) continue;
-		if(cur==' ') cur=0x00;
+		if(cur_symbol>127) continue;
+		
+		if(cur==' ') //blank 
+		{
+			if(!in_chars) continue;
+			cur=0x00;
+		}
+		
 		if(!in_chars) entries[cur_symbol].cipher=cur;
 		else entries[cur_symbol].plain=cur;
 
@@ -74,12 +81,13 @@ void Map::Clear(int mode)
 	{
 		num_symbols=0;
 		memset(symbols,0,MAX_SYM*sizeof(SYMBOL));
+		memset(locked,0,MAX_SYM);
 		return;
 	}
 	
 	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++) 
 	{
-		if(symbols[cur_symbol].locked) continue;
+		if(locked[cur_symbol]) continue;
 		
 		if(mode & CLR_CIPHER) symbols[cur_symbol].cipher=0;
 		if(mode & CLR_PLAIN) symbols[cur_symbol].plain=0;
@@ -132,14 +140,14 @@ void Map::Init(int first)
 	while(cur_symbol<num_symbols)
 	{
 		symbols[cur_symbol].plain=0;
-		symbols[cur_symbol].locked=true;
+		locked[cur_symbol]=true;
 		cur_symbol++;
 	}
 }
 
 //add/update a symbol; if inc_freq is true, 
 //when an existing symbol is updated its frequency is incremented
-int Map::AddSymbol(SYMBOL symbol, int inc_freq)
+int Map::AddSymbol(SYMBOL &symbol, int inc_freq)
 {
 	int index;
 
@@ -150,10 +158,10 @@ int Map::AddSymbol(SYMBOL symbol, int inc_freq)
 	
 	if(index>-1)
 	{
-		if(symbols[index].locked) return num_symbols;
+		if(locked[index]) return num_symbols;
 		//if(IS_ASCII(symbol.plain)) 
 		symbols[index].plain=symbol.plain;
-		symbols[index].locked=symbol.locked;
+		locked[index]=false;
 		if(inc_freq) symbols[index].freq++;
 		return num_symbols;
 	}
@@ -187,7 +195,7 @@ int Map::GetSymbol(int index, SYMBOL *symbol)
 //swap the plain text letters for two symbols
 void Map::SwapSymbols(int swap1, int swap2)
 {
-	if(symbols[swap1].locked || symbols[swap2].locked) return;
+	if(locked[swap1] || locked[swap2]) return;
 	
 	char temp=symbols[swap1].plain;
 	symbols[swap1].plain=symbols[swap2].plain;
@@ -204,6 +212,7 @@ void Map::MergeSymbols(char symbol1, char symbol2)
 	num_symbols--;
 	symbols[index1].freq+=symbols[index2].freq;
 	memmove(&symbols[index2],&symbols[index2+1],(num_symbols-index2)*sizeof(SYMBOL));
+	memmove(&locked[index2],&locked[index2+1],num_symbols-index2);
 
 	SortByFreq();
 }
@@ -266,16 +275,96 @@ void Map::SymbolTable(char *dest)
 	dest[cur_char++]='\0';
 }
 
+long Map::SymbolGraph(char *dest)
+{
+	int max, step, cur_symbol;
+	int dest_index=0;
+	char level[64];
+	
+	max=symbols[0].freq;
+	if(max%5) max+=5-(max%5);
+	step=(max/50)+1;
+
+	//line numbers and bars
+	for(int row=max; row>0; row-=step)
+	{
+		sprintf(level,"%4i ",row);
+		to_unicode(level);
+		memcpy(dest+dest_index,level,10);
+		dest_index+=10;
+
+		//vertical line
+		dest[dest_index++]=char(0x02);
+		dest[dest_index++]=char(0x25);		
+
+		for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		{
+			if(symbols[cur_symbol].freq>=row) 
+			{
+				//half bar
+				dest[dest_index++]=char(0x8C);
+				dest[dest_index++]=char(0x25);
+			}
+			
+			else break;//blank 
+			/*{
+				dest[dest_index++]=char(0x20);
+				dest[dest_index++]=char(0x00);
+			}*/
+		}
+
+		strcpy(level,"\r\n");
+		to_unicode(level);
+		memcpy(dest+dest_index,level,4);
+		dest_index+=4;
+	}
+
+	//bottom line
+	strcpy(level,"     ");
+	to_unicode(level);
+	memcpy(dest+dest_index,level,10);
+	dest_index+=10;
+
+	for(cur_symbol=0; cur_symbol<=num_symbols; cur_symbol++)
+	{
+		//horizontal line
+		dest[dest_index++]=char(0x3E);
+		dest[dest_index++]=char(0x20);
+	}
+
+	//symbols
+	strcpy(level,"\r\n      ");
+	to_unicode(level);
+	memcpy(dest+dest_index,level,16);
+	dest_index+=16;
+
+	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	{
+		//symbol
+		dest[dest_index++]=symbols[cur_symbol].cipher;
+		dest[dest_index++]=char(0x00);
+	}
+
+	//terminate
+	dest[dest_index++]=char(0x00);
+	dest[dest_index++]=char(0x00);
+
+	//rows in the high word, cols in the low
+	return ((max/step)+2)<<16 | (num_symbols+4);
+}
+
 //hillclimb key <-> Map class conversion
-void Map::ToKey(char *key)
+void Map::ToKey(char *key, char *extra)
 {
 	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
 		if(symbols[cur_symbol].plain) key[cur_symbol]=symbols[cur_symbol].plain;
 		else key[cur_symbol]=BLANK;
-	}	
+	}
 	
 	key[num_symbols]='\0';
+
+	strcat(key,extra);
 }
 
 void Map::FromKey(char *key)
@@ -354,13 +443,13 @@ void Message::SetInfo()
 		exp_freq[letter]=ROUNDTOINT((cur_map.GetUnigraph(letter)/100)*msg_len);
 	
 	//patterns
-	FindPatterns();
+	FindPatterns(true);
 }
 
 //put the specifed row in dest, according to the specifiec line length 
 int Message::GetRow(int row, int line_len, char *dest)
 {
-	int row_len, row_start, cipher_end;
+	int row_len, row_start;
 	
 	//find start
 	row_start=row*line_len;
@@ -441,7 +530,7 @@ void Message::GetActFreq(int *freq)
 }
 
 //replace all instances of symbol2 with symbol1, and update map
-void Message::MergeSymbols(char symbol1, char symbol2)
+void Message::MergeSymbols(char symbol1, char symbol2, int do_near)
 {
 	Map old_map;
 
@@ -452,71 +541,243 @@ void Message::MergeSymbols(char symbol1, char symbol2)
 
 	//merge symbols in map and find new patterns
 	cur_map.MergeSymbols(symbol1,symbol2);
-	FindPatterns();
+	FindPatterns(do_near);
 }
 
+//try to identify homophones and merge them
 int Message::Simplify(char &simp1, char &simp2)
 {
-	int max_patterns, old_patterns;
-	char max1, max2;
+	int max_patterns, old_patterns, num_symbols;
+	char max1=char(0xFF), max2;
 	Message test_msg;
 	SYMBOL symbol1, symbol2;
 	
-	old_patterns=max_patterns=num_patterns;
+	//only use exact patterns
+	FindPatterns(false);
+	old_patterns=max_patterns=good_pat;
+	num_symbols=cur_map.GetNumSymbols();
 	
-	test_msg=*this;
+	test_msg+=*this;
 
 	//find the best of all possible sustitutions 
-	for(int cur_sym1=0; cur_sym1<(cur_map.GetNumSymbols())-1; cur_sym1++)
+	for(int cur_sym1=0; cur_sym1<num_symbols-1; cur_sym1++)
 	{
+		if(cur_map.GetLock(cur_sym1)) continue;
 		cur_map.GetSymbol(cur_sym1,&symbol1);
 
-		for(int cur_sym2=cur_sym1+1; cur_sym2<cur_map.GetNumSymbols(); cur_sym2++)
+		for(int cur_sym2=cur_sym1+1; cur_sym2<num_symbols; cur_sym2++)
 		{
+			if(cur_map.GetLock(cur_sym2)) continue;
 			cur_map.GetSymbol(cur_sym2,&symbol2);
 
-			test_msg.MergeSymbols(symbol1.cipher,symbol2.cipher);
+			test_msg.MergeSymbols(symbol1.cipher,symbol2.cipher,false);
 			
 			//good substitution
-			if(test_msg.num_patterns>max_patterns)
+			if(test_msg.good_pat>max_patterns)
 			{
-				max_patterns=test_msg.num_patterns;
+				max_patterns=test_msg.good_pat;
 				max1=symbol1.cipher;
 				max2=symbol2.cipher;
 			}
 
-			test_msg=*this;
+			test_msg+=*this;
 		}
 	}
 
 	simp1=max1;
 	simp2=max2;
-	MergeSymbols(max1,max2);
+	if(max1!=char(0xFF)) MergeSymbols(max1,max2,true);
 
 	return (max_patterns-old_patterns);
 }
 
-int Message::AddPattern(NGRAM *pattern, int inc_freq)
+//find a pattern in the tree & set dest to it
+int Message::FindPattern(const char *string, NGRAM *&dest, NGRAM *cur_pat, NGRAM *last_pat=NULL)
 {
-	//find pattern
-	for(int cur_pat=0; cur_pat<num_patterns; cur_pat++)
-		if(!strcmp(pattern->string,patterns[cur_pat].string))
-		{
-			if(inc_freq) 
-			{
-				patterns[cur_pat].positions[patterns[cur_pat].freq]=pattern->positions[1];
-				patterns[cur_pat].freq++;
-			}
-			return num_patterns;
-		}
+	//doesn't exist
+	if(!cur_pat) {dest=last_pat; return 0;}
+
+	//follow branch
+	int cmp=strcmp(string,cur_pat->string);
+	if(cmp<0) return FindPattern(string,dest,cur_pat->left,cur_pat);
+	if(cmp>0) return FindPattern(string,dest,cur_pat->right,cur_pat);
 	
-	if(num_patterns==MAX_PAT) return num_patterns;
-		
-	memcpy(&patterns[num_patterns],pattern,sizeof(NGRAM));
-	num_patterns++;	
-	
-	return num_patterns;	
+	//found
+	dest=cur_pat;
+	return 1;
 }
+
+
+int Message::FindPattern(const char *string, NGRAM *&dest)
+{
+	NGRAM *cur_pat, *last_pat=NULL;
+	int cmp;
+
+	cur_pat=patterns; //start at head
+
+	while(cur_pat)
+	{
+		last_pat=cur_pat;
+
+		cmp=strcmp(string,cur_pat->string);
+		if(cmp<0) cur_pat=cur_pat->left;
+		else if(cmp>0) cur_pat=cur_pat->right;
+		else //this is it
+		{
+			dest=cur_pat;
+			return 1;
+		}
+	}
+
+	dest=last_pat; //doesn't exist, give the would be parent
+	return 0;
+}
+
+int Message::AddPattern(NGRAM &new_pat, int inc_freq)
+{
+	NGRAM *found=NULL;
+	int exists;
+
+	//exists=FindPattern(new_pat.string,found,patterns);
+	exists=FindPattern(new_pat.string,found);
+
+	//doesn't exist, allocate a new node
+	if(!exists)
+	{
+		if(!found) //this is the head
+		{
+			found=new NGRAM;
+			patterns=found;
+		}
+
+		//less than, add to left
+		else if(strcmp(new_pat.string,found->string)<0)
+		{
+			found->left=new NGRAM;
+			found=found->left;
+		}
+
+		else //greater than, add to right
+		{
+			found->right=new NGRAM;
+			found=found->right;
+		}
+
+		//copy to node & set children to null
+		memcpy(found,&new_pat,sizeof(NGRAM));
+		
+		//allocate & copy position array
+		found->pos_size=new_pat.freq;
+		found->positions=new int[found->pos_size];
+		memcpy(found->positions,new_pat.positions,new_pat.freq*sizeof(int));
+		//found->positions[0]=new_pat.positions[0];
+		found->left=found->right=NULL;
+		num_patterns++;
+	}
+
+	//found pattern
+	else if(inc_freq)
+	{
+		//must reallocate
+		if(found->freq>=found->pos_size)
+		{
+			int *temp=found->positions;
+
+			found->pos_size+=10;
+			found->positions=new int[found->pos_size];
+			memcpy(found->positions,temp,found->freq*sizeof(int));
+
+			delete[] temp;
+		}
+		
+		found->positions[found->freq]=new_pat.positions[0];
+		found->freq++;
+	}
+
+	return num_patterns;
+}
+
+//get the specified pattern
+int Message::GetPattern(NGRAM *find_pat)
+{
+	NGRAM *found;
+
+	//if(FindPattern(find_pat->string,found,patterns))
+	if(FindPattern(find_pat->string,found))
+	{
+		memcpy(find_pat,found,sizeof(NGRAM));
+		return 1;
+	}
+
+	return 0;
+}
+
+//call print_func for each pattern node, return number printed
+long Message::ForAllPatterns(NGRAM *cur_pat, int min_freq, void (*do_func)(NGRAM*)=NULL)
+{
+	int done=0;
+
+	if(!cur_pat) return 0;
+
+	done+=ForAllPatterns(cur_pat->left,min_freq,do_func);
+	done+=ForAllPatterns(cur_pat->right,min_freq,do_func);
+
+	if(cur_pat->freq>min_freq || (cur_pat->length>2 && cur_pat->freq>(min_freq-1))) 
+	{
+		if(do_func) do_func(cur_pat);
+		done++;
+	}
+
+	return done;
+}
+
+//interface for print pattern
+long Message::PrintPatterns(void (*print_func)(NGRAM*))
+{
+	return ForAllPatterns(patterns,(msg_len>>10)+2,print_func);
+}
+
+long Message::WritePatterns(NGRAM *cur_pat, int length)
+{
+	int done=0;
+
+	if(!cur_pat) return 0;
+
+	done+=WritePatterns(cur_pat->left,length);
+	done+=WritePatterns(cur_pat->right,length);
+
+	//if(cur_pat->freq>min_freq || (cur_pat->length>2 && cur_pat->freq>(min_freq-1))) 
+	if(cur_pat->length==length)
+	{
+		fprintf(ngram_file,"%s : %i %f\n",cur_pat->string,cur_pat->freq,float(cur_pat->freq)/msg_len);
+		done++;
+	}
+
+	return done;
+}
+
+void Message::PatternsToFile(const char *filename, int length)
+{
+	ngram_file=fopen(filename,"w");
+
+	WritePatterns(patterns,length);
+
+	fclose(ngram_file);
+}
+
+void Message::ClearPatterns(NGRAM *cur_pat)
+{
+	if(!cur_pat) return;
+	
+	ClearPatterns(cur_pat->left);
+	ClearPatterns(cur_pat->right);
+	
+	if(cur_pat->positions) delete cur_pat->positions;
+	delete cur_pat;
+	
+	if(cur_pat==patterns) patterns=NULL;
+}
+
 
 //check if pat1 & pat2 are more than 50% similar, put pattern string into pat3
 inline int pat_match(const char *pat1, const char *pat2, char *pat_temp, int len)
@@ -525,130 +786,168 @@ inline int pat_match(const char *pat1, const char *pat2, char *pat_temp, int len
 	int end=len-1;
 
 	//first & last characters must be the same
-	if(pat1[0]!=pat2[0]) return 0;
-	if(pat1[end]!=pat2[end]) return 0;
-
-	//set characters in the template string
-	pat_temp[0]=pat1[0];
-	pat_temp[end]=pat1[end];
+	if(pat1[0]!=pat2[0] || pat1[end]!=pat2[end]) return 0;
 	
 	//check other characters
 	for(int chr=1; chr<end; chr++)
 	{
 		//different
 		if(pat1[chr]!=pat2[chr]) {pat_temp[chr]=BLANK; diff++; run++;}
-		
-		//same
-		else {pat_temp[chr]=pat1[chr]; run=0;}
-		
-		//fail if 3 characters in a row are different
-		if(run>3) return 0;
+		else {pat_temp[chr]=pat1[chr]; run=0;} //same
+		if(run>2) return 0; //fail if 3 characters in a row are different
 	}
-	
-	pat_temp[len]='\0';
 	
 	if(!diff) return 0; //exactly the same
 	if((len-diff)<=len>>1) return 0; //at least half of the characters are different
 	
+	//set outside characters in the template string
+	pat_temp[0]=pat1[0];
+	pat_temp[end]=pat1[end];
+	pat_temp[len]='\0';	
+	
 	return 1;
 }
-
-void Message::FindPatterns()
+void Message::FindPatterns(int do_near)
 {
-	char *cur_pos;
-	int length, next;
+	int length;
 	NGRAM pattern;
 
+	//delete old tree
+	if(patterns) ClearPatterns(patterns);
+	patterns=NULL;
 	num_patterns=0;
-	next=true;
+
+	//allocate position array
+	pattern.pos_size=2;
+	pattern.positions=new int[pattern.pos_size];
 
 	//exact patterns
-	for(length=2; next && length<MAX_PAT_LEN; length++)
-	{
-		next=false;
-		
-		for(int index=0; index<msg_len-length-1; index++)
+	for(length=2; length<=MAX_PAT_LEN; length++)
+	{	
+		for(int index=0; index<msg_len-length+1; index++)
 		{
-			//init pattern
 			memcpy(pattern.string,cipher+index,length);
 			pattern.string[length]='\0';
 			pattern.length=length;
-			pattern.freq=0;
-			
-			//count pattern
-			cur_pos=cipher+index;
-			while(cur_pos=strstr(cur_pos,pattern.string)) 
-			{
-				pattern.positions[pattern.freq]=cur_pos-cipher;
-				pattern.freq++;
-				//cur_pos++;
-				cur_pos+=length;
-			}
-		
-			//add pattern
-			if(pattern.freq>2 || (pattern.length>2 && pattern.freq>1))
-			{
-				AddPattern(&pattern,false);
-				next=true;
-			}
+			pattern.freq=1;
+			pattern.positions[0]=index;
+			AddPattern(pattern,true);
 		}
 	}
 	
 	//near patterns
-	next=0;
-	
-	for(length=4; length<=MAX_PAT_LEN; length++)
+	if(do_near && msg_len<5000)	
 	{
-		if(next>2) break;
-
-		next++;
-
-		pattern.length=length;
-		pattern.freq=2;
-		
-		for(int index1=0; index1<msg_len-length-2; index1++)
-			for(int index2=index1+length; index2<msg_len-length; index2++)
-			{
-				if(pat_match(cipher+index1,cipher+index2,pattern.string,length))
-				{
-					pattern.positions[0]=index1;
-					pattern.positions[1]=index2;					
-					AddPattern(&pattern,true);
-					next=0;
-				}
-			}	
-	}
-
-	//sort patterns
-	int swap;
-	int found;
-	do
-	{
-		found=false;
-
-		for(int cur_pat=0; cur_pat<num_patterns-1; cur_pat++)
+		for(length=4; length<=MAX_PAT_LEN; length++)
 		{
-			swap=false;
-
-			//if(patterns[cur_pat].freq<patterns[cur_pat+1].freq) swap=true;
-			if(strcmp(patterns[cur_pat].string,patterns[cur_pat+1].string)>0) swap=true;
+			pattern.length=length;
+			pattern.freq=2;
 			
-			if(swap)
+			for(int index1=0; index1<msg_len-length+1; index1++)
 			{
-				memcpy(&pattern,&patterns[cur_pat],sizeof(NGRAM));
-				memcpy(&patterns[cur_pat],&patterns[cur_pat+1],sizeof(NGRAM));
-				memcpy(&patterns[cur_pat+1],&pattern,sizeof(NGRAM));
-				found=true;
+				for(int index2=index1+length; index2<msg_len-length; index2++)
+					if(pat_match(cipher+index1,cipher+index2,pattern.string,length))
+					{
+						pattern.positions[0]=index2;
+						pattern.positions[1]=index1;
+						AddPattern(pattern,true);
+					}
 			}
 		}
-	} 
-	while(found);
+	}
+
+	good_pat=PrintPatterns(0);
+
+	delete[] pattern.positions;
 }
 
-int Message::GetPattern(int index, NGRAM *pattern) 
+long Message::LetterGraph(char *dest)
 {
-	if(index<0 || index>num_patterns) return 0;
-	memcpy(pattern,&patterns[index],sizeof(NGRAM));
-	return 1;
-}
+	int max=0, step, cur_letter;
+	int dest_index=0, act_freq[26];
+	char level[64];
+	
+	Decode();
+	GetActFreq(act_freq);
+	
+	//find highest occurance
+	for(cur_letter=0; cur_letter<16; cur_letter++)
+		if(act_freq[cur_letter]>max)
+			max=act_freq[cur_letter];
+	
+	if(max%5) max+=5-(max%5);
+	step=(max/50)+1;
 
+	//line numbers and bars
+	for(int row=max; row>0; row-=step)
+	{
+		sprintf(level,"%4i ",row);
+		to_unicode(level);
+		memcpy(dest+dest_index,level,10);
+		dest_index+=10;
+
+		//vertical line
+		dest[dest_index++]=char(0x02);
+		dest[dest_index++]=char(0x25);		
+
+		for(cur_letter=0; cur_letter<26; cur_letter++)
+		{
+			if(act_freq[cur_letter]>=row) 
+			{
+				//half bar
+				dest[dest_index++]=char(0x88/*8C*/);
+				dest[dest_index++]=char(0x25);
+			}
+			
+			else //blank
+			{
+				dest[dest_index++]=char(0x20);
+				dest[dest_index++]=char(0x00);
+			}
+
+			dest[dest_index++]=char(0x20);
+			dest[dest_index++]=char(0x00);
+		}
+
+		strcpy(level,"\r\n");
+		to_unicode(level);
+		memcpy(dest+dest_index,level,4);
+		dest_index+=4;
+	}
+
+	//bottom line
+	strcpy(level,"     ");
+	to_unicode(level);
+	memcpy(dest+dest_index,level,10);
+	dest_index+=10;
+
+	for(cur_letter=0; cur_letter<=52; cur_letter++)
+	{
+		//horizontal line
+		dest[dest_index++]=char(0x3E);
+		dest[dest_index++]=char(0x20);
+	}
+
+	//letters
+	strcpy(level,"\r\n      ");
+	to_unicode(level);
+	memcpy(dest+dest_index,level,16);
+	dest_index+=16;
+
+	for(cur_letter=0; cur_letter<26; cur_letter++)
+	{
+		//symbol
+		dest[dest_index++]=cur_letter+'A';
+		dest[dest_index++]=char(0x00);
+
+		dest[dest_index++]=char(0x20);
+		dest[dest_index++]=char(0x00);
+	}
+
+	//terminate
+	dest[dest_index++]=char(0x00);
+	dest[dest_index++]=char(0x00);
+
+	//rows in the high word, cols in the low
+	return ((max/step)+2)<<16 | (52+4);
+}

@@ -6,13 +6,15 @@
 --------------------Configuration: zodiac - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP1226.tmp" with contents
+Creating temporary file "C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP2271.tmp" with contents
 [
 /nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"zodiac___Win32_Debug/" /Fp"zodiac___Win32_Debug/zodiac.pch" /YX /Fo"zodiac___Win32_Debug/" /Fd"zodiac___Win32_Debug/" /FD /GZ /c 
 "C:\Source\zodiac\message.cpp"
+"C:\Source\zodiac\z340.cpp"
+"C:\Source\zodiac\zodiac.cpp"
 ]
-Creating command line "cl.exe @C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP1226.tmp" 
-Creating temporary file "C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP1227.tmp" with contents
+Creating command line "cl.exe @C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP2271.tmp" 
+Creating temporary file "C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP2272.tmp" with contents
 [
 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib COMCTL32.LIB /nologo /subsystem:windows /incremental:yes /pdb:"zodiac___Win32_Debug/zodiac.pdb" /debug /machine:I386 /out:"zodiac.exe" /pdbtype:sept 
 .\zodiac___Win32_Debug\message.obj
@@ -20,14 +22,13 @@ kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32
 .\zodiac___Win32_Debug\zodiac.obj
 .\zodiac___Win32_Debug\zodiac.res
 ]
-Creating command line "link.exe @C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP1227.tmp"
+Creating command line "link.exe @C:\DOCUME~1\wrhopper\LOCALS~1\Temp\RSP2272.tmp"
 <h3>Output Window</h3>
 Compiling...
 message.cpp
+z340.cpp
+zodiac.cpp
 Linking...
-Creating command line "bscmake.exe /nologo /o"zodiac___Win32_Debug/zodiac.bsc"  .\zodiac___Win32_Debug\message.sbr .\zodiac___Win32_Debug\z340.sbr .\zodiac___Win32_Debug\zodiac.sbr"
-Creating browse info file...
-<h3>Output Window</h3>
 
 
 
