@@ -133,3 +133,58 @@ int SavePlain(char *filename)
 
 	return 1;
 }
+
+int LoadINI()
+{
+	FILE *ini_file;
+	char filename[1024], option[32], value[1024];
+
+	sprintf(filename,"%s\\zodiac.ini",szExeDir);
+
+	ini_file=fopen(filename,"r");
+
+	if(!ini_file) return 0;
+
+	while(fscanf(ini_file,"%s = %s",option,value)!=EOF)
+	{
+		if(!stricmp(option,"cipher")) strcpy(szCipherName,value);
+		else if(!stricmp(option,"key")) strcpy(szKeyName,value);
+		else if(!stricmp(option,"fail")) siSolveInfo.max_fail=atoi(value);
+		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
+		else if(!stricmp(option,"revert")) siSolveInfo.revert=atoi(value);
+		else if(!stricmp(option,"use")) iUseGraphs=atoi(value);
+		else if(!stricmp(option,"line")) iLineChars=atoi(value);
+		else if(!stricmp(option,"lang")) iLang=atoi(value);
+		else if(!stricmp(option,"extra")) strcpy(szExtraLtr,value);
+	}
+
+	fclose(ini_file);
+
+	return 1;
+}
+
+int SaveINI()
+{
+	FILE *ini_file;
+	char filename[1024];
+
+	sprintf(filename,"%s\\zodiac.ini",szExeDir);
+
+	ini_file=fopen(filename,"w");
+
+	if(!ini_file) return 0;
+
+	fprintf(ini_file,"cipher = %s\n",szCipherName);
+	fprintf(ini_file,"key = %s\n",szKeyName);
+	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_fail);
+	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
+	fprintf(ini_file,"revert = %i\n",siSolveInfo.revert);
+	fprintf(ini_file,"use = %i\n",iUseGraphs);
+	fprintf(ini_file,"line = %i\n",iLineChars);
+	fprintf(ini_file,"lang = %i\n",iLang);
+	fprintf(ini_file,"extra = %s\n",szExtraLtr);
+
+	fclose(ini_file);
+
+	return 1;
+}

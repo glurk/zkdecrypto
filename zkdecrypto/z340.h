@@ -38,7 +38,7 @@ struct SOLVEINFO
 
 #define		_DEB						0
 #define		ASCII_SIZE 					256
-#define		MAX_CIPH_LENGTH 			4096
+#define		MAX_CIPH_LENGTH 			20480
 
 //having multiply operations in definitions could slow down algorithms
 #define UNI_SIZE	26			//26
@@ -58,6 +58,7 @@ struct SOLVEINFO
 inline int		calcscore(const int,const char *,int&);
 inline int		calclsoc(const int,const char *);
 inline void		shufflekey(char *,const char *);
+int				readcipher(char *);
 
 void			printcipher(int,char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);

@@ -21,8 +21,6 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_KEY_INIT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_SCRAMBLE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_CLEAR,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_KEY_LOCK,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_KEY_UNLOCK,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_SOLVE_WORD,MF_BYCOMMAND | menu_state);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_CHANGE),enabled);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_RESET),enabled);
@@ -32,6 +30,8 @@ void MsgEnable(int enabled)
 	else menu_state=MF_GRAYED;
 	
 	EnableMenuItem(hMainMenu,IDM_EDIT_MSG,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_VIEW_SYMGRAPH,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_VIEW_LTRGRAPH,MF_BYCOMMAND | menu_state);
 }
 
 //enable/disable menu items & buttons associated with a loaded key
@@ -62,6 +62,8 @@ void MapEnable(int enabled)
 void StopSolve()
 {
 	siSolveInfo.running=false;
+	TerminateThread(hTimerThread,0);
+	hTimerThread=NULL;
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Start");
 	MsgEnable(true);
 	MapEnable(true);
@@ -86,6 +88,7 @@ DWORD WINAPI Timer(LPVOID lpVoid)
 		Sleep(1000);
 	}
 
+	hTimerThread=NULL;
 	ExitThread(0);
 	return 0;
 }
@@ -94,20 +97,15 @@ DWORD WINAPI Timer(LPVOID lpVoid)
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
 	char key[256];
-	char *locked;
 	
 	if(!bMsgLoaded) return 0;
 	
 	SetThreadPriority(hSolveThread,iPriority);
 	
 	//convert map to key to pass
-	message.cur_map.ToKey(key);
-	locked=new char[message.cur_map.GetNumSymbols()];
-	message.cur_map.GetLocked(locked);
+	message.cur_map.ToKey(key,szExtraLtr);
 	
-	hillclimb(szCipher,message.GetLength(),key,locked,siSolveInfo,iUseGraphs);
-
-	delete[] locked;
+	hillclimb(szCipher,message.GetLength(),key,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs);
 
 	//reset window state
 	StopSolve();
@@ -121,12 +119,14 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 //reset window state when solve starts
 void StartSolve()
 {
+	if(hSolveThread) return;
+
 	siSolveInfo.running=true;
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Stop");
 	MsgEnable(false);
 	MapEnable(false);
 	hSolveThread=CreateThread(0,1024,FindSolution,0,0,0);
-	CreateThread(0,128,Timer,0,0,0);
+	hTimerThread=CreateThread(0,128,Timer,0,0,0);
 }
 
 void Reset() //init solve info

@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Written by Brax Sisco (Developed starting 9/14/2006)                                                                                                     //
 // This program attempts to solve the November 8th, 1969 unsolved Zodiac 340 character cipher                                                               //
 //                                                                                                                                                          //
@@ -295,13 +295,13 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//           Return the value of a unigraph for use in other ares of the program                //
+//Return the value of a unigraph for use in other ares of the program                           //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//            Read the specified N-gram file, of size n, into the proper array                  //
+//Read the specified ngram file, of size n, into the proper array                               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ReadNGraphs(const char *filename, int n) 
@@ -346,7 +346,7 @@ int ReadNGraphs(const char *filename, int n)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//  Find position where the word string inserted into the plain text produces the highest score //
+//find position where the word string inserted into the plain text produces the highest score   //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int WordPlug(Message &msg, const char *word, int use_graphs)

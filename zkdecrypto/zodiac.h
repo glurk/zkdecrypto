@@ -4,8 +4,8 @@
 #include "z340.h"
 
 //program
-#define PROG_NAME	"Zodiac Code Decipher"
-#define PROG_VER	"v1.0"
+#define PROG_NAME	"Zodiac Decrypto"
+#define PROG_VER	"v1.0 Alpha4"
 
 //language
 #define LANG_DIR	"language"
@@ -23,17 +23,12 @@
 #define POR_IOC 	.0746
 #define RUS_IOC 	.0677
 
-
-//position and size for the cipher and plain text displays, 
-//used to calculate #lines for display and click position
-#define CIPHER_X	202
-#define CIPHER_Y	32
-#define PLAIN_X		426
-#define PLAIN_Y		32
-#define TEXT_WIDTH  223
-#define TEXT_HEIGHT 208
+//text constants
 #define CHAR_WIDTH  7
 #define CHAR_HEIGHT 12
+#define TEXT_POS	0 //HWND_TOPMOST
+
+#define MAX_EXTRA	26
 
 //macros
 #define IS_BETWEEN(X,Y,Z) (X>=Y && X<=Z)
@@ -48,26 +43,40 @@ int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
 
 //GUI data
-char szTitle[512], szText[1024], szExeDir[1024];
+char szTitle[64], szText[1024], szExeDir[1024]; 
 int iCurSymbol=-1, iCurPat=-1, iTextSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
+int iSortBy=0;
+
+//text gui
 float iCharSize=1.0; //font size multiplier
 int iLineChars=17, iLines, iDispLines; //text line data
 int iScrollPos, iMaxScroll; //scrollbar
+int iDispStart, iDispEnd; //index of the start/end characters being displayed
+int iMargin=10; //window margin size
+int iCipherX=3*iMargin, iCipherY=3*iMargin; //cipher wnd position
+int iPlainX, iPlainY=3*iMargin; //plain wnd position
+int iTextWidth=100, iTextHeight=100; //dimensions of cipher and plain
+POINT pntClickPoint; //click point
+
+//graphs
+char szGraph[8192];
+long lRowCol;
 
 //solver data
 SOLVEINFO siSolveInfo;
 int iUseGraphs=USE_BI+USE_TRI+USE_TETRA+USE_PENTA;
 int iPriority, iLang, iBestScore=0;
+char szExtraLtr[MAX_EXTRA+1]="WBVKXZQJ";
 
 //Win32 object handles
-HWND		hMainWnd, hCipher=NULL, hPlain=NULL, hScroll=NULL;
+HWND		hMainWnd, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hScroll;
 HPEN 		hRedPen, hGreenPen, hBluePen;
 HDC 		hCipherDC=NULL, hPlainDC=NULL;
 HFONT		hTextFont=NULL;
-HMENU		hMainMenu;
+HMENU		hMainMenu, hTextMenu;
 HINSTANCE	hInst;
-HANDLE		hSolveThread=NULL;
+HANDLE		hSolveThread=NULL, hTimerThread=NULL;
 
 //open/save file filter
 char szFileFilter[]=
@@ -79,10 +88,13 @@ inline void disp_all()  {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPALL,0);}
 inline void disp_info() {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPINFO,0);}
 inline DWORD GetTime()	{return GetTickCount();}
 
+//index of conincidence of a string
 float IoC(const char *string)
 {
 	int freqs[256], length;
 	float ic=0;
+
+	if(!string) return 0;
 
 	length=strlen(string);
 	if(length<2) return 0;
@@ -102,24 +114,32 @@ float IoC(const char *string)
 	return ic;
 }
 
-int unique(const char *string)
+//convert an ascii string into unicode
+void to_unicode(char *string)
 {
-	int freqs[256], length, uniq=0;
-
+	int length, uni_length, uni_index=0;
+	char *unicode;
+	
 	length=strlen(string);
+	uni_length=(length+1)<<1;
+	
+	//allocate temp string for unicode
+	unicode=new char[uni_length];
+	memset(unicode,0,uni_length);
 
-	memset(freqs,0,256*sizeof(int));
+	//fill unicode string
+	for(int chr=0; chr<length; chr++)
+	{
+		unicode[uni_index]=string[chr];
+		uni_index+=2;
+	}
 
-	//count frequencies
-	for(int index=0; index<length; index++)
-		freqs[string[index]]++;
+	//terminate
+	unicode[uni_index++]=0x00;
+	unicode[uni_index++]=0x00;
 
-	//calculate index of conincidence
-	for(int sym_index=0; sym_index<256; sym_index++)
-		if(freqs[sym_index]) 
-			uniq++;
-
-	return uniq;
+	memcpy(string,unicode,uni_length);
+	delete unicode;
 }
 
 #endif
