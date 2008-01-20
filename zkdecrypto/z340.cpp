@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Written by Brax Sisco (Developed starting 9/14/2006)                                                                                                     //
 // This program attempts to solve the November 8th, 1969 unsolved Zodiac 340 character cipher                                                               //
 //                                                                                                                                                          //
@@ -33,14 +33,13 @@
 int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
-	#define	SETSOLVED	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; }
 
 	int cuniq;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
-	char solved[MAX_CIPH_LENGTH],solvedsav[MAX_CIPH_LENGTH];
+	char solved[MAX_CIPH_LENGTH],solvedtemp[MAX_CIPH_LENGTH];
 	char uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
 
-	for(int i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedsav[i]=0;				//INITIALIZE (ZERO) ARRAYS
+	for(int i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedtemp[i]=0;				//INITIALIZE (ZERO) ARRAYS
 	for(int i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	strcpy(bestkey,key);
@@ -62,7 +61,7 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 
 	if (_DEB) printfrequency(clength,uniqarr,uniqstr,cuniq);
 
-	SETSOLVED;
+	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
@@ -107,8 +106,9 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 				info.disp_all();	
 				}
 	
-			strcpy(solvedsav,solved); DO_SWAP; SETSOLVED;
-			if((calcscore(clength,solved,use_graphs))<score) { DO_SWAP; strcpy(solved,solvedsav); }
+			DO_SWAP; for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
+
+			if((calcscore(clength,solvedtemp,use_graphs))<score) DO_SWAP else memcpy(solved,solvedtemp,clength);
 
 			}
 		}
@@ -116,7 +116,7 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 	for(int i=0;i<info.swaps;i++) shufflekey(key,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert) { strcpy(key,bestkey); iterations=0; }
-	SETSOLVED;
+	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	
 	if(!improve) info.cur_fail++;
 	
