@@ -58,7 +58,6 @@ struct SOLVEINFO
 inline int		calcscore(const int,const char *,int&);
 inline int		calclsoc(const int,const char *);
 inline void		shufflekey(char *,const char *);
-int				readcipher(char *);
 
 void			printcipher(int,char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
