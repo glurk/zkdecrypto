@@ -9,7 +9,4 @@ int	trigraphs[TRI_SIZE];
 int	tetragraphs[TETRA_SIZE];
 int	pentagraphs[PENTA_SIZE];
 
-char	cipher[MAX_CIPH_LENGTH];
-int		keylength;
-
 #endif
