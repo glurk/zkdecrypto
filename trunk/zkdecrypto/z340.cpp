@@ -30,20 +30,19 @@
 #include "z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
-int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
+int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 
-	int cuniq;
+	int cuniq,keylength;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
 	char solved[MAX_CIPH_LENGTH],solvedtemp[MAX_CIPH_LENGTH];
 	char uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
 
-	for(int i=0;i<MAX_CIPH_LENGTH;i++) cipher[i]=solved[i]=solvedtemp[i]=0;				//INITIALIZE (ZERO) ARRAYS
+	for(int i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=solvedtemp[i]=0;				       //INITIALIZE (ZERO) ARRAYS
 	for(int i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	strcpy(bestkey,key);
-	strcpy(cipher,ciph);
 	keylength=(int)strlen(key);
 
 	init_genrand((unsigned long)time(NULL));											//SEED RANDOM GENERATOR
@@ -56,8 +55,9 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
 
 	cuniq=(int)strlen(uniqstr);
-	if(keylength < cuniq)
-		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); }
+	
+/*	if(keylength < cuniq)      THIS SHOULD NEVER HAPPEN
+		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); } */
 
 	if (_DEB) printfrequency(clength,uniqarr,uniqstr,cuniq);
 
@@ -113,7 +113,7 @@ int hillclimb(const char ciph[],int clength,char key[],const char locked[],SOLVE
 			}
 		}
 
-	for(int i=0;i<info.swaps;i++) shufflekey(key,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	for(int i=0;i<info.swaps;i++) shufflekey(key,keylength,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert) { strcpy(key,bestkey); iterations=0; }
 	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
@@ -196,7 +196,7 @@ inline int calclsoc(const int length_of_cipher,const char *solv) {
 //              Mutate the char array "key[]" by swapping two unlocked letters                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline void shufflekey(char *key,const char locked[]) {
+inline void shufflekey(char *key,const int keylength,const char locked[]) {
 
 	int x,y,z,canswap=0;
 
@@ -220,7 +220,7 @@ inline void shufflekey(char *key,const char locked[]) {
 //                   NOTE: Normal English text normally contains approx. 40% vowels             //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void printcipher(int length_of_cipher,char *ciph,char *solv,int bestscore,char *key) {
+void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,char *key) {
 
 	int c=0;
 	int s=0;
