@@ -2,12 +2,10 @@
 
 = Introduction =
 
-Add your content here.
-
+Some of these are obvious, but will be stated here so that *all* facts are included.
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Fact
+1 - there are 340 symbols in the 340 cipher.
+2 - there are 63 unique symbols.
