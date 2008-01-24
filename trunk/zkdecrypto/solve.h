@@ -142,6 +142,15 @@ void Reset() //init solve info
 //set thread priority
 void SetPriority(int iNewPriority)
 {
+	//IDLE Priority, added to balance resource Ussage
+	if(iNewPriority==4)
+	{
+		iPriority=THREAD_PRIORITY_IDLE;
+		CheckMenuItem(hMainMenu,IDM_SOLVE_TP_IDLE,MF_BYCOMMAND | MF_CHECKED);
+	}
+
+	else CheckMenuItem(hMainMenu,IDM_SOLVE_TP_IDLE,MF_BYCOMMAND | MF_UNCHECKED);
+
 	if(iNewPriority==3)
 	{
 		iPriority=THREAD_PRIORITY_ABOVE_NORMAL;//TTHREAD_PRIORITY_HIGHEST;
