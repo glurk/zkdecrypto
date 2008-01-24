@@ -701,9 +701,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_OPTIONS),hMainWnd,(DLGPROC)OptionsProc);
 					return 0;
 
+				case IDM_SOLVE_TP_IDLE: SetPriority(4); return 0;
 				case IDM_SOLVE_TP_HIGH: SetPriority(3); return 0;	
 				case IDM_SOLVE_TP_NORM: SetPriority(2); return 0;	
-				case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;										
+				case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;	
 
 
 				/*view menu*/

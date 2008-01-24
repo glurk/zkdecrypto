@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by zodiac.rc
 //
 #define IDR_MAIN_MENU                   101
@@ -96,6 +96,7 @@
 #define IDM_SOLVE_TP_LOW                40010
 #define IDM_SOLVE_TP_NORM               40011
 #define IDM_SOLVE_TP_HIGH               40012
+#define IDM_SOLVE_TP_IDLE               40040
 #define IDM_KEY_INIT                    40013
 #define IDM_SOLVE_WORD                  40014
 #define IDM_EDIT_UNDO                   40015
@@ -129,7 +130,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        123
-#define _APS_NEXT_COMMAND_VALUE         40039
+#define _APS_NEXT_COMMAND_VALUE         40041
 #define _APS_NEXT_CONTROL_VALUE         1064
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
