@@ -30,14 +30,15 @@ IDR_MAIN_MENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "Open &Cipher",                IDM_FILE_OPEN_MSG
+        MENUITEM "&Open Cipher",                IDM_FILE_OPEN_MSG
         MENUITEM SEPARATOR
         MENUITEM "Open &Key",                   IDM_FILE_OPEN_MAP
         MENUITEM "&Save Key",                   IDM_FILE_SAVE_MAP
         MENUITEM SEPARATOR
         MENUITEM "Save &Plain Text",            IDM_FILE_SAVE_PLAIN
+        MENUITEM "&Copy Plain to Clipboard",    IDM_FILE_COPY_PLAIN
         MENUITEM SEPARATOR
-        MENUITEM "&Exit",                       IDM_FILE_EXIT
+        MENUITEM "E&xit",                       IDM_FILE_EXIT
     END
     POPUP "&Edit"
     BEGIN
@@ -94,6 +95,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&About",                      IDM_HELP_ABOUT
+        //MENUITEM "&Contents",                   IDM_HELP_CONT
     END
 END
 
@@ -129,44 +131,46 @@ END
 // Dialog
 //
 
-IDD_MAIN DIALOGEX 0, 0, 271, 258
+IDD_MAIN DIALOGEX 0, 0, 279, 278
 STYLE DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_ACCEPTFILES
 MENU IDR_MAIN_MENU
-FONT 9, "Lucida Console"
+FONT 9, "Lucida Console", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Patterns",IDC_PAT_TITLE,9,24,114,226,BS_CENTER
-    LISTBOX         IDC_PATTERNS,15,38,102,210,LBS_SORT | WS_VSCROLL | 
+    GROUPBOX        "Patterns",IDC_PAT_TITLE,9,24,114,245,BS_CENTER
+    LISTBOX         IDC_PATTERNS,15,36,102,230,LBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    GROUPBOX        "Key",IDC_MAP_TITLE,126,24,73,226,BS_CENTER
-    LISTBOX         IDC_MAP,133,38,59,185,WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_MAP_VALUE,133,226,21,15,ES_UPPERCASE | 
+    GROUPBOX        "Key",IDC_MAP_TITLE,126,24,73,245,BS_CENTER
+    LISTBOX         IDC_MAP,133,36,59,210,WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_MAP_VALUE,133,247,21,15,ES_UPPERCASE | 
                     ES_AUTOHSCROLL
-    PUSHBUTTON      "&Change",IDC_MAP_CHANGE,157,226,35,15
-    GROUPBOX        "Solve",IDC_SOLVE_TITLE,202,24,59,226,BS_CENTER
-    CTEXT           "Time",IDC_TIME_TITLE,204,44,56,11,SS_CENTERIMAGE
-    CTEXT           "",IDC_TIME,204,56,56,11,SS_CENTERIMAGE
-    CTEXT           "Iterations",IDC_TRY_TITLE,204,83,56,11,SS_CENTERIMAGE
-    CTEXT           "",IDC_TRY,204,95,56,11,SS_CENTERIMAGE
-    CTEXT           "Failures",IDC_FAIL_TITLE,204,122,56,11,SS_CENTERIMAGE
-    CTEXT           "",IDC_FAIL,204,134,56,11,SS_CENTERIMAGE
-    CTEXT           "Best Score",IDC_SCORE_TITLE,204,161,56,11,
+    PUSHBUTTON      "&Change",IDC_MAP_CHANGE,157,247,35,15
+    GROUPBOX        "Solve",IDC_SOLVE_TITLE,202,24,66,245,BS_CENTER
+    CTEXT           "Time",IDC_TIME_TITLE,207,44,56,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_TIME,207,56,56,11,SS_CENTERIMAGE
+    CTEXT           "Iterations",IDC_TRY_TITLE,207,83,56,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_TRY,207,95,56,11,SS_CENTERIMAGE
+    CTEXT           "Failures",IDC_FAIL_TITLE,207,122,56,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_FAIL,203,134,64,11,SS_CENTERIMAGE
+    CTEXT           "Best Score",IDC_SCORE_TITLE,207,161,56,11,
                     SS_CENTERIMAGE
-    CTEXT           "",IDC_SCORE,204,173,56,11,SS_CENTERIMAGE
-    PUSHBUTTON      "&Start",IDC_SOLVE,206,207,51,15
-    PUSHBUTTON      "&Reset",IDC_RESET,206,226,51,15
-    GROUPBOX        "Key Table",IDC_TABLE_TITLE,9,24,94,226,BS_CENTER
-    CTEXT           "Total\r\nDifference",IDC_DIFF_TITLE,210,46,44,18
-    CTEXT           "Vowel\r\nPercentage",IDC_VOWEL_ACT_TITLE,210,92,44,18
+    CTEXT           "",IDC_SCORE,207,173,56,11,SS_CENTERIMAGE
+    PUSHBUTTON      "&Start",IDC_SOLVE,209,228,51,15
+    PUSHBUTTON      "&Reset",IDC_RESET,209,247,51,15
+    GROUPBOX        "Key Table",IDC_TABLE_TITLE,9,24,94,245,BS_CENTER
     LTEXT           "A\r\nB\r\nC\r\nD\r\nE\r\nF\r\nG\r\nH\r\nI\r\nJ\r\nK\r\nL\r\nM\r\nN\r\nO\r\nP\r\nQ\r\nR\r\nS\r\nT\r\nU\r\nV\r\nW\r\nX\r\nY\r\nZ",
-                    IDC_LTRFREQ,112,36,93,208,0,WS_EX_TRANSPARENT
-    CTEXT           "",IDC_VOWEL_EXP,210,126,45,11,SS_CENTERIMAGE
-    GROUPBOX        "Frequency Analysis",IDC_LTRFREQ_TITLE,106,24,156,226,
+                    IDC_TABLE,15,55,78,208,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Frequency Analysis",IDC_LTRFREQ_TITLE,106,24,162,245,
                     BS_CENTER
-    CTEXT           "",IDC_DIFF,217,68,30,11,SS_CENTERIMAGE
-    CTEXT           "",IDC_VOWEL_ACT,210,114,45,11,SS_CENTERIMAGE
+    LTEXT           "   Found Expect Differ  ",IDC_LTRFREQ_HEADER,112,42,93,
+                    8
     LTEXT           "A\r\nB\r\nC\r\nD\r\nE\r\nF\r\nG\r\nH\r\nI\r\nJ\r\nK\r\nL\r\nM\r\nN\r\nO\r\nP\r\nQ\r\nR\r\nS\r\nT\r\nU\r\nV\r\nW\r\nX\r\nY\r\nZ",
-                    IDC_TABLE,15,36,78,208,0,WS_EX_TRANSPARENT
+                    IDC_LTRFREQ,112,55,93,208,0,WS_EX_TRANSPARENT
+    CTEXT           "Total\r\nDifference",IDC_DIFF_TITLE,211,51,45,18
+    CTEXT           "",IDC_DIFF,211,73,45,11,SS_CENTERIMAGE
+    CTEXT           "Vowel\r\nPercentage",IDC_VOWEL_ACT_TITLE,211,97,45,18
+    CTEXT           "",IDC_VOWEL_ACT,211,119,45,11,SS_CENTERIMAGE
+    CTEXT           "",IDC_VOWEL_EXP,211,131,45,11,SS_CENTERIMAGE
     CONTROL         "",IDC_MAIN_TAB,"SysTabControl32",TCS_FIXEDWIDTH,7,7,256,
                     13
 END
@@ -204,17 +208,15 @@ BEGIN
     EDITTEXT        IDC_EXTRA_LTR,12,157,133,14,ES_RIGHT | ES_UPPERCASE
 END
 
-IDD_ABOUT DIALOGEX 0, 0, 168, 94
+IDD_ABOUT DIALOGEX 0, 0, 168, 102
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP
 EXSTYLE WS_EX_TOOLWINDOW
-FONT 9, "MS Sans Serif", 0, 0, 0x1
+FONT 9, "MS Sans Serif"
 BEGIN
-    ICON            IDI_ZODIAC,IDC_STATIC,12,12,20,20
+    ICON            IDI_ZODIAC,IDC_STATIC,12,12,21,20
     LTEXT           "",IDC_PROG,46,16,109,13,SS_CENTERIMAGE
-    CTEXT           "",IDC_ABOUT1,13,42,142,8
-    CTEXT           "",IDC_ABOUT2,13,58,142,8
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,7,154,80
-    CTEXT           "",IDC_ABOUT3,13,74,142,8
+    CTEXT           "",IDC_ABOUT,13,42,142,47
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,7,154,88
 END
 
 IDD_INIT DIALOG DISCARDABLE  0, 0, 150, 44
@@ -244,10 +246,10 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,25,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,61,25,50,14
-    COMBOBOX        IDC_MERSYM1,7,7,41,59,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_MERSYM1,7,7,41,169,CBS_DROPDOWNLIST | 
                     CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     CTEXT           "and",IDC_STATIC,50,10,16,8
-    COMBOBOX        IDC_MERSYM2,70,7,41,59,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_MERSYM2,70,7,41,169,CBS_DROPDOWNLIST | 
                     CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -285,9 +287,9 @@ BEGIN
     IDD_MAIN, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 263
+        RIGHTMARGIN, 271
         TOPMARGIN, 7
-        BOTTOMMARGIN, 251
+        BOTTOMMARGIN, 271
     END
 
     IDD_OPTIONS, DIALOG
@@ -303,7 +305,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 161
         TOPMARGIN, 7
-        BOTTOMMARGIN, 87
+        BOTTOMMARGIN, 95
     END
 
     IDD_WORD, DIALOG
@@ -356,6 +358,26 @@ IDI_ZODIAC              ICON    DISCARDABLE     "zodiac.ico"
 //
 
 1                       24      DISCARDABLE     "manifest.xml"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCEL ACCELERATORS DISCARDABLE 
+BEGIN
+    "C",            IDM_FILE_COPY_PLAIN,    VIRTKEY, CONTROL, NOINVERT
+    "D",            IDM_VIEW_DESELECT,      VIRTKEY, CONTROL, NOINVERT
+    "I",            IDM_KEY_INIT,           VIRTKEY, CONTROL, NOINVERT
+    "L",            IDM_KEY_LOCK,           VIRTKEY, CONTROL, NOINVERT
+    "M",            IDM_CIPHER_MERGE,       VIRTKEY, CONTROL, NOINVERT
+    "S",            IDM_KEY_SCRAMBLE,       VIRTKEY, CONTROL, NOINVERT
+    "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
+    "W",            IDM_SOLVE_WORD,         VIRTKEY, CONTROL, NOINVERT
+    "Z",            IDM_EDIT_UNDO,          VIRTKEY, CONTROL, NOINVERT
+END
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

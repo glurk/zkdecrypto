@@ -105,7 +105,7 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 	//convert map to key to pass
 	message.cur_map.ToKey(key,szExtraLtr);
 	
-	hillclimb(szCipher,message.GetLength(),key,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs);
+	hillclimb(szCipher,message.GetLength(),key,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs,false);
 
 	//reset window state
 	StopSolve();

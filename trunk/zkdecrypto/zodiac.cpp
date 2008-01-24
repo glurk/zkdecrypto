@@ -429,7 +429,7 @@ LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			iWidth=LOWORD(lRowCol)*CHAR_WIDTH;
 			iHeight=HIWORD(lRowCol)*CHAR_HEIGHT;
 			SetWindowPos(GetDlgItem(hWnd,IDC_GRAPH),0,0,0,iWidth,iHeight,SWP_NOREPOSITION | SWP_NOMOVE);
-			SetWindowPos(hWnd,0,0,0,iWidth+(iMargin<<1)+10,iHeight+(iMargin<<1)+25,SWP_NOREPOSITION | SWP_NOMOVE);
+			SetWindowPos(hWnd,0,0,0,iWidth+(iMargin<<1),iHeight+(iMargin<<1),SWP_NOREPOSITION | SWP_NOMOVE);
 			SetDlgItemTextW(hWnd,IDC_GRAPH,(WCHAR*)szGraph);
 			return 0;
 
@@ -439,6 +439,7 @@ LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDOK:
 				case IDCANCEL:
 					EndDialog(hWnd,0);
+					hGraph=NULL;
 					return 0;
 			}
 	}
@@ -454,12 +455,12 @@ LRESULT CALLBACK AboutProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case WM_INITDIALOG:
 			sprintf(szText,"%s %s",PROG_NAME,PROG_VER);
 			SetDlgItemText(hWnd,IDC_PROG,szText);
-			strcpy(szText,"Wesley Hopper (hopperw2000@yahoo.com)");
-			SetDlgItemText(hWnd,IDC_ABOUT1,szText);
-			strcpy(szText,"Brax Sisco (xenex@bardstowncable.net)");
-			SetDlgItemText(hWnd,IDC_ABOUT2,szText);
-			strcpy(szText,"Michael Eaton");
-			SetDlgItemText(hWnd,IDC_ABOUT3,szText);
+			
+			strcpy(szText,"Wesley Hopper (hopperw2000@yahoo.com)\r\n\r\n");
+			strcat(szText,"Brax Sisco (xenex@bardstowncable.net)\r\n\r\n");
+			strcat(szText,"Michael Eaton (michaeleaton@gmail.com)\r\n\r\n");
+
+			SetDlgItemText(hWnd,IDC_ABOUT,szText);
 			return 0;
 
 		case WM_LBUTTONDOWN:
@@ -599,6 +600,17 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
 					}
 					return 0;
+
+				case IDM_FILE_COPY_PLAIN:
+					OpenClipboard(hMainWnd);
+					EmptyClipboard();
+					SetClipboardData(CF_TEXT,(void*)message.GetPlain());
+					CloseClipboard();
+					return 0;
+
+				case IDM_FILE_EXIT:
+					SendMessage(hMainWnd,WM_CLOSE,0,0);
+					return 0;
 					
 				//case IDM_FILE_RELOAD: LoadMap(szKeyName); return 0;
 				
@@ -614,14 +626,26 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 					
 				case IDM_CIPHER_SIMPLIFY:
-					SetUndo();
+					//run simplify
+					SetCursor(LoadCursor(0,IDC_WAIT));
 					time1=GetTickCount();
 					new_pat=message.Simplify(simp1,simp2);
 					time2=GetTickCount();
-					sprintf(szText,"Merged '%c' with '%c'\r\n\r\n%.2fs",simp1,simp2,double(time2-time1)/1000);
-					MessageBox(hMainWnd,szText,"Subsitution",MB_OK);
-					SetCipher();
-					SetDlgInfo();
+					SetCursor(LoadCursor(0,IDC_ARROW));
+
+					if(simp1==char(0xFF)) //no good substituion found
+						return MessageBox(hMainWnd,"No substitions found","Subsitution",MB_YESNO);
+
+					sprintf(szText,"Merge '%c' with '%c'? (%.2fs)",simp1,simp2,double(time2-time1)/1000);
+					
+					//merge if yes
+					if(MessageBox(hMainWnd,szText,"Subsitution",MB_YESNO | MB_ICONQUESTION)==IDYES)
+					{
+						SetUndo();
+						message.MergeSymbols(simp1,simp2,true);
+						SetCipher();
+						SetDlgInfo();
+					}
 					return 0;
 
 				case IDM_CIPHER_POLYIC:
@@ -652,7 +676,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_KEY_SCRAMBLE:
 					SetUndo();
 					num_symbols=message.cur_map.GetNumSymbols();
-					for(swap=0; swap<3000; swap++)
+					for(swap=0; swap<300000; swap++)
 						message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 					SetDlgInfo();
 					return 0;
@@ -700,7 +724,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					
 				case IDM_VIEW_LTRGRAPH:
 					lRowCol=message.LetterGraph(szGraph);
-					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+					hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+					ShowWindow(hGraph,SW_SHOWNORMAL);
 					return 0;
 
 				case IDM_VIEW_BYSTRING: SetSort(0); return 0;
@@ -709,6 +734,11 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				/*help menu*/
 				case IDM_HELP_ABOUT:
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_ABOUT),hMainWnd,(DLGPROC)AboutProc);
+					return 0;
+
+				case IDM_HELP_CONT:
+					sprintf(szText,"%s%s\\%s",szExeDir,"help","index.html");
+					OpenWith(szText);
 					return 0;
 
 				/*Controls*/
@@ -822,6 +852,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hMainWnd=CreateDialog(hInst,MAKEINTRESOURCE(IDD_MAIN),NULL,(DLGPROC)MainWndProc);
 	SendMessage(hMainWnd,WM_SETICON,ICON_BIG,(WPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_ZODIAC)));
 	hMainMenu=GetMenu(hMainWnd);
+	hAccel=LoadAccelerators(hInst,MAKEINTRESOURCE(IDR_ACCEL));
 
 	/*setup tabs*/
 	hMainTab=GetDlgItem(hMainWnd,IDC_MAIN_TAB);
@@ -910,11 +941,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	//message loop
 	while(GetMessage(&Msg,NULL,0,0))
-		if(!IsDialogMessage(hMainWnd,&Msg))
-		{	
-			TranslateMessage(&Msg);
-			DispatchMessage(&Msg);
-		}
+		if(!TranslateAccelerator(hMainWnd,hAccel,&Msg))
+			if(!IsDialogMessage(hMainWnd,&Msg))
+			{	
+				TranslateMessage(&Msg);
+				DispatchMessage(&Msg);
+			}
 
 	SaveINI();
 

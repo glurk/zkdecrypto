@@ -220,9 +220,9 @@ void Map::MergeSymbols(char symbol1, char symbol2)
 //sort the symbols in the same order that hillclimber expects
 void Map::SortByFreq()
 {
-	SYMBOL temp;
+	SYMBOL temp_sym;
 	int freq1, freq2;
-	char cipher1, cipher2;
+	char cipher1, cipher2, temp_lock;
 	int next, swap;
 
 	do //buble sort
@@ -242,9 +242,14 @@ void Map::SortByFreq()
 			
 			if(swap)
 			{
-				memcpy(&temp,&symbols[cur_symbol],sizeof(SYMBOL));
+				memcpy(&temp_sym,&symbols[cur_symbol],sizeof(SYMBOL));
 				memcpy(&symbols[cur_symbol],&symbols[cur_symbol+1],sizeof(SYMBOL));
-				memcpy(&symbols[cur_symbol+1],&temp,sizeof(SYMBOL));
+				memcpy(&symbols[cur_symbol+1],&temp_sym,sizeof(SYMBOL));
+
+				temp_lock=locked[cur_symbol];
+				locked[cur_symbol]=locked[cur_symbol+1];
+				locked[cur_symbol+1]=temp_lock;
+
 				next=true;
 			}
 		}
@@ -275,82 +280,52 @@ void Map::SymbolTable(char *dest)
 	dest[cur_char++]='\0';
 }
 
-long Map::SymbolGraph(char *dest)
+long Map::SymbolGraph(wchar *dest)
 {
-	int max, step, cur_symbol;
+	int max, step, rows, cur_symbol;
 	int dest_index=0;
 	char level[64];
-	
+
 	max=symbols[0].freq;
-	if(max%5) max+=5-(max%5);
-	step=(max/50)+1;
+	
+	//calculate rows, step
+	rows=(max>MAX_GRA_ROW? MAX_GRA_ROW:max);
+	step=ROUNDUP(float(max)/rows);
+	max=step*rows;
+
+	dest[0]=0;
 
 	//line numbers and bars
 	for(int row=max; row>0; row-=step)
 	{
 		sprintf(level,"%4i ",row);
-		to_unicode(level);
-		memcpy(dest+dest_index,level,10);
-		dest_index+=10;
-
-		//vertical line
-		dest[dest_index++]=char(0x02);
-		dest[dest_index++]=char(0x25);		
+		ustrcat(dest,level);
+		ustrcat(dest,UNI_VERTBAR);
 
 		for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 		{
-			if(symbols[cur_symbol].freq>=row) 
-			{
-				//half bar
-				dest[dest_index++]=char(0x8C);
-				dest[dest_index++]=char(0x25);
-			}
-			
-			else break;//blank 
-			/*{
-				dest[dest_index++]=char(0x20);
-				dest[dest_index++]=char(0x00);
-			}*/
+			if(symbols[cur_symbol].freq>=row) ustrcat(dest,UNI_HALFBAR);
+			else ustrcat(dest,0x0020); 
 		}
 
-		strcpy(level,"\r\n");
-		to_unicode(level);
-		memcpy(dest+dest_index,level,4);
-		dest_index+=4;
+		ustrcat(dest,0x000D); 
+		ustrcat(dest,0x000A); 
 	}
 
 	//bottom line
-	strcpy(level,"     ");
-	to_unicode(level);
-	memcpy(dest+dest_index,level,10);
-	dest_index+=10;
+	ustrcat(dest,"     ");
 
 	for(cur_symbol=0; cur_symbol<=num_symbols; cur_symbol++)
-	{
-		//horizontal line
-		dest[dest_index++]=char(0x3E);
-		dest[dest_index++]=char(0x20);
-	}
+		ustrcat(dest,UNI_HORZBAR);
 
 	//symbols
-	strcpy(level,"\r\n      ");
-	to_unicode(level);
-	memcpy(dest+dest_index,level,16);
-	dest_index+=16;
+	ustrcat(dest,"\r\n      ");
 
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
-	{
-		//symbol
-		dest[dest_index++]=symbols[cur_symbol].cipher;
-		dest[dest_index++]=char(0x00);
-	}
-
-	//terminate
-	dest[dest_index++]=char(0x00);
-	dest[dest_index++]=char(0x00);
+		ustrcat(dest,symbols[cur_symbol].cipher);
 
 	//rows in the high word, cols in the low
-	return ((max/step)+2)<<16 | (num_symbols+4);
+	return (rows+2)<<16 | (num_symbols+8);
 }
 
 //hillclimb key <-> Map class conversion
@@ -586,7 +561,7 @@ int Message::Simplify(char &simp1, char &simp2)
 
 	simp1=max1;
 	simp2=max2;
-	if(max1!=char(0xFF)) MergeSymbols(max1,max2,true);
+	//if(max1!=char(0xFF)) MergeSymbols(max1,max2,true);
 
 	return (max_patterns-old_patterns);
 }
@@ -678,7 +653,7 @@ int Message::AddPattern(NGRAM &new_pat, int inc_freq)
 	//found pattern
 	else if(inc_freq)
 	{
-		//must reallocate
+		//must reallocate positions array
 		if(found->freq>=found->pos_size)
 		{
 			int *temp=found->positions;
@@ -861,9 +836,9 @@ void Message::FindPatterns(int do_near)
 	delete[] pattern.positions;
 }
 
-long Message::LetterGraph(char *dest)
+long Message::LetterGraph(wchar *dest)
 {
-	int max=0, step, cur_letter;
+	int max=0, step, cur_letter, rows;
 	int dest_index=0, act_freq[26];
 	char level[64];
 	
@@ -872,82 +847,62 @@ long Message::LetterGraph(char *dest)
 	
 	//find highest occurance
 	for(cur_letter=0; cur_letter<16; cur_letter++)
-		if(act_freq[cur_letter]>max)
-			max=act_freq[cur_letter];
-	
-	if(max%5) max+=5-(max%5);
-	step=(max/50)+1;
+	{
+		if(exp_freq[cur_letter]>max) max=exp_freq[cur_letter];
+		if(act_freq[cur_letter]>max) max=act_freq[cur_letter];
+	}
+
+	//calculate rows, step
+	rows=(max>MAX_GRA_ROW? MAX_GRA_ROW:max);
+	step=ROUNDUP(float(max)/rows);
+	max=step*rows;
+
+	dest[0]=0;
 
 	//line numbers and bars
 	for(int row=max; row>0; row-=step)
 	{
 		sprintf(level,"%4i ",row);
-		to_unicode(level);
-		memcpy(dest+dest_index,level,10);
-		dest_index+=10;
-
-		//vertical line
-		dest[dest_index++]=char(0x02);
-		dest[dest_index++]=char(0x25);		
+		ustrcat(dest,level);
+		ustrcat(dest,UNI_VERTBAR);		
 
 		for(cur_letter=0; cur_letter<26; cur_letter++)
 		{
-			if(act_freq[cur_letter]>=row) 
-			{
-				//half bar
-				dest[dest_index++]=char(0x88/*8C*/);
-				dest[dest_index++]=char(0x25);
-			}
-			
-			else //blank
-			{
-				dest[dest_index++]=char(0x20);
-				dest[dest_index++]=char(0x00);
-			}
+			ustrcat(dest,0x0020);
 
-			dest[dest_index++]=char(0x20);
-			dest[dest_index++]=char(0x00);
+			if(exp_freq[cur_letter]>=row) ustrcat(dest,UNI_LITEBAR);
+			else ustrcat(dest,0x0020);
+
+			if(act_freq[cur_letter]>=row) ustrcat(dest,UNI_FULLBAR);
+			else ustrcat(dest,0x0020);
 		}
 
-		strcpy(level,"\r\n");
-		to_unicode(level);
-		memcpy(dest+dest_index,level,4);
-		dest_index+=4;
+		ustrcat(dest,0x0D);
+		ustrcat(dest,0x0A);
 	}
 
 	//bottom line
-	strcpy(level,"     ");
-	to_unicode(level);
-	memcpy(dest+dest_index,level,10);
-	dest_index+=10;
+	ustrcat(dest,"     ");
 
-	for(cur_letter=0; cur_letter<=52; cur_letter++)
-	{
-		//horizontal line
-		dest[dest_index++]=char(0x3E);
-		dest[dest_index++]=char(0x20);
-	}
+	for(cur_letter=0; cur_letter<=(26*3); cur_letter++)	
+		ustrcat(dest,UNI_HORZBAR);
 
 	//letters
-	strcpy(level,"\r\n      ");
-	to_unicode(level);
-	memcpy(dest+dest_index,level,16);
-	dest_index+=16;
+	ustrcat(dest,"\r\n      ");
 
 	for(cur_letter=0; cur_letter<26; cur_letter++)
 	{
-		//symbol
-		dest[dest_index++]=cur_letter+'A';
-		dest[dest_index++]=char(0x00);
-
-		dest[dest_index++]=char(0x20);
-		dest[dest_index++]=char(0x00);
+		ustrcat(dest,0x0020);
+		ustrcat(dest,cur_letter+'A');
+		ustrcat(dest,0x0020);
 	}
 
-	//terminate
-	dest[dest_index++]=char(0x00);
-	dest[dest_index++]=char(0x00);
+	//legend
+	ustrcat(dest,"\r\n\r\nExpected ");
+	ustrcat(dest,UNI_LITEBAR);
+	ustrcat(dest,"     Actual   ");
+	ustrcat(dest,UNI_FULLBAR);
 
 	//rows in the high word, cols in the low
-	return ((max/step)+2)<<16 | (52+4);
+	return (rows+4)<<16 | ((26*3)+8);
 }

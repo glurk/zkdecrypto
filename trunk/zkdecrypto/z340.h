@@ -36,9 +36,8 @@ struct SOLVEINFO
 
 //////////////////////////////////////////////////////////////////////// DEFINES //////////////////////////////////////////////////////////////////
 
-#define		_DEB						0
 #define		ASCII_SIZE 					256
-#define		MAX_CIPH_LENGTH 			2048
+#define		MAX_CIPH_LENGTH 			20480
 
 //having multiply operations in definitions could slow down algorithms
 #define UNI_SIZE	26			//26
@@ -61,8 +60,8 @@ inline void		shufflekey(char *,const int,const char *);
 
 void			printcipher(int,const char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
-int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&);
+int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&,int);
 
 void 			GetUnigraphs(double*);
 int 			ReadNGraphs(const char*,int);
-int 			WordPlug(Message&, const char *, int);
+int 			WordPlug(Message&,const char *, int);
