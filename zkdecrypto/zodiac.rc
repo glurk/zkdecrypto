@@ -371,11 +371,14 @@ BEGIN
     "I",            IDM_KEY_INIT,           VIRTKEY, CONTROL, NOINVERT
     "L",            IDM_KEY_LOCK,           VIRTKEY, CONTROL, NOINVERT
     "M",            IDM_CIPHER_MERGE,       VIRTKEY, CONTROL, NOINVERT
-    "S",            IDM_KEY_SCRAMBLE,       VIRTKEY, CONTROL, NOINVERT
+    "O",            IDM_FILE_OPEN_MSG,      VIRTKEY, CONTROL, NOINVERT
+    "S",            IDM_FILE_SAVE_MAP,      VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
-    VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
     "W",            IDM_SOLVE_WORD,         VIRTKEY, CONTROL, NOINVERT
     "Z",            IDM_EDIT_UNDO,          VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
+    VK_F3,          IDM_FILE_SAVE_MAP,      VIRTKEY, NOINVERT
+    VK_F5,          IDM_KEY_SCRAMBLE,       VIRTKEY, NOINVERT
 END
 
 #endif    // English (U.S.) resources
