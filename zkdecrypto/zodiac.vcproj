@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\test2"
+			OutputDirectory="$(SolutionDir)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="0"
@@ -39,6 +39,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				UseUnicodeResponseFiles="false"
 				Optimization="0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
@@ -95,10 +96,10 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="\"
+			OutputDirectory="$(SolutionDir)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="1"
+			CharacterSet="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -118,6 +119,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				FavorSizeOrSpeed="1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -137,7 +139,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
-				AdditionalManifestDependencies="manifest.xml"
+				GenerateManifest="false"
+				ManifestFile="manifest.xml"
+				AdditionalManifestDependencies=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -191,11 +195,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\unicode.cpp"
+				>
+			</File>
+			<File
 				RelativePath="z340.cpp"
 				>
 			</File>
 			<File
 				RelativePath="zodiac.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\zodiacmd.cpp"
 				>
 			</File>
 		</Filter>
@@ -222,6 +234,10 @@
 			</File>
 			<File
 				RelativePath="solve.h"
+				>
+			</File>
+			<File
+				RelativePath=".\unicode.h"
 				>
 			</File>
 			<File
