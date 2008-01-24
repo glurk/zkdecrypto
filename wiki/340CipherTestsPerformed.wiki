@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Please post all ideas for future tests to be conducted on the 340 cipher here.
 
 = Introduction =
 
