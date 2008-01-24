@@ -2,12 +2,12 @@
 
 = Introduction =
 
-Add your content here.
-
+I suggest using this page for software enhancement requests in the 340.exe program.
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Request #1
+
+Type: Enhancement
+
+Description: Please add another window that will display the contents of the Key window in a resizable, word wrapped window.  This will allow the user to stretch the window horizontally, which in turn will allow you to see the text without cr/lf's. (i.e. easier to read the whole string as 2 or 3 rows instead of 20.
