@@ -30,7 +30,7 @@
 #include "z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
-int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs)
+int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs, int print)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 
@@ -56,10 +56,10 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 
 	cuniq=(int)strlen(uniqstr);
 	
-/*	if(keylength < cuniq)      THIS SHOULD NEVER HAPPEN
-		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); } */
+	if(keylength < cuniq)      //THIS SHOULD NEVER HAPPEN
+		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); } 
 
-	if (_DEB) printfrequency(clength,uniqarr,uniqstr,cuniq);
+	if (print) printfrequency(clength,uniqarr,uniqstr,cuniq);
 
 	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 
@@ -78,8 +78,8 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 		/*feedback info*/
 		info.cur_try=iterations;
 		info.last_time=float(end_time-start_time)/1000;
-		start_time=info.time_func();
-		info.disp_info();
+		if(info.time_func) start_time=info.time_func();
+		if(info.disp_info) info.disp_info();
 		
 		improve=0;
 		
@@ -96,14 +96,14 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
 				bestscore = score;
 				strcpy(bestkey,key);
-				if (_DEB) printcipher(clength,cipher,solved,bestscore,key);
+				if (print) printcipher(clength,cipher,solved,bestscore,key);
 				
 				/*feedback info*/
 				info.best_score=bestscore;
 				improve=1;
 				info.cur_fail=0;
 				memcpy(info.best_key,bestkey,256);
-				info.disp_all();	
+				if(info.disp_all) info.disp_all();	
 				}
 	
 			DO_SWAP; for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
@@ -120,7 +120,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	
 	if(!improve) info.cur_fail++;
 	
-	end_time=info.time_func();
+	if(info.time_func) end_time=info.time_func();
 
 	}
 

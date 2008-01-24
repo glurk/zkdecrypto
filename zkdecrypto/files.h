@@ -134,10 +134,12 @@ int SavePlain(char *filename)
 	return 1;
 }
 
+//read configuration file
 int LoadINI()
 {
 	FILE *ini_file;
 	char filename[1024], option[32], value[1024];
+	int read;
 
 	sprintf(filename,"%s\\zodiac.ini",szExeDir);
 
@@ -145,8 +147,10 @@ int LoadINI()
 
 	if(!ini_file) return 0;
 
-	while(fscanf(ini_file,"%s = %s",option,value)!=EOF)
+	while((read=fscanf(ini_file,"%s = %s",option,value))!=EOF)
 	{
+		if(read==1) value[0]='\0';
+
 		if(!stricmp(option,"cipher")) strcpy(szCipherName,value);
 		else if(!stricmp(option,"key")) strcpy(szKeyName,value);
 		else if(!stricmp(option,"fail")) siSolveInfo.max_fail=atoi(value);
@@ -163,6 +167,7 @@ int LoadINI()
 	return 1;
 }
 
+//save configuration file
 int SaveINI()
 {
 	FILE *ini_file;

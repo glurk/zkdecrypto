@@ -37,7 +37,7 @@ void SetTitle()
 
 	if(bMsgLoaded) 
 	{
-		sprintf(szText," - %s (%i characters)",szCipherBase,message.GetLength());
+		sprintf(szText," - %s",szCipherBase);
 		strcat(szTitle,szText);
 	}
 	
@@ -416,6 +416,14 @@ void SetPlain()
 	SetText();
 }
 
+void SetGraph()
+{
+	if(!hGraph) return ;
+
+	lRowCol=message.LetterGraph(szGraph);
+	SendMessage(hGraph,WM_INITDIALOG,0,0);
+}
+
 void SetDlgInfo()
 {
 	if(!bMsgLoaded) return;
@@ -428,12 +436,13 @@ void SetDlgInfo()
 	SetKey();
 	SetFreq();
 	SetSolve();
+	SetGraph();
 }
 
 //call when the cipher is changed, i.e. symbol merge
 void SetCipher()
 {	
-	sprintf(szText,"M - %.4f, IoC - %.4f",message.Multiplicity(),IoC(message.GetCipher()));
+	sprintf(szText,"N - %i, M - %.4f, IoC - %.4f",message.GetLength(),message.Multiplicity(),IoC(message.GetCipher()));
 	SetWindowText(hTextWnd,szText);
 
 	szCipher=message.GetCipher();
@@ -527,6 +536,7 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TABLE_TITLE),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TABLE),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_LTRFREQ_TITLE),iShowAnalysis);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_LTRFREQ_HEADER),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_LTRFREQ),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_DIFF_TITLE),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_DIFF),iShowAnalysis);

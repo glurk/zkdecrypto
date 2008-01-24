@@ -60,7 +60,7 @@ int iTextWidth=100, iTextHeight=100; //dimensions of cipher and plain
 POINT pntClickPoint; //click point
 
 //graphs
-char szGraph[8192];
+wchar szGraph[10240];
 long lRowCol;
 
 //solver data
@@ -70,7 +70,8 @@ int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="WBVKXZQJ";
 
 //Win32 object handles
-HWND		hMainWnd, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hScroll;
+HWND		hMainWnd, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
+HACCEL		hAccel;
 HPEN 		hRedPen, hGreenPen, hBluePen;
 HDC 		hCipherDC=NULL, hPlainDC=NULL;
 HFONT		hTextFont=NULL;
@@ -112,34 +113,6 @@ float IoC(const char *string)
 	ic/=(length)*(length-1);
 
 	return ic;
-}
-
-//convert an ascii string into unicode
-void to_unicode(char *string)
-{
-	int length, uni_length, uni_index=0;
-	char *unicode;
-	
-	length=strlen(string);
-	uni_length=(length+1)<<1;
-	
-	//allocate temp string for unicode
-	unicode=new char[uni_length];
-	memset(unicode,0,uni_length);
-
-	//fill unicode string
-	for(int chr=0; chr<length; chr++)
-	{
-		unicode[uni_index]=string[chr];
-		uni_index+=2;
-	}
-
-	//terminate
-	unicode[uni_index++]=0x00;
-	unicode[uni_index++]=0x00;
-
-	memcpy(string,unicode,uni_length);
-	delete unicode;
 }
 
 #endif

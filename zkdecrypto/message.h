@@ -5,10 +5,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <tchar.h>
+#include "unicode.h"
 
 #define MAX_SYM		256
 #define MAX_PAT_LEN	15
+#define MAX_GRA_ROW 35
 
 #define CLR_CIPHER	0x01
 #define CLR_PLAIN	0x02
@@ -17,7 +18,8 @@
 
 #define BLANK char(0x97)
 
-#define ROUNDTOINT(F) (F-int(F)>=.5? int(F)+1:int(F))
+#define ROUNDTOINT(F) (DECIMAL(F)>=.5? int(F)+1:int(F))
+#define ROUNDUP(F) (DECIMAL(F)>0? int(F)+1:int(F))
 #define IS_ASCII(C) (C>0x1F && C<0x7F)
 #define DECIMAL(N) (N-int(N))
 #define ABS(X) (X<0? (-1*X):X)
@@ -53,7 +55,7 @@ public:
 	float GetUnigraph(int letter) {return unigraphs[letter];}
 	void SwapSymbols(int,int);
 	void SymbolTable(char*);
-	long SymbolGraph(char *dest);
+	long SymbolGraph(wchar *dest);
 
 	void MergeSymbols(char,char);
 	
@@ -134,7 +136,7 @@ public:
 	void MergeSymbols(char,char,int);
 	int Simplify(char&,char&);
 	
-	long LetterGraph(char*);
+	long LetterGraph(wchar*);
 	
 	void PatternsToFile(const char*,int);
 	

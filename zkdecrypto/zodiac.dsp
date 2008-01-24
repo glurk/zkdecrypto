@@ -95,6 +95,10 @@ SOURCE=.\message.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\unicode.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\z340.cpp
 # End Source File
 # Begin Source File
@@ -128,6 +132,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\solve.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\unicode.h
 # End Source File
 # Begin Source File
 
