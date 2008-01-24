@@ -2,7 +2,7 @@
 
 void GetBaseName(const char *filename, char *&basename) 
 {
-	if(filename[0]!='\0') basename=strrchr(filename,'\\')+1;
+	if(filename[0]!='\0') basename=(char *)strrchr(filename,'\\')+1;
 	else basename=NULL;
 }
 
