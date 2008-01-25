@@ -292,7 +292,7 @@ LRESULT CALLBACK WordProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(HIWORD(wParam)==EN_CHANGE)
 					{
 						GetDlgItemText(hWnd,IDC_WORD,szWord,128);
-						iLength=strlen(szWord);
+						iLength=(int)strlen(szWord);
 						
 						//remove spaces from string
 						for(int iChar=0; iChar<iLength; iChar++)

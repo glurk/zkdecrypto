@@ -389,7 +389,7 @@ int Message::Read(const char *filename)
 
 void Message::SetCipher(const char *new_cipher)
 {
-	msg_len=strlen(new_cipher);
+	msg_len=(int)strlen(new_cipher);
 	strcpy(cipher,new_cipher);
 	SetInfo();
 }
