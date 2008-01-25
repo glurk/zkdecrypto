@@ -5,7 +5,7 @@ int ustrcpy(wchar *unicode, char *ascii)
 {
 	int length, index;
 	
-	length=strlen(ascii);
+	length=(int)strlen(ascii);
 
 	for(index=0; index<length; index++)
 		unicode[index]=ascii[index];
@@ -53,7 +53,7 @@ int ustrcat(wchar *dest, char *src)
 	wchar *uni;
 
 	dest_len=ustrlen(dest);
-	src_len=strlen(src);
+	src_len=(int)strlen(src);
 
 	uni=new wchar[src_len+1];
 	ustrcpy(uni,src);

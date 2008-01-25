@@ -1,6 +1,6 @@
 #include <stdio.h>
-//#include "message.h"
-#include "z340.h"
+//#include "headers/message.h"
+#include "headers/z340.h"
 
 int main(int argc, char *argv[])
 {

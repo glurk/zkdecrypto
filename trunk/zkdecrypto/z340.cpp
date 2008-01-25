@@ -356,7 +356,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	SYMBOL symbol;
 	Map org_map, best_map;
 
-	word_len=strlen(word);
+	word_len=(int)strlen(word);
 	cipher=msg.GetCipher();
 	msg_len=msg.GetLength();
 
