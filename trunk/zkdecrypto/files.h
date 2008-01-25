@@ -147,7 +147,7 @@ int LoadINI()
 
 	if(!ini_file) return 0;
 
-	while((read=fscanf(ini_file,"%s = %s",option,value))!=EOF)
+	while((read=fscanf(ini_file,"%s = %[^\n]",option,value))!=EOF)
 	{
 		if(read==1) value[0]='\0';
 
