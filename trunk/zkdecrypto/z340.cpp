@@ -26,8 +26,8 @@
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 
-#include "z340.h"
-#include "z340Globals.h"
+#include "headers/z340.h"
+#include "headers/z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
 int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs, int print)

@@ -217,39 +217,39 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="display.h"
+				RelativePath="headers\display.h"
 				>
 			</File>
 			<File
-				RelativePath="files.h"
+				RelativePath="headers\files.h"
 				>
 			</File>
 			<File
-				RelativePath="message.h"
+				RelativePath="headers\message.h"
 				>
 			</File>
 			<File
-				RelativePath="resource.h"
+				RelativePath="headers\resource.h"
 				>
 			</File>
 			<File
-				RelativePath="solve.h"
+				RelativePath="headers\solve.h"
 				>
 			</File>
 			<File
-				RelativePath=".\unicode.h"
+				RelativePath="headers\unicode.h"
 				>
 			</File>
 			<File
-				RelativePath="z340.h"
+				RelativePath="headers\z340.h"
 				>
 			</File>
 			<File
-				RelativePath="z340Globals.h"
+				RelativePath="headers\z340Globals.h"
 				>
 			</File>
 			<File
-				RelativePath="zodiac.h"
+				RelativePath="headers\zodiac.h"
 				>
 			</File>
 		</Filter>
