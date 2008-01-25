@@ -70,7 +70,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit6]
-FileName=headers\zodiac_private.h
+FileName=.\headers\zodiac_private.h
 Folder=zodiac
 Compile=1
 Link=1
@@ -108,7 +108,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit10]
-FileName=headers\resource.h
+FileName=.\headers\resource.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -118,7 +118,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit7]
-FileName=headers\display.h
+FileName=.\headers\display.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -128,7 +128,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit8]
-FileName=headers\files.h
+FileName=.\headers\files.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -138,7 +138,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=headers\message.h
+FileName=.\headers\message.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -148,7 +148,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit11]
-FileName=headers\solve.h
+FileName=.\headers\solve.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -158,7 +158,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit12]
-FileName=headers\unicode.h
+FileName=.\headers\unicode.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -168,7 +168,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit13]
-FileName=headers\z340.h
+FileName=.\headers\z340.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -178,7 +178,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit14]
-FileName=headers\z340Globals.h
+FileName=.\headers\z340Globals.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -188,7 +188,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit15]
-FileName=headers\zodiac.h
+FileName=.\headers\zodiac.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
