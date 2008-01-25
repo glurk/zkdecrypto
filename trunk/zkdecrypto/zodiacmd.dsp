@@ -87,7 +87,7 @@ SOURCE=.\message.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\message.h
+SOURCE=.\headers\message.h
 # End Source File
 # Begin Source File
 
@@ -95,7 +95,7 @@ SOURCE=.\unicode.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\unicode.h
+SOURCE=.\headers\unicode.h
 # End Source File
 # Begin Source File
 
@@ -103,11 +103,11 @@ SOURCE=.\z340.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\z340.h
+SOURCE=.\headers\z340.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\z340Globals.h
+SOURCE=.\headers\z340Globals.h
 # End Source File
 # Begin Source File
 

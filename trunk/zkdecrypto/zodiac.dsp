@@ -115,39 +115,39 @@ SOURCE=.\zodiac.rc
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\display.h
+SOURCE=.\headers\display.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\files.h
+SOURCE=.\headers\files.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\message.h
+SOURCE=.\headers\message.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.h
+SOURCE=.\headers\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\solve.h
+SOURCE=.\headers\solve.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\unicode.h
+SOURCE=.\headers\unicode.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\z340.h
+SOURCE=.\headers\z340.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\z340Globals.h
+SOURCE=.\headers\z340Globals.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\zodiac.h
+SOURCE=.\headers\zodiac.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
