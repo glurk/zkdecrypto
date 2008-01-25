@@ -5,11 +5,11 @@
 #include <windowsx.h>
 #include <commctrl.h>
 #include <richedit.h>
-#include "resource.h"
-#include "zodiac.h"
-#include "display.h"
-#include "solve.h"
-#include "files.h"
+#include "headers/resource.h"
+#include "headers/zodiac.h"
+#include "headers/display.h"
+#include "headers/solve.h"
+#include "headers/files.h"
 
 //do coincidence counting on possible monoalphabets to find polyalphabet key size
 void PolyKeySize(int max_len)

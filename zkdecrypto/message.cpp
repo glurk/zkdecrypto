@@ -1,6 +1,6 @@
 #pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
 
-#include "message.h"
+#include "headers/message.h"
 
 /*Map*/
 
