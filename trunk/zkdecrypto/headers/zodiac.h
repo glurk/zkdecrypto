@@ -13,16 +13,6 @@
 #define LANG_SPA	"spa"
 #define LANG_GER	"ger"
 
-//index of coincidence for languages
-#define ENG_IOC		.0665 //float(1.73/26) 
-#define SPA_IOC 	.0746 //float(1.94/26) 
-#define GER_IOC 	.0788 //float(2.05/26) 
-
-#define FRE_IOC		.0777 
-#define ITA_IOC 	.0746
-#define POR_IOC 	.0746
-#define RUS_IOC 	.0677
-
 //text constants
 #define CHAR_WIDTH  7
 #define CHAR_HEIGHT 12
@@ -61,6 +51,7 @@ POINT pntClickPoint; //click point
 
 //graphs
 wchar szGraph[10240];
+char szGraphTitle[128];
 long lRowCol;
 
 //solver data
@@ -88,32 +79,6 @@ char szFileFilter[]=
 inline void disp_all()  {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPALL,0);}
 inline void disp_info() {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPINFO,0);}
 inline DWORD GetTime()	{return GetTickCount();}
-
-//index of conincidence of a string
-float IoC(const char *string)
-{
-	int freqs[256], length;
-	float ic=0;
-
-	if(!string) return 0;
-
-	length=(int)strlen(string);
-	if(length<2) return 0;
-	memset(freqs,0,256*sizeof(int));
-
-	//count frequencies
-	for(int index=0; index<length; index++)
-		freqs[string[index]]++;
-
-	//calculate index of conincidence
-	for(int sym_index=0; sym_index<256; sym_index++)
-		if(freqs[sym_index]>1) 
-			ic+=(freqs[sym_index])*(freqs[sym_index]-1); 
-
-	ic/=(length)*(length-1);
-
-	return ic;
-}
 
 #endif
 

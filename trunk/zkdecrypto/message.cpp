@@ -4,6 +4,32 @@
 
 /*Map*/
 
+//index of conincidence of a string
+float IoC(const char *string)
+{
+	int freqs[256], length;
+	float ic=0;
+
+	if(!string) return 0;
+
+	length=(int)strlen(string);
+	if(length<2) return 0;
+	memset(freqs,0,256*sizeof(int));
+
+	//count frequencies
+	for(int index=0; index<length; index++)
+		freqs[string[index]]++;
+
+	//calculate index of conincidence
+	for(int sym_index=0; sym_index<256; sym_index++)
+		if(freqs[sym_index]>1) 
+			ic+=(freqs[sym_index])*(freqs[sym_index]-1); 
+
+	ic/=(length)*(length-1);
+
+	return ic;
+}
+
 int Map::Read(const char *filename)
 {
 	FILE *mapfile;
@@ -884,7 +910,7 @@ long Message::LetterGraph(wchar *dest)
 	//bottom line
 	ustrcat(dest,"     ");
 
-	for(cur_letter=0; cur_letter<=(26*3); cur_letter++)	
+	for(cur_letter=0; cur_letter<=(26*3)+1; cur_letter++)	
 		ustrcat(dest,UNI_HORZBAR);
 
 	//letters
@@ -904,5 +930,201 @@ long Message::LetterGraph(wchar *dest)
 	ustrcat(dest,UNI_FULLBAR);
 
 	//rows in the high word, cols in the low
-	return (rows+4)<<16 | ((26*3)+8);
+	return (rows+4)<<16 | ((26*3)+9);
+}
+
+//do coincidence counting on possible monoalphabets to find polyalphabet key size
+long Message::PolyKeySize(wchar *dest, int max_len)
+{
+	int key_len, best_len, key_index, rows;
+	float avg_ic, best_ic=0, max_ic=0;
+	char level[64];
+	
+	if(max_len<=0 || max_len>=msg_len) return 0;
+	
+	//allocate column string
+	char *ma=new char[msg_len+1];
+	float *all_ic=new float[max_len+1];
+
+
+	//get average ic for each key size
+	for(key_len=2; key_len<=max_len; key_len++)
+	{
+		//average ics for each mono alphabet
+		avg_ic=0;
+		
+		for(key_index=0; key_index<key_len; key_index++)
+		{
+			//add this column's IoC to average
+			GetColumn(key_index,key_len,ma);
+			avg_ic+=IoC(ma);
+		}
+		
+		//average
+		avg_ic/=key_len;
+		all_ic[key_len]=avg_ic;
+		
+		if(avg_ic>max_ic) max_ic=avg_ic;
+		
+		//this average is the best so far
+		if(CLOSER(avg_ic,best_ic,ENG_IOC))
+		{
+			best_ic=avg_ic;
+			best_len=key_len;
+		}
+	}
+
+	delete[] ma;
+	
+	//graph
+	dest[0]=0;
+	max_ic*=100;
+	max_ic=ROUNDUP(max_ic);
+	rows=int(max_ic*2);
+	max_ic*=10;
+
+	//line numbers and bars
+	for(int row=(int)max_ic; row>0; row-=5)
+	{
+		sprintf(level,".%03i ",row);
+		ustrcat(dest,level);
+		ustrcat(dest,UNI_VERTBAR);
+
+		for(key_len=2; key_len<=max_len; key_len++)
+		{
+			ustrcat(dest,0x20);
+			if((all_ic[key_len]*1000)>=row) ustrcat(dest,UNI_FULLBAR);
+			else ustrcat(dest,0x20);
+			ustrcat(dest,0x20);
+		}
+
+		ustrcat(dest,0x0D);
+		ustrcat(dest,0x0A);
+	}
+
+	//bottom line
+	ustrcat(dest,"     ");
+
+	for(key_len=2; key_len<(max_len)*3; key_len++)
+		ustrcat(dest,UNI_HORZBAR);
+
+	//key length
+	ustrcat(dest,0x0D);
+	ustrcat(dest,0x0A);
+	ustrcat(dest,"     ");
+
+	for(key_len=2; key_len<=max_len; key_len++)
+	{
+		ustrcat(dest,0x20);
+		sprintf(level,"%2i",key_len);
+		ustrcat(dest,level);
+	}
+
+	delete[] all_ic;
+
+	return (rows+2)<<16 | (max_len*3)+5;
+}
+
+//calculate IoC for each row and column, and averages
+long Message::RowColIoC(wchar *dest, int cols)
+{
+	int row, col, rows, lines, cur_rc;
+	float *row_ic, *col_ic, row_avg=0, col_avg=0, max_ic=0;
+	char rc_string[512];
+	char level[64];
+	
+	lines=msg_len/cols;
+	if(msg_len%cols) lines++;
+
+	row_ic=new float[lines];
+	col_ic=new float[cols];
+	
+	//rows
+	for(row=0; GetRow(row,cols,rc_string); row++)
+	{
+		row_avg+=row_ic[row]=IoC(rc_string);
+		if(row_ic[row]>max_ic) max_ic=row_ic[row];
+	}
+	
+	//rows average
+	row_avg/=lines;
+	
+	//columns
+	for(col=0; GetColumn(col,cols,rc_string); col++)
+	{
+		col_avg+=col_ic[col]=IoC(rc_string);
+		if(col_ic[col]>max_ic) max_ic=col_ic[col];
+	}
+	
+	//cols average
+	col_avg/=cols;
+	
+	//graph
+	dest[0]=0;
+	max_ic*=100;
+	max_ic=ROUNDUP(max_ic);
+	rows=int(max_ic*2);
+	max_ic*=10;
+
+	//line numbers and bars
+	for(row=(int)max_ic; row>0; row-=5)
+	{
+		sprintf(level,".%03i ",row);
+		ustrcat(dest,level);
+		ustrcat(dest,UNI_VERTBAR);
+
+		for(cur_rc=0; cur_rc<lines; cur_rc++)
+		{
+			ustrcat(dest,0x20);
+			if((row_ic[cur_rc]*1000)>=row) ustrcat(dest,UNI_FULLBAR);
+			else ustrcat(dest,0x20);
+			ustrcat(dest,0x20);
+		}
+		
+		ustrcat(dest,UNI_VERTBAR);
+		
+		for(cur_rc=0; cur_rc<cols; cur_rc++)
+		{
+			ustrcat(dest,0x20);
+			if((col_ic[cur_rc]*1000)>=row) ustrcat(dest,UNI_FULLBAR);
+			else ustrcat(dest,0x20);
+			ustrcat(dest,0x20);
+		}
+
+		ustrcat(dest,0x0D);
+		ustrcat(dest,0x0A);
+	}
+
+	//bottom line
+	ustrcat(dest,"     ");
+
+	for(cur_rc=0; cur_rc<(lines+cols)*3+2; cur_rc++)
+		ustrcat(dest,UNI_HORZBAR);
+
+	//row/column
+	ustrcat(dest,0x0D);
+	ustrcat(dest,0x0A);
+	ustrcat(dest,"     ");
+
+	for(cur_rc=0; cur_rc<lines; cur_rc++)
+	{
+		ustrcat(dest,0x20);
+		sprintf(level,"%2i",cur_rc+1);
+		ustrcat(dest,level);
+	}
+	
+	ustrcat(dest,0x20);
+	
+	for(cur_rc=0; cur_rc<cols; cur_rc++)
+	{
+		ustrcat(dest,0x20);
+		sprintf(level,"%2i",cur_rc+1);
+		ustrcat(dest,level);
+	}
+	
+	
+	delete[] row_ic;
+	delete[] col_ic;
+	
+	return (rows+2)<<16 | ((lines+cols+1)*3)+6;
 }
