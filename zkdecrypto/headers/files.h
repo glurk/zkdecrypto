@@ -2,7 +2,7 @@
 
 void GetBaseName(const char *filename, char *&basename) 
 {
-	if(filename[0]!='\0') basename=(char *)strrchr(filename,'\\')+1;
+	if(filename[0]!='\0') basename=(char*)strrchr(filename,'\\')+1;
 	else basename=NULL;
 }
 
@@ -79,6 +79,7 @@ int LoadMessage(char *filename)
 	bUndo=false;
 	MsgEnable(true);
 	MapEnable(false);
+	EnableMenuItem(hMainMenu,IDM_FILE_COPY_PLAIN,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_GRAYED);
 	Button_Enable(GetDlgItem(hMainWnd,IDC_SOLVE),true);
 	
@@ -147,7 +148,7 @@ int LoadINI()
 
 	if(!ini_file) return 0;
 
-	while((read=fscanf(ini_file,"%s = %[^\n]",option,value))!=EOF)
+	while((read=fscanf(ini_file,"%s = %[^\n]\n",option,value))!=EOF)
 	{
 		if(read==1) value[0]='\0';
 

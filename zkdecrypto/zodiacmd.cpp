@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	//print usage
 	if(!cipher_ok || !key_ok)
 	{
-		printf("Zodiac Decrypto\nUsage: -cf <cipher_file> [-kf <key_file> and/or -k <key>] [-l <language>]");
+		printf("Zodiac Decrypto\nUsage: -cf <cipher_file> [-kf <key_file> and/or -k <key>] [-l <language>]\n");
 		exit(0);
 	}
 

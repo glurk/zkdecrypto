@@ -11,140 +11,6 @@
 #include "headers/solve.h"
 #include "headers/files.h"
 
-//do coincidence counting on possible monoalphabets to find polyalphabet key size
-void PolyKeySize(int max_len)
-{
-	int key_len, best_len, key_index;
-	float avg_ic, best_ic=0;
-	
-	//allocate column string
-	char *ma=new char[message.GetLength()+1];
-	
-	//get average ic for each key size
-	for(key_len=2; key_len<=max_len; key_len++)
-	{
-		//average ics for each mono alphabet
-		avg_ic=0;
-		
-		for(key_index=0; key_index<key_len; key_index++)
-		{
-			//add this column's IoC to average
-			message.GetColumn(key_index,key_len,ma);
-			avg_ic+=IoC(ma);
-		}
-		
-		//average
-		avg_ic/=key_len;
-		
-		//this average is the best so far
-		if(CLOSER(avg_ic,best_ic,ENG_IOC))
-		{
-			best_ic=avg_ic;
-			best_len=key_len;
-		}
-	}
-
-	delete[] ma;
-
-	sprintf(szText,"Key Size\t%i\r\n\r\nIoC\t%.3f",best_len,best_ic);
-	MessageBox(hMainWnd,szText,"Polyalphabetic IoC",MB_OK);
-}
-/*
-void FindBestSec()
-{
-	int msg_len, sec_len, best_start, best_end;
-	const char *cipher;
-	char *section;
-	float cur_ic, best_ic=0;
-
-	//get cipher
-	cipher=message.GetCipher();
-	msg_len=message.GetLength();
-
-	section=new char[msg_len+1];
-
-	for(int start=0; start<msg_len; start++)
-		for(int end=start; end<msg_len; end++)
-		{
-			sec_len=end-start+1;
-			if(sec_len<20) continue;
-			memcpy(section,cipher+start,sec_len);
-			section[sec_len]='\0';
-			cur_ic=ic(section);
-			
-			//if(CLOSER(cur_ic,best_ic,ENG_IOC))
-			if(cur_ic>best_ic)
-			{
-				best_ic=cur_ic;
-				best_start=start;
-				best_end=end;
-			}
-		}
-
-	
-
-	sprintf(szText,"Start: %i, End: %i, IoC %.3f",best_start,best_end,best_ic);
-	MessageBox(hMainWnd,szText,"Best Section",MB_OK);
-
-	sec_len=best_end-best_start+1;
-	memcpy(section,cipher+best_start,sec_len);
-	section[sec_len]='\0';
-	message.SetCipher(section);
-	SetCipher();
-	SetDlgInfo();
-
-	delete[] section;
-}
-*/
-
-//calculate IoC for each row and column, and averages
-void RowColIoC()
-{
-	int row, col, msg_len;
-	float cur_ic, row_avg=0, col_avg=0;
-	const char *cipher;
-	char rc_string[512], msg[1024]="";
-	
-	cipher=message.GetCipher();
-	msg_len=message.GetLength();
-	
-	sprintf(szText,"Row - Column IoC\r\n\r\n");
-	
-	//rows
-	for(row=0; message.GetRow(row,iLineChars,rc_string); row++)
-	{
-		cur_ic=IoC(rc_string);
-		row_avg+=cur_ic;
-		
-		sprintf(szText,"R%i\t%.3f\r\n",row+1,cur_ic);
-		strcat(msg,szText);
-	}
-	
-	//rows average
-	row_avg/=iLines;
-	
-	sprintf(szText,"\r\nRow Average\t%.3f\r\n\r\n\r\n",row_avg);
-	strcat(msg,szText);
-	
-	//columns
-	for(col=0; message.GetColumn(col,iLineChars,rc_string); col++)
-	{
-		cur_ic=IoC(rc_string);
-		col_avg+=cur_ic;
-		
-		sprintf(szText,"C%i\t%.3f\r\n",col+1,cur_ic);
-		strcat(msg,szText);
-	}
-	
-	//cols average
-	col_avg/=iLineChars;
-	
-	sprintf(szText,"\r\nColumn Average\t%.3f\r\n",col_avg);
-	strcat(msg,szText);
-	
-	MessageBox(hMainWnd,msg,"RC IoC",MB_OK);
-}
-
 /*Edit Functions*/
 
 void SetUndo()
@@ -240,6 +106,70 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+//graphs dialog
+LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int iWidth, iHeight;
+
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:	
+			iWidth=LOWORD(lRowCol)*CHAR_WIDTH;
+			iHeight=HIWORD(lRowCol)*CHAR_HEIGHT+20;
+			SetWindowPos(GetDlgItem(hWnd,IDC_GRAPH),0,0,0,iWidth,iHeight,SWP_NOREPOSITION | SWP_NOMOVE);
+			SetWindowPos(hWnd,0,0,0,iWidth+(iMargin<<1),iHeight+(iMargin<<1),SWP_NOREPOSITION | SWP_NOMOVE);
+			SetDlgItemTextW(hWnd,IDC_GRAPH,(WCHAR*)szGraph);
+			SetWindowText(hWnd,szGraphTitle);
+			return 0;
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+				case IDCANCEL:
+					EndDialog(hWnd,0);
+					hGraph=NULL;
+					return 0;
+			}
+	}
+
+	return 0;
+}
+
+//init dialog
+LRESULT CALLBACK PolyProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int iPolySize;
+	
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:
+			SetFocus(GetDlgItem(hWnd,IDC_NUMBER));
+			SendDlgItemMessage(hWnd,IDC_NUMBER,EM_LIMITTEXT,3,0);
+			SetDlgItemInt(hWnd,IDC_NUMBER,25,0);
+			SetWindowText(hWnd,"Max Key Length");
+			return 0;
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+					iPolySize=GetDlgItemInt(hWnd,IDC_NUMBER,0,0);
+					EndDialog(hWnd,0);
+					lRowCol=message.PolyKeySize(szGraph,iPolySize);
+					strcpy(szGraphTitle,"Polyalphabetic IoC Count");
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+					return 1;
+
+				case IDCANCEL:
+					EndDialog(hWnd,0);
+					return 0;
+			}
+	}
+
+	return 0;
+}
+
 //init dialog
 LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -248,16 +178,17 @@ LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
-			SetFocus(GetDlgItem(hWnd,IDC_INIT));
-			SendDlgItemMessage(hWnd,IDC_INIT,EM_LIMITTEXT,3,0);
-			SetDlgItemInt(hWnd,IDC_INIT,message.cur_map.GetNumSymbols(),0);
+			SetFocus(GetDlgItem(hWnd,IDC_NUMBER));
+			SendDlgItemMessage(hWnd,IDC_NUMBER,EM_LIMITTEXT,3,0);
+			SetDlgItemInt(hWnd,IDC_NUMBER,message.cur_map.GetNumSymbols(),0);
+			SetWindowText(hWnd,"Symbols to Set");
 			return 0;
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
 				case IDOK:
-					iInitSize=GetDlgItemInt(hWnd,IDC_INIT,0,0);
+					iInitSize=GetDlgItemInt(hWnd,IDC_NUMBER,0,0);
 					SetUndo();
 					message.cur_map.Init(iInitSize);
 					SetDlgInfo();
@@ -396,11 +327,13 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 					//extra letters
 					GetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr,MAX_EXTRA);
-
-					//update display
-					SetScrollBar();					
-					SetDlgInfo();
-					SetCipher();
+					
+					//0 chars per line
+					if(!iLineChars)
+					{
+						MessageBox(hWnd,"Line length must be greather than 0","Notice",MB_ICONEXCLAMATION);
+						return 0;
+					}
 					
 					//no ngrams are checked
 					if(!iUseGraphs)
@@ -408,38 +341,14 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						MessageBox(hWnd,"At least one set of ngrams must be selected","Notice",MB_ICONEXCLAMATION);
 						return 0;
 					}
+					
+					//update display
+					SetScrollBar();					
+					SetDlgInfo();
+					SetCipher();
 
 				case IDCANCEL:
 					EndDialog(hWnd,0);
-					return 0;
-			}
-	}
-
-	return 0;
-}
-
-//graphs dialog
-LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
-{
-	int iWidth, iHeight;
-
-	switch(iMsg)
-	{
-		case WM_INITDIALOG:	
-			iWidth=LOWORD(lRowCol)*CHAR_WIDTH;
-			iHeight=HIWORD(lRowCol)*CHAR_HEIGHT;
-			SetWindowPos(GetDlgItem(hWnd,IDC_GRAPH),0,0,0,iWidth,iHeight,SWP_NOREPOSITION | SWP_NOMOVE);
-			SetWindowPos(hWnd,0,0,0,iWidth+(iMargin<<1),iHeight+(iMargin<<1),SWP_NOREPOSITION | SWP_NOMOVE);
-			SetDlgItemTextW(hWnd,IDC_GRAPH,(WCHAR*)szGraph);
-			return 0;
-
-		case WM_COMMAND:
-			switch(LOWORD(wParam))
-			{
-				case IDOK:
-				case IDCANCEL:
-					EndDialog(hWnd,0);
-					hGraph=NULL;
 					return 0;
 			}
 	}
@@ -535,7 +444,6 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			mmiInfo=(MINMAXINFO*)lParam;
 			mmiInfo->ptMinTrackSize.x=400;
 			mmiInfo->ptMinTrackSize.y=300;
-
 			return 0;
 
 		case WM_SIZE:
@@ -611,8 +519,6 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_FILE_EXIT:
 					SendMessage(hMainWnd,WM_CLOSE,0,0);
 					return 0;
-					
-				//case IDM_FILE_RELOAD: LoadMap(szKeyName); return 0;
 				
 				/*edit menu*/
 				case IDM_EDIT_UNDO: Undo(); SetCipher(); return 0;
@@ -649,11 +555,13 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_CIPHER_POLYIC:
-					PolyKeySize(message.GetLength());
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)PolyProc);
 					return 0;
 
 				case IDM_CIPHER_RC_IOC:
-					RowColIoC();
+					lRowCol=message.RowColIoC(szGraph,iLineChars);
+					strcpy(szGraphTitle,"Row & Column IoC Count");
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					return 0;
 					
 				case IDM_CIPHER_NGRAPHS:
@@ -670,7 +578,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				/*key menu*/
 				case IDM_KEY_INIT:
 					SetUndo();
-					DialogBox(hInst,MAKEINTRESOURCE(IDD_INIT),hMainWnd,(DLGPROC)InitProc);
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)InitProc);
 					return 0;
 
 				case IDM_KEY_SCRAMBLE:
@@ -704,7 +612,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_SOLVE_TP_IDLE: SetPriority(4); return 0;
 				case IDM_SOLVE_TP_HIGH: SetPriority(3); return 0;	
 				case IDM_SOLVE_TP_NORM: SetPriority(2); return 0;	
-				case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;	
+				case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;										
 
 
 				/*view menu*/
@@ -720,11 +628,13 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_VIEW_SYMGRAPH:
 					lRowCol=message.cur_map.SymbolGraph(szGraph);
+					strcpy(szGraphTitle,"Symbol Frequencies");
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					return 0;
 					
 				case IDM_VIEW_LTRGRAPH:
 					lRowCol=message.LetterGraph(szGraph);
+					strcpy(szGraphTitle,"Letter Frequencies");
 					hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					ShowWindow(hGraph,SW_SHOWNORMAL);
 					return 0;
@@ -891,10 +801,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	MsgEnable(false);
 	MapEnable(false);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_MSG,MF_BYCOMMAND | MF_ENABLED);
+	EnableMenuItem(hMainMenu,IDM_FILE_COPY_PLAIN,MF_BYCOMMAND | MF_GRAYED);
 	Button_Enable(GetDlgItem(hMainWnd,IDC_SOLVE),false);
 	SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
 	SetScrollBar();
-	SetPriority(2);
+	SetPriority(1);
 	StopSolve();
 	SetSort(0);
 	

@@ -18,6 +18,16 @@
 
 #define BLANK char(0x97)
 
+//index of coincidence for languages
+#define ENG_IOC		.0665 //float(1.73/26) 
+#define SPA_IOC 	.0746 //float(1.94/26) 
+#define GER_IOC 	.0788 //float(2.05/26) 
+
+#define FRE_IOC		.0777 
+#define ITA_IOC 	.0746
+#define POR_IOC 	.0746
+#define RUS_IOC 	.0677
+
 #define ROUNDTOINT(F) (DECIMAL(F)>=.5? int(F)+1:int(F))
 #define ROUNDUP(F) (DECIMAL(F)>0? int(F)+1:int(F))
 #define IS_ASCII(C) (C>0x1F && C<0x7F)
@@ -26,6 +36,8 @@
 #define CLOSER(A,B,C) (ABS(A-C)<ABS(B-C)) //TRUE if A is closer to C than B is
 
 #pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
+
+float IoC(const char*);
 
 /*Symbol*/
 struct SYMBOL
@@ -137,6 +149,8 @@ public:
 	int Simplify(char&,char&);
 	
 	long LetterGraph(wchar*);
+	long PolyKeySize(wchar*,int);
+	long RowColIoC(wchar*,int);
 	
 	void PatternsToFile(const char*,int);
 	

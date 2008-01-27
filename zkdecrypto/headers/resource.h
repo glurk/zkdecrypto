@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by zodiac.rc
 //
 #define IDR_MAIN_MENU                   101
@@ -16,6 +16,7 @@
 #define IDD_TEXT                        115
 #define IDD_MERGE                       116
 #define IDD_INIT                        117
+#define IDD_NUMBER                      117
 #define IDD_GRAPHS                      118
 #define IDR_ACCEL                       122
 #define IDC_PLAIN                       1000
@@ -69,6 +70,7 @@
 #define IDC_ANAGRAM                     1050
 #define IDC_INIT                        1051
 #define IDC_CIPHER_BORDER               1051
+#define IDC_NUMBER                      1051
 #define IDC_TS_TEXT                     1052
 #define IDC_GRAPH                       1053
 #define IDC_MAIN_TAB                    1054
@@ -96,7 +98,6 @@
 #define IDM_SOLVE_TP_LOW                40010
 #define IDM_SOLVE_TP_NORM               40011
 #define IDM_SOLVE_TP_HIGH               40012
-#define IDM_SOLVE_TP_IDLE               40040
 #define IDM_KEY_INIT                    40013
 #define IDM_SOLVE_WORD                  40014
 #define IDM_EDIT_UNDO                   40015
@@ -122,6 +123,7 @@
 #define IDM_CIPHER_NGRAPHS              40036
 #define IDM_FILE_COPY_PLAIN             40037
 #define IDM_HELP_CONT                   40038
+#define IDM_SOLVE_TP_IDLE				40041
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 
@@ -130,7 +132,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        123
-#define _APS_NEXT_COMMAND_VALUE         40041
+#define _APS_NEXT_COMMAND_VALUE         40039
 #define _APS_NEXT_CONTROL_VALUE         1064
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

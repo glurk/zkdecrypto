@@ -34,24 +34,24 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 
-	int cuniq,keylength;
+	int cuniq,keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
 	char solved[MAX_CIPH_LENGTH],solvedtemp[MAX_CIPH_LENGTH];
 	char uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
 
-	for(int i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=solvedtemp[i]=0;				       //INITIALIZE (ZERO) ARRAYS
-	for(int i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
+	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=solvedtemp[i]=0;				       //INITIALIZE (ZERO) ARRAYS
+	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	strcpy(bestkey,key);
 	keylength=(int)strlen(key);
 
 	init_genrand((unsigned long)time(NULL));											//SEED RANDOM GENERATOR
 
-	for(int i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
+	for(i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
 
-	int i=255,j=0;																		//CALCULATE AND SORT THE CIPHER UNIQUES
-	for(int y=0;y<255;y++) { 
-		for(int x=255;x>0;x--)
+	i=255; j=0;																		//CALCULATE AND SORT THE CIPHER UNIQUES
+	for(y=0;y<255;y++) { 
+		for(x=255;x>0;x--)
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
 
 	cuniq=(int)strlen(uniqstr);
@@ -61,7 +61,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 
 	if (print) printfrequency(clength,uniqarr,uniqstr,cuniq);
 
-	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	for(x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
@@ -113,10 +113,10 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			}
 		}
 
-	for(int i=0;i<info.swaps;i++) shufflekey(key,keylength,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert) { strcpy(key,bestkey); iterations=0; }
-	for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	for(x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	
 	if(!improve) info.cur_fail++;
 	
@@ -224,6 +224,7 @@ void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,
 
 	int c=0;
 	int s=0;
+	int i,x,y;
 	int width,height;
 
 	switch(length_of_cipher) {
@@ -237,24 +238,24 @@ void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,
 
 	printf("\n--------------------------------------------------------------------------------------------------------------------\n\n");
 
-	for(int y=0;y<height;y++) { 
-		for(int x=0;x<width;x++) printf("%c",ciph[c++]);
+	for(y=0;y<height;y++) { 
+		for(x=0;x<width;x++) printf("%c",ciph[c++]);
 		printf("   =   ");
-		for(int x=0;x<width;x++) printf("%c",solv[s++]);
+		for(x=0;x<width;x++) printf("%c",solv[s++]);
 		printf("\n"); }
 
 //	printvowels section
 
 	int diff_tot=0;
 	int	freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	for(int i=0;i<26;i++) freqs[i]=(int)(unigraphs[i]*length_of_cipher)/100;					// CALCULATE EXPECTED LETT. FREQS
+	for(i=0;i<26;i++) freqs[i]=(int)(unigraphs[i]*length_of_cipher)/100;					// CALCULATE EXPECTED LETT. FREQS
 	int solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	for(int i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;								// CALCULATE ACTUAL LETT. FREQS
+	for(i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;								// CALCULATE ACTUAL LETT. FREQS
 
 	printf("\n\n              'A   B   C   D  'E   F   G   H  'I   J   K   L   M   N  'O   P   Q   R   S   T  'U   V   W   X   Y   Z");
-	printf("\n  Expected: ");	for(int i=0;i<26;i++) printf("%4d",freqs[i]);
-	printf("\n     Found: ");	for(int i=0;i<26;i++) printf("%4d",solv_freqs[i]);
-	printf("\nDifference: ");	for(int i=0;i<26;i++) { int y=abs(freqs[i]-solv_freqs[i]); printf("%4d",y); diff_tot+=y; }
+	printf("\n  Expected: ");	for(i=0;i<26;i++) printf("%4d",freqs[i]);
+	printf("\n     Found: ");	for(i=0;i<26;i++) printf("%4d",solv_freqs[i]);
+	printf("\nDifference: ");	for(i=0;i<26;i++) { y=abs(freqs[i]-solv_freqs[i]); printf("%4d",y); diff_tot+=y; }
 
 	printf("\n\nDifference Total: %d    --    Deviation From Expected: %f",diff_tot,100*((float)diff_tot/length_of_cipher));
 	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
@@ -270,7 +271,7 @@ void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,
 
 void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,int cipher_uniques) {
 
-	int f=0;
+	int i, f=0;
 	int z=(int)strlen(unique_string);
 	char zee[10];
 
@@ -278,11 +279,11 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 	printf("Cipher Uniques: %d unique characters\n\n",cipher_uniques);							//PRINT NUMBER OF UNIQUE CHARACTERS
 
 	printf("Frequency Table for Cipher:\n");
-	for(int i=0;i<z;i++) printf("-"); printf("\n");
-	for(int i=0;i<z;i++) if(unique_array[i]/100 != 0) printf("%1d",unique_array[i]/100); if(unique_array[0]>=100) printf("\n");
-	for(int i=0;i<z;i++) { sprintf(zee,"%d",unique_array[i]); if(unique_array[i]/10 != 0) printf("%c",zee[strlen(zee)-2]); } printf("\n");
-	for(int i=0;i<z;i++) { printf("%1d",unique_array[i] % 10); f = f + (unique_array[i] * (unique_array[i]-1)); } printf("\n");
-	for(int i=0;i<z;i++) printf("-");
+	for(i=0;i<z;i++) printf("-"); printf("\n");
+	for(i=0;i<z;i++) if(unique_array[i]/100 != 0) printf("%1d",unique_array[i]/100); if(unique_array[0]>=100) printf("\n");
+	for(i=0;i<z;i++) { sprintf(zee,"%d",unique_array[i]); if(unique_array[i]/10 != 0) printf("%c",zee[strlen(zee)-2]); } printf("\n");
+	for(i=0;i<z;i++) { printf("%1d",unique_array[i] % 10); f = f + (unique_array[i] * (unique_array[i]-1)); } printf("\n");
+	for(i=0;i<z;i++) printf("-");
 
 	printf("\n%s\n\n",unique_string);
 

@@ -489,9 +489,9 @@ void ResizeText(int iNewWidth, int iNewHeight)
 
 	//text size buttons 
 	iX=iNewWidth-(iMargin<<1)-16;
-	SetWindowPos(GetDlgItem(hTextWnd,IDC_TS_DOWN),0,iX,iY,iW,iH,SWP_NOZORDER | SWP_NOSIZE);
-	iX-=20;
 	SetWindowPos(GetDlgItem(hTextWnd,IDC_TS_UP),0,iX,iY,iW,iH,SWP_NOZORDER | SWP_NOSIZE);
+	iX-=20;
+	SetWindowPos(GetDlgItem(hTextWnd,IDC_TS_DOWN),0,iX,iY,iW,iH,SWP_NOZORDER | SWP_NOSIZE);
 
 	//text size 
 	iX-=50;
