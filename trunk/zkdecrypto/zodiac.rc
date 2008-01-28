@@ -95,6 +95,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
+        MENUITEM "&Contents",                   IDM_HELP_CONT
         MENUITEM "&About",                      IDM_HELP_ABOUT
     END
 END
