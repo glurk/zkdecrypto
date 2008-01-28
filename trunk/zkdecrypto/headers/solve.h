@@ -143,7 +143,7 @@ void Reset() //init solve info
 //set thread priority
 void SetPriority(int iNewPriority)
 {
-	if(iNewPriority==3)
+	if(iNewPriority==4)
 	{
 		iPriority=THREAD_PRIORITY_IDLE;
 		CheckMenuItem(hMainMenu,IDM_SOLVE_TP_IDLE,MF_BYCOMMAND | MF_CHECKED);
