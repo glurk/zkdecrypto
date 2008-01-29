@@ -183,6 +183,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\hashtable.cpp"
+				>
+			</File>
+			<File
 				RelativePath="manifest.xml"
 				>
 			</File>
@@ -222,6 +226,10 @@
 			</File>
 			<File
 				RelativePath="headers\files.h"
+				>
+			</File>
+			<File
+				RelativePath=".\hashtable.h"
 				>
 			</File>
 			<File

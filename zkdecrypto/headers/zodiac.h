@@ -1,6 +1,7 @@
 #ifndef _ZODIAC_H
 
 #include "message.h"
+#include "hashtable.h"
 #include "z340.h"
 
 //program
@@ -31,6 +32,7 @@ char szCipherName[1024], szKeyName[1024], szGraphName[1024]; //filenames
 char *szCipherBase, *szKeyBase; //file basenames
 int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
+HashTable<char *> dictionary;
 
 //GUI data
 char szTitle[64], szText[1024], szExeDir[1024]; 
