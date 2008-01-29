@@ -38,6 +38,7 @@
 #pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
 
 float IoC(const char*);
+float Entropy(const char*);
 
 /*Symbol*/
 struct SYMBOL
@@ -201,7 +202,5 @@ private:
 	int num_patterns, good_pat;
 	FILE *ngram_file;
 };
-
-void to_unicode(char*);
 
 #endif

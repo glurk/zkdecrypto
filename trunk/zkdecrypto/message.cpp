@@ -4,6 +4,17 @@
 
 /*Map*/
 
+//count frequencies of chars in a string
+void GetFreqs(const char *string, int *freqs)
+{
+	int length=(int)strlen(string);
+	
+	memset(freqs,0,256*sizeof(int));
+	
+	for(int index=0; index<length; index++)
+		freqs[string[index]]++;
+}
+
 //index of conincidence of a string
 float IoC(const char *string)
 {
@@ -13,12 +24,10 @@ float IoC(const char *string)
 	if(!string) return 0;
 
 	length=(int)strlen(string);
-	if(length<2) return 0;
-	memset(freqs,0,256*sizeof(int));
 
-	//count frequencies
-	for(int index=0; index<length; index++)
-		freqs[string[index]]++;
+	if(length<2) return 0;	
+
+	GetFreqs(string,freqs);
 
 	//calculate index of conincidence
 	for(int sym_index=0; sym_index<256; sym_index++)
@@ -28,6 +37,33 @@ float IoC(const char *string)
 	ic/=(length)*(length-1);
 
 	return ic;
+}
+
+float Entropy(const char *string)
+{
+	int freqs[256], length;
+	float entropy=0, prob_mass, log2;
+
+	if(!string) return 0;
+
+	length=(int)strlen(string);
+	
+	if(length<0) return 0;
+
+	GetFreqs(string,freqs);
+
+	//for log base conversion
+	log2=log(2);
+
+	//calculate entropy
+	for(int sym_index=0; sym_index<256; sym_index++)
+		if(freqs[sym_index])
+		{
+			prob_mass=float(freqs[sym_index])/length;
+			entropy+=prob_mass*(log(prob_mass)/log2);
+		}
+
+	return (-1*entropy);
 }
 
 int Map::Read(const char *filename)
@@ -1036,7 +1072,7 @@ long Message::RowColIoC(wchar *dest, int cols)
 {
 	int row, col, rows, lines, cur_rc;
 	float *row_ic, *col_ic, row_avg=0, col_avg=0, max_ic=0;
-	char rc_string[512];
+	char *rc_string;
 	char level[64];
 	
 	lines=msg_len/cols;
@@ -1044,6 +1080,8 @@ long Message::RowColIoC(wchar *dest, int cols)
 
 	row_ic=new float[lines];
 	col_ic=new float[cols];
+
+	rc_string=new char[(msg_len>>1)+1];
 	
 	//rows
 	for(row=0; GetRow(row,cols,rc_string); row++)
@@ -1131,6 +1169,7 @@ long Message::RowColIoC(wchar *dest, int cols)
 	
 	delete[] row_ic;
 	delete[] col_ic;
+	delete[] rc_string;
 	
 	return (rows+2)<<16 | ((lines+cols+1)*3)+6;
 }
