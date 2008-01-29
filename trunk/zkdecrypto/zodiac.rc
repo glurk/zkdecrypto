@@ -30,26 +30,26 @@ IDR_MAIN_MENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Open Cipher",                IDM_FILE_OPEN_MSG
+        MENUITEM "&Open Cipher\tCtrl+O",        IDM_FILE_OPEN_MSG
         MENUITEM SEPARATOR
         MENUITEM "Open &Key",                   IDM_FILE_OPEN_MAP
-        MENUITEM "&Save Key",                   IDM_FILE_SAVE_MAP
+        MENUITEM "&Save Key\tCtrl+S",           IDM_FILE_SAVE_MAP
         MENUITEM SEPARATOR
         MENUITEM "Save &Plain Text",            IDM_FILE_SAVE_PLAIN
-        MENUITEM "&Copy Plain to Clipboard",    IDM_FILE_COPY_PLAIN
+        MENUITEM "&Copy Plain\tCtrl+C",         IDM_FILE_COPY_PLAIN
         MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       IDM_FILE_EXIT
+        MENUITEM "E&xit\tAlt+F4",               IDM_FILE_EXIT
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo",                       IDM_EDIT_UNDO
+        MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO
         MENUITEM SEPARATOR
         MENUITEM "Edit &Cipher",                IDM_EDIT_MSG
         MENUITEM "Edit &Key",                   IDM_EDIT_MAP
     END
     POPUP "&Cipher"
     BEGIN
-        MENUITEM "&Merge Symbols",              IDM_CIPHER_MERGE
+        MENUITEM "&Merge Symbols\tCtrl+M",      IDM_CIPHER_MERGE
         MENUITEM "&Simplify",                   IDM_CIPHER_SIMPLIFY
         MENUITEM "&Polyalphabet Analysis",      IDM_CIPHER_POLYIC
         MENUITEM "&Row/Column IoC",             IDM_CIPHER_RC_IOC
@@ -57,45 +57,45 @@ BEGIN
     END
     POPUP "&Key"
     BEGIN
-        MENUITEM "&Init Key",                   IDM_KEY_INIT
-        MENUITEM "&Scramble Key",               IDM_KEY_SCRAMBLE
+        MENUITEM "&Init Key\tCtrl+I",           IDM_KEY_INIT
+        MENUITEM "&Scramble Key\tF5",           IDM_KEY_SCRAMBLE
         MENUITEM "&Clear Key",                  IDM_KEY_CLEAR
         MENUITEM SEPARATOR
-        MENUITEM "&Lock Symbol",                IDM_KEY_LOCK
-        MENUITEM "&Unlock Symbol",              IDM_KEY_UNLOCK
+        MENUITEM "&Lock Symbol\tCtrl+L",        IDM_KEY_LOCK
+        MENUITEM "&Unlock Symbol\tCtrl+U",      IDM_KEY_UNLOCK
         MENUITEM SEPARATOR
         MENUITEM "L&ock All",                   IDM_KEY_LOCK_ALL
         MENUITEM "U&nlock All",                 IDM_KEY_UNLOCK_ALL
     END
     POPUP "&Solve"
     BEGIN
-        MENUITEM "&Word Plug",                  IDM_SOLVE_WORD
+        MENUITEM "&Word Plug\tCtrl+W",          IDM_SOLVE_WORD
         MENUITEM SEPARATOR
         POPUP "&Thread Priority"
         BEGIN
-            MENUITEM "&High",                       IDM_SOLVE_TP_HIGH
-            MENUITEM "&Normal",                     IDM_SOLVE_TP_NORM
-            MENUITEM "&Low",                        IDM_SOLVE_TP_LOW
-            MENUITEM "&Idle",                       IDM_SOLVE_TP_IDLE
+            MENUITEM "&High",                   IDM_SOLVE_TP_HIGH
+            MENUITEM "&Normal",                 IDM_SOLVE_TP_NORM
+            MENUITEM "&Low",                    IDM_SOLVE_TP_LOW
+            MENUITEM "&Idle",                   IDM_SOLVE_TP_IDLE
         END
         MENUITEM "&Options",                    IDM_SOLVE_OPTIONS
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Deselect",                   IDM_VIEW_DESELECT
+        MENUITEM "&Deselect\tCtrl+D",           IDM_VIEW_DESELECT
         MENUITEM SEPARATOR
         MENUITEM "&Symbol Graph",               IDM_VIEW_SYMGRAPH
         MENUITEM "&Letter Graph",               IDM_VIEW_LTRGRAPH
         MENUITEM SEPARATOR
         POPUP "Sort &Patterns"
         BEGIN
-            MENUITEM "By &String",                  IDM_VIEW_BYSTRING
-            MENUITEM "By &Frequency",               IDM_VIEW_BYFREQ
+            MENUITEM "By &String",              IDM_VIEW_BYSTRING
+            MENUITEM "By &Frequency",           IDM_VIEW_BYFREQ
         END
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Contents",                   IDM_HELP_CONT
+        MENUITEM "&Contents\tF1",               IDM_HELP_CONT
         MENUITEM "&About",                      IDM_HELP_ABOUT
     END
 END

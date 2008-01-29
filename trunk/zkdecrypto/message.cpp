@@ -308,16 +308,15 @@ void Map::SymbolTable(char *dest)
 
 long Map::SymbolGraph(wchar *dest)
 {
-	int max, step, rows, cur_symbol;
+	int max, step, rows=0, cur_symbol;
 	int dest_index=0;
 	char level[64];
 
 	max=symbols[0].freq;
 	
 	//calculate rows, step
-	rows=(max>MAX_GRA_ROW? MAX_GRA_ROW:max);
-	step=ROUNDUP(float(max)/rows);
-	max=step*rows;
+	step=ROUNDUP(float(max)/MAX_GRA_ROW);
+	max+=step-(max%step);
 
 	dest[0]=0;
 
@@ -336,6 +335,8 @@ long Map::SymbolGraph(wchar *dest)
 
 		ustrcat(dest,0x000D); 
 		ustrcat(dest,0x000A); 
+		
+		rows++;
 	}
 
 	//bottom line
@@ -691,6 +692,12 @@ int Message::AddPattern(NGRAM &new_pat, int inc_freq)
 			delete[] temp;
 		}
 		
+		//skip if position already logged
+		for(int cur_pos=0; cur_pos<found->freq; cur_pos++)
+			if(found->positions[cur_pos]==new_pat.positions[0])
+				return num_patterns;
+		
+		//add new position
 		found->positions[found->freq]=new_pat.positions[0];
 		found->freq++;
 	}
@@ -703,7 +710,6 @@ int Message::GetPattern(NGRAM *find_pat)
 {
 	NGRAM *found;
 
-	//if(FindPattern(find_pat->string,found,patterns))
 	if(FindPattern(find_pat->string,found))
 	{
 		memcpy(find_pat,found,sizeof(NGRAM));
@@ -747,7 +753,6 @@ long Message::WritePatterns(NGRAM *cur_pat, int length)
 	done+=WritePatterns(cur_pat->left,length);
 	done+=WritePatterns(cur_pat->right,length);
 
-	//if(cur_pat->freq>min_freq || (cur_pat->length>2 && cur_pat->freq>(min_freq-1))) 
 	if(cur_pat->length==length)
 	{
 		fprintf(ngram_file,"%s : %i %f\n",cur_pat->string,cur_pat->freq,float(cur_pat->freq)/msg_len);
@@ -849,8 +854,8 @@ void Message::FindPatterns(int do_near)
 				for(int index2=index1+length; index2<msg_len-length; index2++)
 					if(pat_match(cipher+index1,cipher+index2,pattern.string,length))
 					{
-						pattern.positions[0]=index2;
-						pattern.positions[1]=index1;
+						pattern.positions[0]=index1;
+						pattern.positions[1]=index2;
 						AddPattern(pattern,true);
 					}
 			}
@@ -864,7 +869,7 @@ void Message::FindPatterns(int do_near)
 
 long Message::LetterGraph(wchar *dest)
 {
-	int max=0, step, cur_letter, rows;
+	int max=0, step, cur_letter, rows=0;
 	int dest_index=0, act_freq[26];
 	char level[64];
 	
@@ -872,16 +877,15 @@ long Message::LetterGraph(wchar *dest)
 	GetActFreq(act_freq);
 	
 	//find highest occurance
-	for(cur_letter=0; cur_letter<16; cur_letter++)
+	for(cur_letter=0; cur_letter<26; cur_letter++)
 	{
 		if(exp_freq[cur_letter]>max) max=exp_freq[cur_letter];
 		if(act_freq[cur_letter]>max) max=act_freq[cur_letter];
 	}
 
 	//calculate rows, step
-	rows=(max>MAX_GRA_ROW? MAX_GRA_ROW:max);
-	step=ROUNDUP(float(max)/rows);
-	max=step*rows;
+	step=ROUNDUP(float(max)/MAX_GRA_ROW);
+	max+=step-(max%step);
 
 	dest[0]=0;
 
@@ -905,6 +909,8 @@ long Message::LetterGraph(wchar *dest)
 
 		ustrcat(dest,0x0D);
 		ustrcat(dest,0x0A);
+		
+		rows++;
 	}
 
 	//bottom line
