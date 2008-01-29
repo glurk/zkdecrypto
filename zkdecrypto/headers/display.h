@@ -442,7 +442,12 @@ void SetDlgInfo()
 //call when the cipher is changed, i.e. symbol merge
 void SetCipher()
 {	
-	sprintf(szText,"N - %i, M - %.4f, IoC - %.4f",message.GetLength(),message.Multiplicity(),IoC(message.GetCipher()));
+	sprintf(szText,"N - %i, M - %.4f, H - %.4f, IoC - %.4f",
+					message.GetLength(),
+					message.Multiplicity(),
+					Entropy(message.GetCipher()),
+					IoC(message.GetCipher()));
+
 	SetWindowText(hTextWnd,szText);
 
 	szCipher=message.GetCipher();

@@ -91,6 +91,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\hashtable.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\message.cpp
 # End Source File
 # Begin Source File
@@ -120,6 +124,10 @@ SOURCE=.\headers\display.h
 # Begin Source File
 
 SOURCE=.\headers\files.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hashtable.h
 # End Source File
 # Begin Source File
 
