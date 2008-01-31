@@ -139,6 +139,7 @@ public:
 	int GetRow(int,int,char*);
 	int GetColumn(int,int,char*);
 	
+	void SetExpFreq();
 	void GetExpFreq(int*);
 	void GetActFreq(int*);
 		
@@ -196,7 +197,7 @@ private:
 	int AddPattern(NGRAM&,int);
 	long ForAllPatterns(NGRAM *,int,void (*do_func)(NGRAM*));
 	void ClearPatterns(NGRAM*);
-	long Message::WritePatterns(NGRAM*,int);
+	long WritePatterns(NGRAM*,int);
 	
 	char *cipher, *plain;
 	int msg_len;

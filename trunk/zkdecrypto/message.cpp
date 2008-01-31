@@ -457,6 +457,13 @@ void Message::SetCipher(const char *new_cipher)
 	SetInfo();
 }
 
+void Message::SetExpFreq()
+{
+	//set expected frequencies
+	for(int letter=0; letter<26; letter++)
+		exp_freq[letter]=ROUNDTOINT((cur_map.GetUnigraph(letter)/100)*msg_len);
+}
+
 //set all info for new cipher data
 void Message::SetInfo()
 {
@@ -476,9 +483,7 @@ void Message::SetInfo()
 	//sort map
 	cur_map.SortByFreq();
 
-	//set expected frequencies
-	for(int letter=0; letter<26; letter++)
-		exp_freq[letter]=ROUNDTOINT((cur_map.GetUnigraph(letter)/100)*msg_len);
+	SetExpFreq();
 	
 	//patterns
 	FindPatterns(true);
