@@ -453,6 +453,10 @@ int Message::Read(const char *filename)
 void Message::SetCipher(const char *new_cipher)
 {
 	msg_len=(int)strlen(new_cipher);
+	
+	if(cipher) delete[] cipher;
+	cipher=new char[msg_len+1];
+
 	strcpy(cipher,new_cipher);
 	SetInfo();
 }
@@ -649,7 +653,6 @@ int Message::FindPattern(const char *string, NGRAM *&dest, NGRAM *cur_pat, NGRAM
 	dest=cur_pat;
 	return 1;
 }
-
 
 int Message::FindPattern(const char *string, NGRAM *&dest)
 {
@@ -1219,3 +1222,4 @@ void Message::HomophoneSet(char *msg, char letter, int avg_min, int avg_max, flo
 		strcat(msg,temp);
 	}
 }
+

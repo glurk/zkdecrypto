@@ -52,6 +52,17 @@ void ChangePlain()
 	SetFreq();
 }
 
+void RandCipher(int length, int symbols)
+{
+	FILE *rand_cipher;
+
+	sprintf(szText,"%s%s",szExeDir,"random.txt");
+	if(!(rand_cipher=fopen(szText,"w"))) return;
+	for(int x=0; x<340; x++) putc((rand()%63)+0x21,rand_cipher);
+	fclose(rand_cipher);
+	LoadMessage(szText);
+}
+
 /*Window Functions*/
 
 //merge dialog
@@ -593,6 +604,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 					message.HomophoneSet(szText,'N',6,12,float(.1));
 					MessageBox(hMainWnd,szText,"Homophone Sets for N",MB_OK);
+					return 0;
+
+				case IDM_CIPHER_RANDOM:
+					RandCipher(340,63);
 					return 0;
 
 				/*key menu*/

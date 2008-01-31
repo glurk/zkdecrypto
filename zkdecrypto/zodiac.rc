@@ -55,6 +55,7 @@ BEGIN
         MENUITEM "&Row/Column IoC",             IDM_CIPHER_RC_IOC
         MENUITEM "Write &ngram Files",          IDM_CIPHER_NGRAPHS
         MENUITEM "Find &Homophone Set",         IDM_CIPHER_HOMOSET
+        MENUITEM "&Random",                     IDM_CIPHER_RANDOM
     END
     POPUP "&Key"
     BEGIN

@@ -152,7 +152,7 @@ public:
 	void MergeSymbols(char,char,int);
 	int Simplify(char&,char&);
 	void HomophoneSet(char*,char,int,int,float);
-	
+
 	long LetterGraph(wchar*);
 	long PolyKeySize(wchar*,int);
 	long RowColIoC(wchar*,int);

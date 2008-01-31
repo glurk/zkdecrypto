@@ -51,7 +51,7 @@ int iTextWidth=100, iTextHeight=100; //dimensions of cipher and plain
 POINT pntClickPoint; //click point
 
 //graphs
-wchar szGraph[10240];
+wchar szGraph[20480];
 char szGraphTitle[128];
 long lRowCol;
 

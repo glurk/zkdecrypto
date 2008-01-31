@@ -122,6 +122,7 @@
 #define IDM_CIPHER_NGRAPHS              40036
 #define IDM_FILE_COPY_PLAIN             40037
 #define IDM_HELP_CONT                   40038
+#define IDM_CIPHER_RANDOM				40040
 #define IDM_SOLVE_TP_IDLE				40041
 #define IDM_CIPHER_HOMOSET				40042
 #define UDM_DISPALL                     40050

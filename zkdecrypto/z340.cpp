@@ -372,6 +372,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 			symbol.cipher=cipher[position+chr];
 			symbol.plain=word[chr];
 			msg.cur_map.AddSymbol(symbol,0);
+			msg.cur_map.SetLock(msg.cur_map.FindByCipher(symbol.cipher),true);
 		}
 
 		//check validity	
