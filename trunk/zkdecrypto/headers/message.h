@@ -32,8 +32,10 @@
 #define ROUNDUP(F) (DECIMAL(F)>0? int(F)+1:int(F))
 #define IS_ASCII(C) (C>0x1F && C<0x7F)
 #define DECIMAL(N) (N-int(N))
-#define ABS(X) (X<0? (-1*X):X)
-#define CLOSER(A,B,C) (ABS(A-C)<ABS(B-C)) //TRUE if A is closer to C than B is
+#define ABS(X) ((X)<0? (-1*(X)):(X))
+#define CLOSER(A,B,C) (ABS((A)-(C))<ABS((B)-(C))) //TRUE if A is closer to C than B is
+#define CLOSE_TO(A,B,T) (ABS((A)-(B))<=ROUNDTOINT((B)*(T))? true:false)
+#define IS_BETWEEN(X,Y,Z) ((X)>=(Y) && (X)<=(Z))
 
 #pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
 
@@ -51,7 +53,7 @@ struct SYMBOL
 class Map
 {
 public:
-	Map() {num_symbols=0; Clear(CLR_ALL); SetAllLock(0);}
+	Map() {num_symbols=0; Clear(CLR_ALL); memset(locked,0,MAX_SYM);}
 
 	int Read(const char*);
 	int Write(const char*);
@@ -78,7 +80,7 @@ public:
 	int GetLock(int index) {return locked[index];}
 	void SetLock(int index, int lock) {locked[index]=lock;}
 	void ToggleLock(int index) {locked[index]=!locked[index];}
-	void SetAllLock(int lock) {memset(locked,lock,MAX_SYM);}
+	void SetAllLock(int lock) {memset(locked,lock,num_symbols);}
 	const char* GetLocked() {return locked;}
 
 	//set this map equal to another
@@ -148,6 +150,7 @@ public:
 
 	void MergeSymbols(char,char,int);
 	int Simplify(char&,char&);
+	void HomophoneSet(char*,char,int,int,float);
 	
 	long LetterGraph(wchar*);
 	long PolyKeySize(wchar*,int);

@@ -22,7 +22,6 @@
 #define MAX_EXTRA	26
 
 //macros
-#define IS_BETWEEN(X,Y,Z) (X>=Y && X<=Z)
 #define IN_RECT(X,Y,L,T,W,H) (IS_BETWEEN(X,L,L+W) && IS_BETWEEN(Y,T,T+H))
 
 //cipher/key data & files

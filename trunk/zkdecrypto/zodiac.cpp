@@ -575,6 +575,26 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					message.PatternsToFile(szText,5);
 					return 0;
 
+				case IDM_CIPHER_HOMOSET:
+					message.HomophoneSet(szText,'E',6,12,float(.1));
+					MessageBox(hMainWnd,szText,"Homophone Sets for E",MB_OK);
+
+					message.HomophoneSet(szText,'T',6,12,float(.1));
+					MessageBox(hMainWnd,szText,"Homophone Sets for T",MB_OK);
+
+					message.HomophoneSet(szText,'A',6,12,float(.1));
+					MessageBox(hMainWnd,szText,"Homophone Sets for A",MB_OK);
+
+					message.HomophoneSet(szText,'O',6,12,float(.1));
+					MessageBox(hMainWnd,szText,"Homophone Sets for O",MB_OK);
+
+					message.HomophoneSet(szText,'I',6,12,float(.1));
+					MessageBox(hMainWnd,szText,"Homophone Sets for I",MB_OK);
+
+					message.HomophoneSet(szText,'N',6,12,float(.1));
+					MessageBox(hMainWnd,szText,"Homophone Sets for N",MB_OK);
+					return 0;
+
 				/*key menu*/
 				case IDM_KEY_INIT:
 					SetUndo();
