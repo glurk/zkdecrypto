@@ -37,15 +37,10 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	int cuniq,keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
 	char solved[MAX_CIPH_LENGTH],solvedtemp[MAX_CIPH_LENGTH];
-	char uniqstr[ASCII_SIZE],bestkey[ASCII_SIZE];
+	char uniqstr[ASCII_SIZE];
 
-	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=solvedtemp[i]=0;				       //INITIALIZE (ZERO) ARRAYS
+	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=solvedtemp[i]=0;						//INITIALIZE (ZERO) ARRAYS
 	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
-
-	strcpy(bestkey,key);
-	keylength=(int)strlen(key);
-
-	init_genrand((unsigned long)time(NULL));											//SEED RANDOM GENERATOR
 
 	for(i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
 
@@ -55,13 +50,14 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
 
 	cuniq=(int)strlen(uniqstr);
+	keylength=(int)strlen(key);
 	
 	if(keylength < cuniq)      //THIS SHOULD NEVER HAPPEN
 		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); } 
 
 	if (print) printfrequency(clength,uniqarr,uniqstr,cuniq);
 
-	for(x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
@@ -71,6 +67,9 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	int improve=0;
 	info.cur_try=0;
 	info.cur_fail=0;
+	
+	memcpy(info.best_key,key,256);
+	init_genrand((unsigned long)time(NULL));										//SEED RANDOM GENERATOR
 	
 	/*go until max number of iterations or stop is pressed*/
 	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
@@ -95,18 +94,17 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	
 			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
 				bestscore = score;
-				strcpy(bestkey,key);
 				if (print) printcipher(clength,cipher,solved,bestscore,key);
 				
 				/*feedback info*/
 				info.best_score=bestscore;
 				improve=1;
 				info.cur_fail=0;
-				memcpy(info.best_key,bestkey,256);
+				memcpy(info.best_key,key,256);
 				if(info.disp_all) info.disp_all();	
 				}
 	
-			DO_SWAP; for(int x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
+			DO_SWAP; for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
 
 			if((calcscore(clength,solvedtemp,use_graphs))<score) DO_SWAP else memcpy(solved,solvedtemp,clength);
 
@@ -115,8 +113,8 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 
 	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
-	iterations++; if(iterations>info.revert) { strcpy(key,bestkey); iterations=0; }
-	for(x=0;x<cuniq;x++) { for(int y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
+	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	
 	if(!improve) info.cur_fail++;
 	
@@ -296,13 +294,13 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//Return the value of a unigraph for use in other ares of the program                           //
+//           Return the value of a unigraph for use in other ares of the program                //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//Read the specified ngram file, of size n, into the proper array                               //
+//             Read the specified ngram file, of size n, into the proper array                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ReadNGraphs(const char *filename, int n) 
@@ -347,7 +345,7 @@ int ReadNGraphs(const char *filename, int n)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//find position where the word string inserted into the plain text produces the highest score   //
+//  Find position where the word string inserted into the plain text produces the highest score //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 int WordPlug(Message &msg, const char *word, int use_graphs)
