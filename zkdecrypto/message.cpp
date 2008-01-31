@@ -53,7 +53,7 @@ float Entropy(const char *string)
 	GetFreqs(string,freqs);
 
 	//for log base conversion
-	log2=log(2);
+	log2=log((float)2);
 
 	//calculate entropy
 	for(int sym_index=0; sym_index<256; sym_index++)

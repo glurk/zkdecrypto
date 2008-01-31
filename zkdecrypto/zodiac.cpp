@@ -851,8 +851,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	strcpy(szKeyName,szExeDir);
 	
 	//language
-	iLang=0;
-	SetLanguage();
+	//iLang=0;
+	//SetLanguage();
 
 	//show the windows
 	GetWindowRect(hMainWnd,&rMainRect);
@@ -869,7 +869,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		message.Read(szCipherName);
 	}
 
+	//language
+	iLang=0;
 	LoadINI();
+	SetLanguage();
 
 	//message loop
 	while(GetMessage(&Msg,NULL,0,0))
