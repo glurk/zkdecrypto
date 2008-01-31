@@ -84,7 +84,6 @@
 #define IDC_DIFF_TITLE                  1062
 #define IDC_VOWEL_ACT_TITLE             1063
 #define IDC_LTRFREQ_HEADER              1064
-#define IDM_FILE_OPEN                   40001
 #define IDM_FILE_OPEN_MSG               40001
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
@@ -124,6 +123,7 @@
 #define IDM_FILE_COPY_PLAIN             40037
 #define IDM_HELP_CONT                   40038
 #define IDM_SOLVE_TP_IDLE				40041
+#define IDM_CIPHER_HOMOSET				40042
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 

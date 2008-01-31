@@ -54,6 +54,7 @@ BEGIN
         MENUITEM "&Polyalphabet Analysis",      IDM_CIPHER_POLYIC
         MENUITEM "&Row/Column IoC",             IDM_CIPHER_RC_IOC
         MENUITEM "Write &ngram Files",          IDM_CIPHER_NGRAPHS
+        MENUITEM "Find &Homophone Set",         IDM_CIPHER_HOMOSET
     END
     POPUP "&Key"
     BEGIN
@@ -73,10 +74,10 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Thread Priority"
         BEGIN
-            MENUITEM "&High",                   IDM_SOLVE_TP_HIGH
-            MENUITEM "&Normal",                 IDM_SOLVE_TP_NORM
-            MENUITEM "&Low",                    IDM_SOLVE_TP_LOW
-            MENUITEM "&Idle",                   IDM_SOLVE_TP_IDLE
+            MENUITEM "&High",                       IDM_SOLVE_TP_HIGH
+            MENUITEM "&Normal",                     IDM_SOLVE_TP_NORM
+            MENUITEM "&Low",                        IDM_SOLVE_TP_LOW
+            MENUITEM "&Idle",                       IDM_SOLVE_TP_IDLE
         END
         MENUITEM "&Options",                    IDM_SOLVE_OPTIONS
     END
@@ -89,8 +90,8 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Sort &Patterns"
         BEGIN
-            MENUITEM "By &String",              IDM_VIEW_BYSTRING
-            MENUITEM "By &Frequency",           IDM_VIEW_BYFREQ
+            MENUITEM "By &String",                  IDM_VIEW_BYSTRING
+            MENUITEM "By &Frequency",               IDM_VIEW_BYFREQ
         END
     END
     POPUP "&Help"

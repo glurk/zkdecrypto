@@ -1173,3 +1173,44 @@ long Message::RowColIoC(wchar *dest, int cols)
 	
 	return (rows+2)<<16 | ((lines+cols+1)*3)+6;
 }
+
+
+void Message::HomophoneSet(char *msg, char letter, int avg_min, int avg_max, float freq_tol)
+{
+	int set_size;
+	float avg_freq;
+	char temp[512], set[128];
+	SYMBOL symbol;
+
+	letter-='A';
+
+	msg[0]='\0';
+
+	for(int num_homo=2; num_homo<10; num_homo++)
+	{
+		//average frequency for homophones
+		avg_freq=float(exp_freq[letter])/num_homo;
+
+		//skip if average is not within bounds
+		if(!IS_BETWEEN(avg_freq,avg_min,avg_max)) continue;
+
+		//find set
+		set_size=0;
+
+		for(int cur_symbol=0; cur_symbol<cur_map.GetNumSymbols(); cur_symbol++)
+		{
+			cur_map.GetSymbol(cur_symbol,&symbol);
+
+			if(CLOSE_TO(symbol.freq,avg_freq,freq_tol))
+			{
+				set[set_size]=symbol.cipher;
+				set_size++;
+			}
+		}
+		
+		set[set_size]='\0';
+
+		sprintf(temp,"N - %i A - %.2f\t%s\n\n",num_homo,avg_freq,set); 
+		strcat(msg,temp);
+	}
+}
