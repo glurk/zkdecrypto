@@ -849,10 +849,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//set open/save dir as executable dir
 	strcpy(szCipherName,szExeDir);
 	strcpy(szKeyName,szExeDir);
-	
-	//language
-	//iLang=0;
-	//SetLanguage();
 
 	//show the windows
 	GetWindowRect(hMainWnd,&rMainRect);

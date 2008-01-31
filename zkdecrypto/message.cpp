@@ -716,6 +716,11 @@ int Message::AddPattern(NGRAM &new_pat, int inc_freq)
 	//found pattern
 	else if(inc_freq)
 	{
+		//skip if position already logged
+		for(int cur_pos=0; cur_pos<found->freq; cur_pos++)
+			if(found->positions[cur_pos]==new_pat.positions[0])
+				return num_patterns;
+				
 		//must reallocate positions array
 		if(found->freq>=found->pos_size)
 		{
@@ -727,11 +732,6 @@ int Message::AddPattern(NGRAM &new_pat, int inc_freq)
 
 			delete[] temp;
 		}
-		
-		//skip if position already logged
-		for(int cur_pos=0; cur_pos<found->freq; cur_pos++)
-			if(found->positions[cur_pos]==new_pat.positions[0])
-				return num_patterns;
 		
 		//add new position
 		found->positions[found->freq]=new_pat.positions[0];
@@ -890,8 +890,8 @@ void Message::FindPatterns(int do_near)
 				for(int index2=index1+length; index2<msg_len-length; index2++)
 					if(pat_match(cipher+index1,cipher+index2,pattern.string,length))
 					{
-						pattern.positions[0]=index1;
-						pattern.positions[1]=index2;
+						pattern.positions[0]=index2;
+						pattern.positions[1]=index1;
 						AddPattern(pattern,true);
 					}
 			}

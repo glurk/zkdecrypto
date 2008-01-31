@@ -123,12 +123,17 @@ int LoadDictionary(char *filename)
 
 int LoadMap(char *filename)
 {
-	if(!message.cur_map.Read(filename))
+	Map temp_map;
+	
+	if(!temp_map.Read(filename))
 	{
 		sprintf(szText,"Cannot open %s",filename);
 		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
 		return 0;
 	}
+	
+	//update symbols from loaded map
+	message.cur_map+=temp_map;
 
 	//get map filename
 	strcpy(szKeyName,filename);

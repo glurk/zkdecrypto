@@ -1,7 +1,7 @@
 #ifndef _ZODIAC_H
 
 #include "message.h"
-#include "hashtable.h"
+#include "../hashtable.h"
 #include "z340.h"
 
 //program
