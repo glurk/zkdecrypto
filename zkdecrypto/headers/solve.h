@@ -216,4 +216,5 @@ void SetLanguage()
 	
 	GetUnigraphs(unigraphs);
 	message.cur_map.SetUnigraphs(unigraphs);
+	message.SetExpFreq();
 }
