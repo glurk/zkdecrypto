@@ -41,6 +41,7 @@
 
 float IoC(const char*);
 float Entropy(const char*);
+float ChiSquare(const char*);
 
 /*Symbol*/
 struct SYMBOL

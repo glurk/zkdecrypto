@@ -5,20 +5,28 @@
 /*Map*/
 
 //count frequencies of chars in a string
-void GetFreqs(const char *string, int *freqs)
+int GetFreqs(const char *string, int *freqs)
 {
-	int length=(int)strlen(string);
+	int length, index, ascii_index[256], unique=0;
 	
-	memset(freqs,0,256*sizeof(int));
+	length=(int)strlen(string);
 	
-	for(int index=0; index<length; index++)
-		freqs[string[index]]++;
+	memset(ascii_index,0,256*sizeof(int));
+	
+	for(index=0; index<length; index++)
+		ascii_index[string[index]]++;
+
+	for(index=0; index<256; index++)
+		if(ascii_index[index])
+			freqs[unique++]=ascii_index[index];
+
+	return unique;
 }
 
 //index of conincidence of a string
 float IoC(const char *string)
 {
-	int freqs[256], length;
+	int freqs[256], length, unique;
 	float ic=0;
 
 	if(!string) return 0;
@@ -27,10 +35,10 @@ float IoC(const char *string)
 
 	if(length<2) return 0;	
 
-	GetFreqs(string,freqs);
+	unique=GetFreqs(string,freqs);
 
 	//calculate index of conincidence
-	for(int sym_index=0; sym_index<256; sym_index++)
+	for(int sym_index=0; sym_index<unique; sym_index++)
 		if(freqs[sym_index]>1) 
 			ic+=(freqs[sym_index])*(freqs[sym_index]-1); 
 
@@ -41,7 +49,7 @@ float IoC(const char *string)
 
 float Entropy(const char *string)
 {
-	int freqs[256], length;
+	int freqs[256], length, unique;
 	float entropy=0, prob_mass, log2;
 
 	if(!string) return 0;
@@ -50,20 +58,47 @@ float Entropy(const char *string)
 	
 	if(length<0) return 0;
 
-	GetFreqs(string,freqs);
+	unique=GetFreqs(string,freqs);
 
 	//for log base conversion
 	log2=log((float)2);
 
 	//calculate entropy
-	for(int sym_index=0; sym_index<256; sym_index++)
-		if(freqs[sym_index])
-		{
-			prob_mass=float(freqs[sym_index])/length;
-			entropy+=prob_mass*(log(prob_mass)/log2);
-		}
+	for(int sym_index=0; sym_index<unique; sym_index++)
+	{
+		prob_mass=float(freqs[sym_index])/length;
+		entropy+=prob_mass*(log(prob_mass)/log2);
+	}
 
 	return (-1*entropy);
+}
+
+float ChiSquare(const char *string)
+{
+	int freqs[256], length, unique;
+	float chi2=0, prob_mass, cur_calc;
+
+	if(!string) return 0;
+
+	length=(int)strlen(string);
+	
+	if(length<0) return 0;
+
+	unique=GetFreqs(string,freqs);
+
+	//calculate chi2
+	for(int sym_index=0; sym_index<unique; sym_index++)
+	{
+		//prob_mass=float(freqs[sym_index])/length;
+		prob_mass=length*(1.0/unique);
+		cur_calc=freqs[sym_index]-prob_mass;
+		cur_calc*=cur_calc;
+		cur_calc/=prob_mass;
+
+		chi2+=cur_calc;
+	}
+
+	return chi2;
 }
 
 int Map::Read(const char *filename)
