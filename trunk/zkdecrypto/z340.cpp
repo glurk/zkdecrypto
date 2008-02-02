@@ -352,18 +352,21 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 {
  	const char *cipher, *plain;
 	int word_len, msg_len, cur_score=0, best_score=0;
+	int act_freq[26], exp_freq[26], above, fail;
 	SYMBOL symbol;
 	Map org_map, best_map;
 
 	word_len=(int)strlen(word);
 	cipher=msg.GetCipher();
 	msg_len=msg.GetLength();
+	
+	msg.GetExpFreq(exp_freq);
 
 	org_map=msg.cur_map;
 	best_map=msg.cur_map;
 
 	for(int position=0; position<=msg_len-word_len; position++)
-	{
+	{		
 		msg.cur_map=org_map;
 
 		//set word in current position
@@ -374,10 +377,25 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 			msg.cur_map.AddSymbol(symbol,0);
 			msg.cur_map.SetLock(msg.cur_map.FindByCipher(symbol.cipher),true);
 		}
-
+		
+		fail=false;
+		
 		//check validity	
 		plain=msg.GetPlain();
-		if(memcmp(word,plain+position,word_len)) continue;
+		if(memcmp(word,plain+position,word_len)) fail=true;
+		
+		//if any letter appears too often
+		msg.GetActFreq(act_freq);	
+		above=0;
+	
+		for(int letter=0; letter<26; letter++)
+			if(act_freq[letter]>2*exp_freq[letter]) fail=true;
+			//if(act_freq[letter]>exp_freq[letter]) 
+				//above+=act_freq[letter]-exp_freq[letter];
+			
+		//if(above>.1*msg_len) continue;
+		
+		if(fail) continue;
 		
 		//compare score
 		cur_score=calcscore(msg_len,plain,use_graphs);
