@@ -37,11 +37,17 @@
 #define CLOSE_TO(A,B,T) (ABS((A)-(B))<=ROUNDTOINT((B)*(T))? true:false)
 #define IS_BETWEEN(X,Y,Z) ((X)>=(Y) && (X)<=(Z))
 
+#define NUM_ROWS(C,R) (C%R? (C/R)+1:(C/R))
+
 #pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
 
 float IoC(const char*);
 float Entropy(const char*);
 float ChiSquare(const char*);
+/*
+void Transform(char*,unsigned long*,int);
+void FlipHorz(unsigned long*,int&,int,int);
+void FlipVert(unsigned long*,int&,int,int);*/
 
 /*Symbol*/
 struct SYMBOL
@@ -153,6 +159,7 @@ public:
 	void MergeSymbols(char,char,int);
 	int Simplify(char&,char&);
 	void HomophoneSet(char*,char,int,int,float);
+	void Flip(int,int);
 
 	long LetterGraph(wchar*);
 	long PolyKeySize(wchar*,int);

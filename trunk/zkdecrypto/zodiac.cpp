@@ -610,6 +610,27 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					RandCipher(340,63);
 					return 0;
 
+				case IDM_CIPHER_HORZ: 
+					SetUndo();
+					message.Flip(1,iLineChars);
+					SetDlgInfo();
+					SetPatterns();
+					return 0;
+
+				case IDM_CIPHER_VERT:
+					SetUndo();
+					message.Flip(2,iLineChars);
+					SetDlgInfo();
+					SetPatterns();
+					return 0;
+
+				case IDM_CIPHER_REV:
+					SetUndo();
+					message.Flip(3,iLineChars);
+					SetDlgInfo();
+					SetPatterns();
+					return 0;
+
 				/*key menu*/
 				case IDM_KEY_INIT:
 					SetUndo();

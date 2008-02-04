@@ -125,6 +125,9 @@
 #define IDM_CIPHER_RANDOM				40040
 #define IDM_SOLVE_TP_IDLE				40041
 #define IDM_CIPHER_HOMOSET				40042
+#define IDM_CIPHER_HORZ					40043
+#define IDM_CIPHER_VERT					40044
+#define IDM_CIPHER_REV					40045
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 
