@@ -101,6 +101,78 @@ float ChiSquare(const char *string)
 	return chi2;
 }
 
+void Transform(char *string, unsigned long *xfm, int num_xfm)
+{
+	unsigned short xfm_a, xfm_b;
+	char temp;
+	
+	for(int cur_xfm=0; cur_xfm<num_xfm; cur_xfm++)
+	{
+		xfm_a=xfm[cur_xfm]>>16;
+		xfm_b=xfm[cur_xfm]&0xFFFF;
+		
+		temp=string[xfm_a];
+		string[xfm_a]=string[xfm_b];
+		string[xfm_b]=temp;
+	}
+}
+
+void SwapRows(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int row_a, int row_b)
+{
+	int index1, index2;
+
+	for(int cur_col=0; cur_col<row_len; cur_col++)
+	{
+		index1=(row_a*row_len)+cur_col;
+		index2=(row_b*row_len)+cur_col;
+		if(index1>=str_len || index2>=str_len) continue;
+		xfm[num_xfm++]=index1<<16 | index2;
+	}
+}
+
+void SwapCols(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int col_a, int col_b)
+{
+	int index1, index2, num_rows=NUM_ROWS(str_len,row_len);
+
+	for(int cur_row=0; cur_row<num_rows; cur_row++)
+	{
+		index1=(cur_row*row_len)+col_a;
+		index2=(cur_row*row_len)+col_b;
+		if(index1>=str_len || index2>=str_len) continue;
+		xfm[num_xfm++]=index1<<16 | index2;
+	}
+}
+
+void FlipHorz(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
+{
+	for(int cur_col=0; cur_col<=(row_len>>1); cur_col++)
+		SwapCols(xfm,num_xfm,str_len,row_len,cur_col,row_len-cur_col-1);
+}
+
+void FlipVert(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
+{
+	int num_rows=NUM_ROWS(str_len,row_len);
+	
+	for(int cur_row=0; cur_row<=(num_rows>>1); cur_row++)
+		SwapRows(xfm,num_xfm,str_len,row_len,cur_row,num_rows-cur_row-1);
+}
+
+void Message::Flip(int flip_dir, int row_len)
+{
+	unsigned long *xfm=new unsigned long[msg_len<<1];
+	int num_xfm=0;
+
+	if(flip_dir & 0x01) FlipHorz(xfm,num_xfm,msg_len,row_len);
+	if(flip_dir & 0x02) FlipVert(xfm,num_xfm,msg_len,row_len);
+
+	Transform(cipher,xfm,num_xfm);
+
+	delete[] xfm;
+
+	FindPatterns(true);
+}
+
+
 int Map::Read(const char *filename)
 {
 	FILE *mapfile;
