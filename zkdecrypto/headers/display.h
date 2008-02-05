@@ -362,12 +362,13 @@ void SetFreq()
 		iExpFreq=lprgiExpFreq[letter];
 		
 		//current and total frequency difference
-		diff=iActFreq-iExpFreq;
-		if(diff<0) diff*=-1;
-		total_diff+=diff;					
+		diff=iActFreq-iExpFreq;					
 
 		sprintf(szText,"%c  %5i  %5i  %5i\r\n",letter+'A',iActFreq,iExpFreq,diff);
 		strcat(msg,szText);
+
+		if(diff<0) total_diff+=-1*diff;
+		else total_diff+=diff;
 	}
 	
 	//reset selected letter
