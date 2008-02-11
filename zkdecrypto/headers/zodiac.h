@@ -13,6 +13,7 @@
 #define LANG_ENG	"eng"
 #define LANG_SPA	"spa"
 #define LANG_GER	"ger"
+#define LANG_ITA	"ita"
 
 //text constants
 #define CHAR_WIDTH  7
