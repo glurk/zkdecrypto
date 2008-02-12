@@ -188,10 +188,10 @@ void SetLanguage()
 
 	switch(iLang)
 	{
-		case 0: strcpy(szLang,LANG_ENG); break;
-		case 1: strcpy(szLang,LANG_SPA); break;
-		case 2: strcpy(szLang,LANG_GER); break;
-		case 3: strcpy(szLang,LANG_ITA); break;
+		case 0: strcpy(szLanguage,"English"); strcpy(szLang,LANG_ENG); break;
+		case 1: strcpy(szLanguage,"Spanish"); strcpy(szLang,LANG_SPA); break;
+		case 2: strcpy(szLanguage,"German"); strcpy(szLang,LANG_GER); break;
+		case 3: strcpy(szLanguage,"Italian"); strcpy(szLang,LANG_ITA); break;
 	}
 	
 	for(int n=1; n<=5; n++)
