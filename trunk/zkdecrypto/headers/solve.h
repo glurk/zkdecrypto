@@ -19,6 +19,9 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_CIPHER_POLYIC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_RC_IOC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_NGRAPHS,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_HORZ,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_VERT,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_REV,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_INIT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_SCRAMBLE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_CLEAR,MF_BYCOMMAND | menu_state);
@@ -219,3 +222,16 @@ void SetLanguage()
 	message.cur_map.SetUnigraphs(unigraphs);
 	message.SetExpFreq();
 }
+
+int ToggleLock()
+{
+	iCurSymbol=SendDlgItemMessage(hMainWnd,IDC_MAP,LB_GETCURSEL,0,0);
+	if(iCurSymbol<0) return -1;
+	
+	message.cur_map.ToggleLock(iCurSymbol);
+	UpdateSymbol(iCurSymbol);
+	SetText();
+
+	return iCurSymbol;
+}
+							

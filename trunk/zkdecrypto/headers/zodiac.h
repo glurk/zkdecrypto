@@ -23,7 +23,7 @@
 #define MAX_EXTRA	26
 
 //macros
-#define IN_RECT(X,Y,L,T,W,H) (IS_BETWEEN(X,L,L+W) && IS_BETWEEN(Y,T,T+H))
+#define IN_RECT(X,Y,R) (IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
 
 //cipher/key data & files
 Message message; //cipher & main key
@@ -40,6 +40,7 @@ char szTitle[64], szText[1024], szExeDir[1024];
 int iCurSymbol=-1, iCurPat=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
 int iSortBy=0;
+RECT rKeyRect;
 
 //text gui
 COLORREF crRed, crGreen, crBlue, crYellow, crBlack, crWhite;
@@ -52,6 +53,7 @@ int iCipherX=3*iMargin, iCipherY=3*iMargin; //cipher wnd position
 int iPlainX, iPlainY=3*iMargin; //plain wnd position
 int iTextWidth=100, iTextHeight=100; //dimensions of cipher and plain
 POINT pntClickPoint; //click point
+int iTextBorder=4;
 
 //graphs
 wchar szGraph[20480];
@@ -65,9 +67,10 @@ int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="WBVKXZQJ";
 
 //Win32 object handles
-HWND		hMainWnd, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
+HWND		hMainWnd, hKey, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
 HACCEL		hAccel;
-HPEN 		hRedPen, hGreenPen, hBluePen;
+HPEN 		hRedPen, hGreenPen, hBluePen, hWhitePen;
+HBRUSH		hWhiteBrush;
 HDC 		hCipherDC=NULL, hPlainDC=NULL;
 HFONT		hTextFont=NULL;
 HMENU		hMainMenu, hTextMenu;
