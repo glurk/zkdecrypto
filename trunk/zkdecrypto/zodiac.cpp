@@ -439,7 +439,7 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		//click on text
 		case WM_LBUTTONDOWN:
 			TextClick(LOWORD(lParam),HIWORD(lParam));
-			return 0;	
+			return 0;
 
 		case WM_RBUTTONDOWN:
 			CreateTextMenu();
@@ -448,7 +448,7 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		//redraw window
 		case WM_PAINT:
 			BeginPaint(hWnd,&ps);
-			DrawOutlines();
+			SetText();
 			EndPaint(hWnd,&ps);
 			return 0;
 
@@ -462,6 +462,10 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			iWidth=LOWORD(lParam);
 			iHeight=HIWORD(lParam);
 			ResizeText(iWidth,iHeight);
+		case WM_WINDOWPOSCHANGING:
+		case WM_MOVING:
+		case WM_SIZING:
+			SetText();
 			return 0;
 
 		case WM_CLOSE:
@@ -750,6 +754,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							if(iCurSymbol<0) return 0;
 							message.cur_map.ToggleLock(iCurSymbol);
 							UpdateSymbol(iCurSymbol);
+							SetText();
 							break;
 					}
 					return 0;
@@ -846,9 +851,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hPlainDC=GetWindowDC(hPlain);
 
 	/*drawing*/
-	hRedPen=CreatePen(0,0,RGB(255,0,0));
-	hGreenPen=CreatePen(0,0,RGB(0,196,0));
-	hBluePen=CreatePen(0,0,RGB(0,0,255));
+	crRed=RGB(255,0,0);
+	crGreen=RGB(0,196,0);
+	crBlue=RGB(0,0,255);
+	crYellow=RGB(255,255,0);
+	crBlack=RGB(0,0,0);
+	crWhite=RGB(255,255,255);
+	hRedPen=CreatePen(0,0,crRed);
+	hGreenPen=CreatePen(0,0,crGreen);
+	hBluePen=CreatePen(0,0,crBlue);
 	SelectObject(hCipherDC,(HBRUSH)GetStockObject(NULL_BRUSH));
 	SelectObject(hPlainDC,(HBRUSH)GetStockObject(NULL_BRUSH));
 	SetCharSize();

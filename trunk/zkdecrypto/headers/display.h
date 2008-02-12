@@ -3,17 +3,11 @@
 /*Dialog Info Functions*/
 
 //get subset of string needed for display, based on scroll position & chars/line
-int GetDisplayText(const char *src, char *dest)
+/*int GetDisplayText(const char *src, char *dest)
 {
-	int dest_index=0, msg_len;
+	int dest_index=0;
 	
 	if(!src || !dest) return 0;
-	
-	msg_len=message.GetLength();
-	
-	iDispStart=iScrollPos*iLineChars;
-	iDispEnd=iDispStart+(iDispLines*iLineChars);
-	if(iDispEnd>msg_len) iDispEnd=msg_len;
 
 	for(int cur_char=iDispStart; cur_char<iDispEnd; cur_char++)
 	{
@@ -28,7 +22,7 @@ int GetDisplayText(const char *src, char *dest)
 
 	dest[dest_index]='\0';
 	return 1;
-}
+}*/
 
 //set window title
 void SetTitle()
@@ -151,16 +145,61 @@ void DrawOutlines()
 	}
 }
 
+void OutputText(int bSection)
+{
+	const char *szString;
+	int iIndex, iLength, iXPos, iYPos;
+	HWND hWnd;
+	HDC hDC;
+	DWORD dwBG;
+	COLORREF crBG;
+	RECT rTextRect;
+	
+	iLength=message.GetLength();
+		
+	//plain/cipher
+	if(bSection) {hWnd=hPlain; hDC=hPlainDC; szString=szPlain; }
+	else {hWnd=hCipher; hDC=hCipherDC; szString=szCipher;}
+	
+	//get background rect
+	GetClientRect(hWnd,&rTextRect);
+	rTextRect.top++; rTextRect.left++;
+	rTextRect.right--; rTextRect.bottom--;
+
+	dwBG=GetSysColor(COLOR_SCROLLBAR);
+	crBG=RGB(GetRValue(dwBG),GetGValue(dwBG),GetBValue(dwBG));
+	
+	for(int row=0; row<iDispLines; row++)
+		for(int col=0; col<iLineChars; col++)
+		{
+			iIndex=(row+iScrollPos)*iLineChars+col;
+			if(iIndex>=iLength) break;
+				
+			if(message.cur_map.GetLock(message.cur_map.FindByCipher(szCipher[iIndex])))
+				SetBkColor(hDC,crYellow);//SetTextColor(hDC,crGreen);
+			else SetBkColor(hDC,crBG);//SetTextColor(hDC,crBlack);	
+			
+			iXPos=(col*iCharWidth)+1;
+			iYPos=(row*iCharHeight)+1;
+			TextOut(hDC,iXPos,iYPos,szString+iIndex,1);		
+		}
+}
+
 //refresh text display
 void SetText()
 {
-	if(hCipher && GetDisplayText(szCipher,szText))
-		SetWindowText(hCipher,szText);
-		
-	if(hPlain && GetDisplayText(szPlain,szText))
-		SetWindowText(hPlain,szText);
-
+	int msg_len=message.GetLength();
+	
+	iDispStart=iScrollPos*iLineChars;
+	iDispEnd=iDispStart+(iDispLines*iLineChars);
+	if(iDispEnd>msg_len) iDispEnd=msg_len;
+	
+	OutputText(0);
+	OutputText(1);
 	DrawOutlines();
+	
+	sprintf(szText,"%s: Row %i, Column %i, Character %i",szLanguage,iRowSel+1,iColSel+1,iTextSel+1);
+	SetDlgItemText(hTextWnd,IDC_TEXTINFO,szText);
 }
 
 //handle click in text area
@@ -210,8 +249,8 @@ int TextClick(int click_x, int click_y)
 
 	//set selection info
 	iTextSel=text_index;
-	sprintf(szText,"Row %i, Column %i, Character %i",text_row+iScrollPos+1,text_col+1,iTextSel+1);
-	SetDlgItemText(hTextWnd,IDC_TEXTINFO,szText);
+	iRowSel=text_row+iScrollPos;
+	iColSel=text_col;
 
 	SetText();
 
@@ -238,8 +277,10 @@ void SetCharSize()
 	//load font into windows
 	if(hTextFont) CloseHandle(hTextFont);
 	hTextFont=CreateFont(iCharHeight,iCharWidth,0,0,FW_NORMAL,0,0,0,0,0,0,0,0,"Lucida Console");
-	if(hCipher) SendMessage(hCipher,WM_SETFONT,(WPARAM)hTextFont,0);
-	if(hPlain) SendMessage(hPlain,WM_SETFONT,(WPARAM)hTextFont,0);
+	if(hCipher) //SendMessage(hCipher,WM_SETFONT,(WPARAM)hTextFont,0); 
+		SelectObject(hCipherDC,hTextFont);
+	if(hPlain) //SendMessage(hPlain,WM_SETFONT,(WPARAM)hTextFont,0); 
+		SelectObject(hPlainDC,hTextFont);
 
 	//draw text
 	SetScrollBar();
@@ -340,6 +381,7 @@ void SetKey()
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,cur_sel,0);
 	
 	SetTable();
+	SetText();
 }
 
 //refresh letter frequency list
@@ -490,7 +532,7 @@ void ResizeText(int iNewWidth, int iNewHeight)
 	//text info 
 	iX=(iMargin<<1);
 	iY=iNewHeight-(iMargin<<1)-13;
-	iW=200;
+	iW=275;
 	iH=15;
 	SetWindowPos(GetDlgItem(hTextWnd,IDC_TEXTINFO),0,iX,iY,iW,iH,SWP_NOZORDER);
 
