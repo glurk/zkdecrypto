@@ -392,12 +392,42 @@ LRESULT CALLBACK AboutProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+LRESULT CALLBACK TextProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	PAINTSTRUCT ps;
+
+	switch(iMsg)
+	{
+		//click on text
+		case WM_LBUTTONDOWN:
+			TextClick(LOWORD(lParam),HIWORD(lParam));
+			return 0;
+
+		case WM_MBUTTONDOWN:
+			TextClick(LOWORD(lParam),HIWORD(lParam));
+			ToggleLock();
+			return 0;
+
+		case WM_RBUTTONDOWN:
+			TextClick(LOWORD(lParam),HIWORD(lParam));
+			CreateTextMenu();
+			return 0;
+
+		case WM_PAINT: //redraw text windows
+			BeginPaint(hWnd,&ps);
+			SetText();
+			EndPaint(hWnd,&ps);
+			return 0;
+	}
+
+	return DefWindowProc(hWnd,iMsg,wParam,lParam);
+}
+
 //message handler for text window
 LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int iWidth, iHeight;
 	MINMAXINFO *mmiInfo;
-	PAINTSTRUCT ps;
 
 	switch(iMsg)
 	{
@@ -415,7 +445,7 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 			}
 
-	//scroll text
+		//scroll text
 		case WM_VSCROLL:
 			switch(LOWORD(wParam))
 			{
@@ -436,36 +466,16 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SetText();
 			return 0;
 
-		//click on text
-		case WM_LBUTTONDOWN:
-			TextClick(LOWORD(lParam),HIWORD(lParam));
-			return 0;
-
-		case WM_RBUTTONDOWN:
-			CreateTextMenu();
-			return 0;
-
-		//redraw window
-		case WM_PAINT:
-			BeginPaint(hWnd,&ps);
-			SetText();
-			EndPaint(hWnd,&ps);
+		case WM_SIZE:
+			iWidth=LOWORD(lParam);
+			iHeight=HIWORD(lParam);
+			ResizeText(iWidth,iHeight);
 			return 0;
 
 		case WM_GETMINMAXINFO:
 			mmiInfo=(MINMAXINFO*)lParam;
 			mmiInfo->ptMinTrackSize.x=400;
 			mmiInfo->ptMinTrackSize.y=300;
-			return 0;
-
-		case WM_SIZE:
-			iWidth=LOWORD(lParam);
-			iHeight=HIWORD(lParam);
-			ResizeText(iWidth,iHeight);
-		case WM_WINDOWPOSCHANGING:
-		case WM_MOVING:
-		case WM_SIZING:
-			SetText();
 			return 0;
 
 		case WM_CLOSE:
@@ -489,6 +499,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	long time1,time2;
 	SYMBOL symbol;
 	char filename[1024];
+	POINT ptClick;
 
 	switch(iMsg)
 	{
@@ -589,26 +600,6 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					message.PatternsToFile(szText,4);
 					sprintf(szText,"%s%s",szExeDir,"pentagraphs.txt");
 					message.PatternsToFile(szText,5);
-					return 0;
-
-				case IDM_CIPHER_HOMOSET:
-					message.HomophoneSet(szText,'E',6,12,float(.1));
-					MessageBox(hMainWnd,szText,"Homophone Sets for E",MB_OK);
-
-					message.HomophoneSet(szText,'T',6,12,float(.1));
-					MessageBox(hMainWnd,szText,"Homophone Sets for T",MB_OK);
-
-					message.HomophoneSet(szText,'A',6,12,float(.1));
-					MessageBox(hMainWnd,szText,"Homophone Sets for A",MB_OK);
-
-					message.HomophoneSet(szText,'O',6,12,float(.1));
-					MessageBox(hMainWnd,szText,"Homophone Sets for O",MB_OK);
-
-					message.HomophoneSet(szText,'I',6,12,float(.1));
-					MessageBox(hMainWnd,szText,"Homophone Sets for I",MB_OK);
-
-					message.HomophoneSet(szText,'N',6,12,float(.1));
-					MessageBox(hMainWnd,szText,"Homophone Sets for N",MB_OK);
 					return 0;
 
 				case IDM_CIPHER_RANDOM:
@@ -749,13 +740,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							SetText();
 							break;
 
-						case LBN_DBLCLK:
-							iCurSymbol=SendDlgItemMessage(hMainWnd,IDC_MAP,LB_GETCURSEL,0,0);
-							if(iCurSymbol<0) return 0;
-							message.cur_map.ToggleLock(iCurSymbol);
-							UpdateSymbol(iCurSymbol);
-							SetText();
-							break;
+						case LBN_DBLCLK: ToggleLock(); break;
 					}
 					return 0;
 					
@@ -770,14 +755,37 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			return 0;
 
+		case WM_CONTEXTMENU:
+			//rect of key window in screen coordinates
+			GetWindowRect(GetDlgItem(hMainWnd,IDC_MAP),&rKeyRect);
+			
+			//click point in screen coordinates
+			ptClick.x=LOWORD(lParam);
+			ptClick.y=HIWORD(lParam);
+
+			if(IN_RECT(ptClick.x,ptClick.y,rKeyRect))
+			{
+				//convert click to key window coordinates
+				lParam=(ptClick.x-rKeyRect.left) | (ptClick.y-rKeyRect.top)<<16;
+				
+				//send click message
+				SendMessage(hKey,WM_LBUTTONDOWN,0,lParam);
+				SendMessage(hKey,WM_LBUTTONUP,0,lParam);
+				
+				CreateTextMenu();
+			}
+
+			return 0;
+
 		case WM_NOTIFY:
-			if(LPNMHDR(lParam)->hwndFrom==hMainTab) //Control ID
+			if(LPNMHDR(lParam)->hwndFrom==hMainTab) //Control ID 
 				switch(LPNMHDR(lParam)->code) //Notify Code
 				{
 					case NM_CLICK:
 						ShowTab(SendMessage(hMainTab,TCM_GETCURSEL,0,0));
 						return 0;
-				}
+				}					
+
 			return 0;
 		
 		//drag & drop loading of files
@@ -803,7 +811,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				   LPSTR lpszCmdLine, int nCmdShow)
 {
-	int iTextFlags=WS_CHILD | SS_NOPREFIX | SS_LEFTNOWORDWRAP | SS_SUNKEN;
+	int iTextFlags=WS_CHILD;
 	TCITEM tciTabItem;
 	RECT rMainRect;
 	MSG Msg;
@@ -826,6 +834,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hMainWnd,WM_SETICON,ICON_BIG,(WPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_ZODIAC)));
 	hMainMenu=GetMenu(hMainWnd);
 	hAccel=LoadAccelerators(hInst,MAKEINTRESOURCE(IDR_ACCEL));
+	hKey=GetDlgItem(hMainWnd,IDC_MAP);
 
 	/*setup tabs*/
 	hMainTab=GetDlgItem(hMainWnd,IDC_MAIN_TAB);
@@ -844,9 +853,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hTextWnd,WM_SETICON,ICON_BIG,(WPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_ZODIAC)));
 
 	/*cipher/plain text controls*/
+	WNDCLASSEX wcTextClass;
+	memset(&wcTextClass,0,sizeof(WNDCLASSEX));
+	wcTextClass.style = CS_HREDRAW | CS_VREDRAW;
+	wcTextClass.cbSize = sizeof(WNDCLASSEX);
+	wcTextClass.lpfnWndProc = TextProc;
+	wcTextClass.hInstance = hInst;
+	wcTextClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcTextClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wcTextClass.lpszClassName = "ZKDTEXT";
+	RegisterClassEx(&wcTextClass);
+
 	hScroll=GetDlgItem(hTextWnd,IDC_SCROLL);
-	hCipher=CreateWindow("STATIC","",iTextFlags,iCipherX,iCipherY,iTextWidth,iTextHeight,hTextWnd,NULL,hInst,NULL);
-	hPlain=CreateWindow("STATIC","",iTextFlags,iPlainX,iPlainY,iTextWidth,iTextHeight,hTextWnd,NULL,hInst,NULL);
+	hCipher=CreateWindowEx(WS_EX_CLIENTEDGE,"ZKDTEXT","",iTextFlags,iCipherX,iCipherY,iTextWidth,iTextHeight,hTextWnd,NULL,hInst,NULL);
+	hPlain=CreateWindowEx(WS_EX_CLIENTEDGE,"ZKDTEXT","",iTextFlags,iPlainX,iPlainY,iTextWidth,iTextHeight,hTextWnd,NULL,hInst,NULL);
 	hCipherDC=GetWindowDC(hCipher);
 	hPlainDC=GetWindowDC(hPlain);
 
@@ -860,6 +880,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hRedPen=CreatePen(0,0,crRed);
 	hGreenPen=CreatePen(0,0,crGreen);
 	hBluePen=CreatePen(0,0,crBlue);
+	hWhitePen=CreatePen(0,0,crWhite);
+	hWhiteBrush=(HBRUSH)GetStockObject(WHITE_BRUSH);
 	SelectObject(hCipherDC,(HBRUSH)GetStockObject(NULL_BRUSH));
 	SelectObject(hPlainDC,(HBRUSH)GetStockObject(NULL_BRUSH));
 	SetCharSize();

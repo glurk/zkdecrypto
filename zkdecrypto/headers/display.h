@@ -2,28 +2,6 @@
 
 /*Dialog Info Functions*/
 
-//get subset of string needed for display, based on scroll position & chars/line
-/*int GetDisplayText(const char *src, char *dest)
-{
-	int dest_index=0;
-	
-	if(!src || !dest) return 0;
-
-	for(int cur_char=iDispStart; cur_char<iDispEnd; cur_char++)
-	{
-		dest[dest_index++]=src[cur_char];
-				
-		if(!((cur_char+1)%iLineChars)) //end of line
-		{
-			dest[dest_index++]='\r';
-			dest[dest_index++]='\n';
-		}
-	}
-
-	dest[dest_index]='\0';
-	return 1;
-}*/
-
 //set window title
 void SetTitle()
 {
@@ -66,7 +44,7 @@ void OutlineChars(HDC hDC, HPEN hPen, int iStart, int iEnd, int bOutline=false)
 {
 	RECT rOutRect;
 	int iRow, iCol;
-	int iShift=-1;
+	int iShift=-2+iTextBorder;
 	
 	SelectObject(hDC,hPen);
 	
@@ -153,20 +131,14 @@ void OutputText(int bSection)
 	HDC hDC;
 	DWORD dwBG;
 	COLORREF crBG;
-	RECT rTextRect;
 	
 	iLength=message.GetLength();
 		
 	//plain/cipher
 	if(bSection) {hWnd=hPlain; hDC=hPlainDC; szString=szPlain; }
 	else {hWnd=hCipher; hDC=hCipherDC; szString=szCipher;}
-	
-	//get background rect
-	GetClientRect(hWnd,&rTextRect);
-	rTextRect.top++; rTextRect.left++;
-	rTextRect.right--; rTextRect.bottom--;
 
-	dwBG=GetSysColor(COLOR_SCROLLBAR);
+	dwBG=GetSysColor(COLOR_WINDOW);
 	crBG=RGB(GetRValue(dwBG),GetGValue(dwBG),GetBValue(dwBG));
 	
 	for(int row=0; row<iDispLines; row++)
@@ -179,8 +151,9 @@ void OutputText(int bSection)
 				SetBkColor(hDC,crYellow);//SetTextColor(hDC,crGreen);
 			else SetBkColor(hDC,crBG);//SetTextColor(hDC,crBlack);	
 			
-			iXPos=(col*iCharWidth)+1;
-			iYPos=(row*iCharHeight)+1;
+			iXPos=(col*iCharWidth)+iTextBorder;
+			iYPos=(row*iCharHeight)+iTextBorder;
+	
 			TextOut(hDC,iXPos,iYPos,szString+iIndex,1);		
 		}
 }
@@ -205,29 +178,12 @@ void SetText()
 //handle click in text area
 int TextClick(int click_x, int click_y)
 {
-	int window_x, window_y;
 	int text_row, text_col, text_index;
 	char click_char;
 
-	///click in cipher text
-	if(IN_RECT(click_x,click_y,iCipherX,iCipherY,iTextWidth,iTextHeight))
-	{
-		window_x=iCipherX;
-		window_y=iCipherY;
-	}
-
-	//click in plain text
-	else if(IN_RECT(click_x,click_y,iPlainX,iPlainY,iTextWidth,iTextHeight))
-	{
-		window_x=iPlainX;
-		window_y=iPlainY;
-	}
-
-	else return 0;
-
 	//row/column for clicked character
-	text_row=(click_y-window_y)/iCharHeight;
-	text_col=(click_x-window_x)/iCharWidth;
+	text_row=click_y/iCharHeight;
+	text_col=click_x/iCharWidth;
 
 	//check if row/col is outside of text bounds
 	if(!IS_BETWEEN(text_row,0,iLines-1)) return 0;
@@ -257,6 +213,38 @@ int TextClick(int click_x, int click_y)
 	return 1;
 }
 
+//draw white rects on text areas, and set up cliping paths
+void ClearTextAreas()
+{
+	RECT rTextRect;
+
+	//fill white
+	GetClientRect(hCipher,&rTextRect);
+	rTextRect.left+=iTextBorder; rTextRect.top+=iTextBorder;
+	//rTextRect.right-=iTextBorder; rTextRect.bottom-=iTextBorder;
+	FillRect(hCipherDC,&rTextRect,hWhiteBrush);
+
+	//set clipping path
+	SelectObject(hPlainDC,hWhitePen);
+	BeginPath(hCipherDC);
+	Rectangle(hCipherDC,rTextRect.left,rTextRect.top,rTextRect.right,rTextRect.bottom);
+    EndPath(hCipherDC); 
+    SelectClipPath(hCipherDC,RGN_COPY); 
+
+	//fill white
+	GetClientRect(hPlain,&rTextRect);
+	rTextRect.left+=iTextBorder; rTextRect.top+=iTextBorder;
+	//rTextRect.right-=iTextBorder; rTextRect.bottom-=iTextBorder;
+	FillRect(hPlainDC,&rTextRect,hWhiteBrush);
+
+	//set clipping path
+	SelectObject(hPlainDC,hWhitePen);
+	BeginPath(hPlainDC);
+	Rectangle(hPlainDC,rTextRect.left,rTextRect.top,rTextRect.right,rTextRect.bottom);
+	EndPath(hPlainDC); 
+    SelectClipPath(hPlainDC,RGN_COPY);
+}
+
 //set font size
 void SetCharSize()
 {
@@ -277,13 +265,12 @@ void SetCharSize()
 	//load font into windows
 	if(hTextFont) CloseHandle(hTextFont);
 	hTextFont=CreateFont(iCharHeight,iCharWidth,0,0,FW_NORMAL,0,0,0,0,0,0,0,0,"Lucida Console");
-	if(hCipher) //SendMessage(hCipher,WM_SETFONT,(WPARAM)hTextFont,0); 
-		SelectObject(hCipherDC,hTextFont);
-	if(hPlain) //SendMessage(hPlain,WM_SETFONT,(WPARAM)hTextFont,0); 
-		SelectObject(hPlainDC,hTextFont);
+	if(hCipher) SelectObject(hCipherDC,hTextFont);
+	if(hPlain) SelectObject(hPlainDC,hTextFont);
 
 	//draw text
 	SetScrollBar();
+	ClearTextAreas();
 	SetText();
 }
 
@@ -532,7 +519,7 @@ void ResizeText(int iNewWidth, int iNewHeight)
 	//text info 
 	iX=(iMargin<<1);
 	iY=iNewHeight-(iMargin<<1)-13;
-	iW=275;
+	iW=250;
 	iH=15;
 	SetWindowPos(GetDlgItem(hTextWnd,IDC_TEXTINFO),0,iX,iY,iW,iH,SWP_NOZORDER);
 
@@ -547,8 +534,9 @@ void ResizeText(int iNewWidth, int iNewHeight)
 	iW=50;
 	SetWindowPos(GetDlgItem(hTextWnd,IDC_TS_TEXT),0,iX,iY,iW,iH,SWP_NOZORDER);
 
+	ClearTextAreas();
 	SetScrollBar();
-	SetText();
+	//SetText();
 }
 
 void ShowTab(int iTab)
