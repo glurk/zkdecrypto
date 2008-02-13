@@ -86,6 +86,7 @@ int LoadMessage(char *filename)
 	iCurSymbol=-1;
 	iTextSel=-1;
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
+	ClearTextAreas();
 	SetScrollBar();
 	SetTitle();
 	SetCipher();

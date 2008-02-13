@@ -14,7 +14,8 @@
 #define CLR_CIPHER	0x01
 #define CLR_PLAIN	0x02
 #define CLR_FREQ	0x04
-#define CLR_ALL		0x07
+#define CLR_EXCLUDE	0x08
+#define CLR_ALL		0x0F
 
 #define BLANK char(0x97)
 
@@ -55,6 +56,7 @@ struct SYMBOL
 	char cipher;
 	char plain;
 	int freq;
+	char exclude[27];
 };
 
 class Map

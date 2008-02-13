@@ -56,11 +56,11 @@ struct SOLVEINFO
 
 inline int		calcscore(const int,const char *,int&);
 inline int		calclsoc(const int,const char *);
-inline void		shufflekey(char *,const int,const char *);
+inline void		shufflekey(char *,const int,const int,const char *,const char*);
 
 void			printcipher(int,const char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
-int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&,int);
+int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&,const char*,int);
 
 void 			GetUnigraphs(double*);
 int 			ReadNGraphs(const char*,int);

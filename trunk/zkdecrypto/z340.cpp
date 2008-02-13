@@ -30,7 +30,7 @@
 #include "headers/z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
-int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs, int print)
+int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs, const char *exclude, int print)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 
@@ -91,7 +91,15 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			/*stop*/
 			if(!info.running) return bestscore;
 			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical
-	
+			
+			/*exclusions*/
+			if(exclude)
+			{
+				if(p1<cuniq && strchr(exclude+(27*p1),key[p2])) continue; 
+				if(p2<cuniq && strchr(exclude+(27*p2),key[p1])) continue;
+			}
+			
+
 			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
 				bestscore = score;
 				if (print) printcipher(clength,cipher,solved,bestscore,key);
@@ -111,7 +119,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			}
 		}
 
-	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,locked);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,locked,exclude);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
@@ -194,7 +202,7 @@ inline int calclsoc(const int length_of_cipher,const char *solv) {
 //              Mutate the char array "key[]" by swapping two unlocked letters                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline void shufflekey(char *key,const int keylength,const char locked[]) {
+inline void shufflekey(char *key,const int keylength,const int cuniq,const char locked[],const char *exclude) {
 
 	int x,y,z,canswap=0;
 
@@ -205,6 +213,13 @@ inline void shufflekey(char *key,const int keylength,const char locked[]) {
 	{
 		do {x=genrand_int32()%keylength;} while(locked[x]);
 		do {y=genrand_int32()%keylength;} while(locked[y]);
+
+		/*exclusions*/
+		if(exclude)
+		{
+			if(x<cuniq && strchr(exclude+(27*x),key[y])) return; 
+			if(y<cuniq && strchr(exclude+(27*y),key[x])) return;
+		}
 		
 		z=key[x]; key[x]=key[y]; key[y]=z;
 	}
@@ -364,6 +379,8 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 
 	org_map=msg.cur_map;
 	best_map=msg.cur_map;
+
+	memset(&symbol,0,sizeof(SYMBOL));
 
 	for(int position=0; position<=msg_len-word_len; position++)
 	{		

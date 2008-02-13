@@ -182,8 +182,8 @@ int TextClick(int click_x, int click_y)
 	char click_char;
 
 	//row/column for clicked character
-	text_row=click_y/iCharHeight;
-	text_col=click_x/iCharWidth;
+	text_row=(click_y-iTextBorder)/iCharHeight;
+	text_col=(click_x-iTextBorder)/iCharWidth;
 
 	//check if row/col is outside of text bounds
 	if(!IS_BETWEEN(text_row,0,iLines-1)) return 0;
@@ -590,6 +590,8 @@ void CreateTextMenu()
 									
 	AppendMenu(hTextMenu,0,IDM_KEY_LOCK,"&Lock Symbol");
 	AppendMenu(hTextMenu,0,IDM_KEY_UNLOCK,"&Unlock Symbol");
+	AppendMenu(hTextMenu,0,IDM_KEY_EXCLUDE,"E&xclude Letters");
+	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
 	AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
 											
 	TrackPopupMenu(hTextMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,

@@ -147,63 +147,24 @@ LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-//init dialog
-LRESULT CALLBACK PolyProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+//number dialog
+LRESULT CALLBACK NumberProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	int iPolySize;
-	
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
 			SetFocus(GetDlgItem(hWnd,IDC_NUMBER));
 			SendDlgItemMessage(hWnd,IDC_NUMBER,EM_LIMITTEXT,3,0);
-			SetDlgItemInt(hWnd,IDC_NUMBER,25,0);
-			SetWindowText(hWnd,"Max Key Length");
+			SetDlgItemInt(hWnd,IDC_NUMBER,iNumber,0);
+			SetWindowText(hWnd,szNumberTitle);
 			return 0;
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
 				case IDOK:
-					iPolySize=GetDlgItemInt(hWnd,IDC_NUMBER,0,0);
-					EndDialog(hWnd,0);
-					lRowCol=message.PolyKeySize(szGraph,iPolySize);
-					strcpy(szGraphTitle,"Polyalphabetic IoC Count");
-					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
-					return 1;
-
-				case IDCANCEL:
-					EndDialog(hWnd,0);
-					return 0;
-			}
-	}
-
-	return 0;
-}
-
-//init dialog
-LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
-{
-	int iInitSize;
-	
-	switch(iMsg)
-	{
-		case WM_INITDIALOG:
-			SetFocus(GetDlgItem(hWnd,IDC_NUMBER));
-			SendDlgItemMessage(hWnd,IDC_NUMBER,EM_LIMITTEXT,3,0);
-			SetDlgItemInt(hWnd,IDC_NUMBER,message.cur_map.GetNumSymbols(),0);
-			SetWindowText(hWnd,"Symbols to Set");
-			return 0;
-
-		case WM_COMMAND:
-			switch(LOWORD(wParam))
-			{
-				case IDOK:
-					iInitSize=GetDlgItemInt(hWnd,IDC_NUMBER,0,0);
-					SetUndo();
-					message.cur_map.Init(iInitSize);
-					SetDlgInfo();
-					EndDialog(hWnd,0);
+					iNumber=GetDlgItemInt(hWnd,IDC_NUMBER,0,0);
+					EndDialog(hWnd,1);
 					return 1;
 
 				case IDCANCEL:
@@ -216,31 +177,35 @@ LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 }
 
 //word plug dialog
-LRESULT CALLBACK WordProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK StringProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	char szWord[128];
 	int iLength, bChange;
 
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
-			SetFocus(GetDlgItem(hWnd,IDC_WORD));
+			SetFocus(GetDlgItem(hWnd,IDC_STRING));
+			SendDlgItemMessage(hWnd,IDC_STRING,EM_LIMITTEXT,127,0);
+			SetDlgItemText(hWnd,IDC_STRING,szString);
+			SetWindowText(hWnd,szStringTitle);
 			return 0;
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDC_WORD: 
+				case IDC_STRING: 
 					if(HIWORD(wParam)==EN_CHANGE)
 					{
-						GetDlgItemText(hWnd,IDC_WORD,szWord,128);
-						iLength=(int)strlen(szWord);
+						GetDlgItemText(hWnd,IDC_STRING,szString,128);
+						iLength=(int)strlen(szString);
+
+						bChange=false;
 						
 						//remove spaces from string
 						for(int iChar=0; iChar<iLength; iChar++)
-							if(szWord[iChar]==' ')
+							if(szString[iChar]==' ')
 							{
-								memmove(szWord+iChar,szWord+iChar+1,iLength-iChar);
+								memmove(szString+iChar,szString+iChar+1,iLength-iChar);
 								iChar--; iLength--;
 								bChange=true;
 							}
@@ -248,17 +213,15 @@ LRESULT CALLBACK WordProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						//reset string
 						if(bChange)
 						{
-							SetDlgItemText(hWnd,IDC_WORD,szWord);
-							SendDlgItemMessage(hWnd,IDC_WORD,EM_SETSEL,iLength,iLength);
+							SetDlgItemText(hWnd,IDC_STRING,szString);
+							SendDlgItemMessage(hWnd,IDC_STRING,EM_SETSEL,iLength,iLength);
 						}
 					}
 					return 0;
+
 				case IDOK:
-					GetDlgItemText(hWnd,IDC_WORD,szWord,128);
-					SetUndo();
-					iBestScore=WordPlug(message,szWord,iUseGraphs);
-					SetDlgInfo();
-					EndDialog(hWnd,0);
+					GetDlgItemText(hWnd,IDC_STRING,szString,128);
+					EndDialog(hWnd,1);
 					return 1;
 
 				case IDCANCEL:
@@ -582,7 +545,14 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_CIPHER_POLYIC:
-					DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)PolyProc);
+					strcpy(szNumberTitle,"Max Key Length");
+					iNumber=25;
+					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
+					{
+						lRowCol=message.PolyKeySize(szGraph,iNumber);
+						strcpy(szGraphTitle,"Polyalphabetic IoC Count");
+						DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+					}
 					return 0;
 
 				case IDM_CIPHER_RC_IOC:
@@ -629,8 +599,14 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				/*key menu*/
 				case IDM_KEY_INIT:
-					SetUndo();
-					DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)InitProc);
+					strcpy(szNumberTitle,"Symbols to Set");
+					iNumber=message.cur_map.GetNumSymbols();
+					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
+					{
+						SetUndo();
+						message.cur_map.Init(iNumber);
+						SetDlgInfo();
+					}
 					return 0;
 
 				case IDM_KEY_SCRAMBLE:
@@ -652,9 +628,28 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_KEY_LOCK_ALL: message.cur_map.SetAllLock(true); SetKey(); return 0;
 				case IDM_KEY_UNLOCK_ALL: message.cur_map.SetAllLock(false); SetKey(); return 0;
 
+				case IDM_KEY_EXCLUDE:
+					if(iCurSymbol<0) return 0;
+					strcpy(szStringTitle,"Letters to Exclude");
+					message.cur_map.GetSymbol(iCurSymbol,&symbol);
+					strcpy(szString,symbol.exclude);
+					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
+					{
+						strcpy(symbol.exclude,szString);
+						message.cur_map.AddSymbol(symbol,false);
+					}
+					return 0;
+
 				/*solve menu*/
 				case IDM_SOLVE_WORD:
-					DialogBox(hInst,MAKEINTRESOURCE(IDD_WORD),hMainWnd,(DLGPROC)WordProc);
+					strcpy(szStringTitle,"Word to Insert");
+					szString[0]='\0';
+					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
+					{
+						SetUndo();
+						iBestScore=WordPlug(message,szString,iUseGraphs);
+						SetDlgInfo();
+					}
 					return 0;
 
 				case IDM_SOLVE_OPTIONS:

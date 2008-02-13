@@ -34,6 +34,8 @@ char szLanguage[32];
 int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
 HashTable<char *> dictionary;
+int iNumber;
+char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
 
 //GUI data
 char szTitle[64], szText[1024], szExeDir[1024]; 
