@@ -18,6 +18,7 @@
 #define IDD_INIT                        117
 #define IDD_NUMBER                      117
 #define IDD_GRAPHS                      118
+#define IDD_STRING						119
 #define IDR_ACCEL                       122
 #define IDC_PLAIN                       1000
 #define IDC_CIPHER                      1001
@@ -84,6 +85,7 @@
 #define IDC_DIFF_TITLE                  1062
 #define IDC_VOWEL_ACT_TITLE             1063
 #define IDC_LTRFREQ_HEADER              1064
+#define IDC_STRING						1065
 #define IDM_FILE_OPEN_MSG               40001
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
@@ -128,6 +130,7 @@
 #define IDM_CIPHER_HORZ					40043
 #define IDM_CIPHER_VERT					40044
 #define IDM_CIPHER_REV					40045
+#define IDM_KEY_EXCLUDE					40046
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 

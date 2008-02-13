@@ -261,6 +261,7 @@ void Map::Clear(int mode)
 		if(mode & CLR_CIPHER) symbols[cur_symbol].cipher=0;
 		if(mode & CLR_PLAIN) symbols[cur_symbol].plain=0;
 		if(mode & CLR_FREQ) symbols[cur_symbol].freq=0;
+		if(mode & CLR_EXCLUDE) symbols[cur_symbol].exclude[0]='\0';
 	}
 }
 
@@ -325,19 +326,21 @@ int Map::AddSymbol(SYMBOL &symbol, int inc_freq)
 	//search for symbol, and update if it exists
 	index=FindByCipher(symbol.cipher);
 	
-	if(index>-1)
+	if(index>-1) //existing symbol
 	{
 		if(locked[index]) return num_symbols;
 		//if(IS_ASCII(symbol.plain)) 
 		symbols[index].plain=symbol.plain;
 		locked[index]=false;
 		if(inc_freq) symbols[index].freq++;
+		strcpy(symbols[index].exclude,symbol.exclude);
 		return num_symbols;
 	}
 
 	symbols[num_symbols].cipher=symbol.cipher;
 	symbols[num_symbols].plain=symbol.plain;
 	symbols[num_symbols].freq=1;
+	strcpy(symbols[num_symbols].exclude,symbol.exclude);
 	num_symbols++;
 
 	return 1;

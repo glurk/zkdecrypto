@@ -100,7 +100,10 @@ DWORD WINAPI Timer(LPVOID lpVoid)
 //solve thread proc
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
+	int num_symbols;
 	char key[256];
+	char *exclude;
+	SYMBOL symbol;
 	
 	if(!bMsgLoaded) return 0;
 	
@@ -109,13 +112,24 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 	//convert map to key to pass
 	message.cur_map.ToKey(key,szExtraLtr);
 	
-	hillclimb(szCipher,message.GetLength(),key,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs,false);
+	//setup exclude list
+	num_symbols=message.cur_map.GetNumSymbols();
+	exclude=new char[27*num_symbols];
+
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	{
+		message.cur_map.GetSymbol(cur_symbol,&symbol);
+		strcpy(exclude+(27*cur_symbol),symbol.exclude);
+	}
+
+	hillclimb(szCipher,message.GetLength(),key,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs,exclude,false);
 
 	//reset window state
 	StopSolve();
 	SetDlgInfo();
 
 	hSolveThread=NULL;
+	delete[] exclude;
 	ExitThread(0);
 	return 0;
 }
