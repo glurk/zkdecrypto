@@ -1,7 +1,6 @@
 #ifndef _ZODIAC_H
 
 #include "message.h"
-#include "../hashtable.h"
 #include "z340.h"
 
 //program
@@ -33,7 +32,6 @@ char *szCipherBase, *szKeyBase; //file basenames
 char szLanguage[32];
 int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
-HashTable<char *> dictionary;
 int iNumber;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
 

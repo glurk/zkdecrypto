@@ -96,6 +96,7 @@ int LoadMessage(char *filename)
 	return 1;
 }
 
+/*
 int LoadDictionary(char *filename)
 {
 	if(!message.Read(filename)) 
@@ -121,7 +122,7 @@ int LoadDictionary(char *filename)
 	fclose(dictionary_file);
 	return 1;
 }
-
+*/
 int LoadMap(char *filename)
 {
 	Map temp_map;
