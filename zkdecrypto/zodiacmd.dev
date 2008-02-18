@@ -1,7 +1,7 @@
 [Project]
 FileName=zodiacmd.dev
 Name=zodiacmd
-UnitCount=8
+UnitCount=13
 Type=1
 Ver=1
 ObjFiles=
@@ -30,16 +30,6 @@ CompilerSet=0
 CompilerSettings=
 
 [Unit1]
-FileName=message.h
-CompileCpp=1
-Folder=zodiacmd
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit2]
 FileName=message.cpp
 CompileCpp=1
 Folder=zodiacmd
@@ -49,7 +39,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit3]
+[Unit2]
 FileName=z340.cpp
 CompileCpp=1
 Folder=zodiacmd
@@ -59,8 +49,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit3]
+FileName=zodiacmd.cpp
+CompileCpp=1
+Folder=zodiacmd
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit4]
-FileName=z340.h
+FileName=unicode.cpp
 CompileCpp=1
 Folder=zodiacmd
 Compile=1
@@ -70,7 +70,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit5]
-FileName=z340Globals.h
+FileName=headers\display.h
 CompileCpp=1
 Folder=zodiacmd
 Compile=1
@@ -80,7 +80,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit6]
-FileName=zodiacmd.cpp
+FileName=headers\files.h
 CompileCpp=1
 Folder=zodiacmd
 Compile=1
@@ -108,7 +108,7 @@ ProductVersion=
 AutoIncBuildNr=0
 
 [Unit7]
-FileName=unicode.cpp
+FileName=headers\message.h
 CompileCpp=1
 Folder=zodiacmd
 Compile=1
@@ -118,7 +118,57 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit8]
-FileName=unicode.h
+FileName=headers\resource.h
+CompileCpp=1
+Folder=zodiacmd
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit9]
+FileName=headers\solve.h
+CompileCpp=1
+Folder=zodiacmd
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit10]
+FileName=headers\unicode.h
+CompileCpp=1
+Folder=zodiacmd
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit11]
+FileName=headers\z340.h
+CompileCpp=1
+Folder=zodiacmd
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit12]
+FileName=headers\z340Globals.h
+CompileCpp=1
+Folder=zodiacmd
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit13]
+FileName=headers\zodiac.h
 CompileCpp=1
 Folder=zodiacmd
 Compile=1

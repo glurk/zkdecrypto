@@ -166,7 +166,7 @@ BEGIN
     PUSHBUTTON      "&Reset",IDC_RESET,209,247,51,15
     GROUPBOX        "Key Table",IDC_TABLE_TITLE,9,24,94,245,BS_CENTER
     LTEXT           "A\r\nB\r\nC\r\nD\r\nE\r\nF\r\nG\r\nH\r\nI\r\nJ\r\nK\r\nL\r\nM\r\nN\r\nO\r\nP\r\nQ\r\nR\r\nS\r\nT\r\nU\r\nV\r\nW\r\nX\r\nY\r\nZ",
-                    IDC_TABLE,15,55,78,208,0,WS_EX_TRANSPARENT
+                    IDC_TABLE,15,55,78,208,0,SS_NOPREFIX
     GROUPBOX        "Frequency Analysis",IDC_LTRFREQ_TITLE,106,24,162,245,
                     BS_CENTER
     LTEXT           "   Found Expect Differ  ",IDC_LTRFREQ_HEADER,112,42,93,
