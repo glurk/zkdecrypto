@@ -320,7 +320,8 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					//update display
 					SetScrollBar();					
 					SetDlgInfo();
-					SetCipher();
+					ClearTextAreas();
+					SetText();
 
 				case IDCANCEL:
 					EndDialog(hWnd,0);

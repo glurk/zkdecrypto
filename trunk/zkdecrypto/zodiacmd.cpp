@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	si.swaps=5;
 	si.running=true;
 
-	hillclimb(msg.GetCipher(),msg.GetLength(),key,msg.cur_map.GetLocked(),si,ug,true);
+	hillclimb(msg.GetCipher(),msg.GetLength(),key,msg.cur_map.GetLocked(),si,ug,0,true);
 	
 	return 0;
 }

@@ -264,7 +264,7 @@ void Map::Clear(int mode)
 		if(mode & CLR_EXCLUDE) symbols[cur_symbol].exclude[0]='\0';
 	}
 }
-
+/*
 void Map::Init(int first)
 {
 	int letter, set_symbols=0, max_letter;
@@ -296,6 +296,77 @@ void Map::Init(int first)
 
 	//set symbols
 	int cur_symbol=0;
+
+	for(letter=0; letter<26; letter++)
+		while(n[letter]>=1)
+		{		
+			symbols[cur_symbol++].plain=letter+'A';
+			n[letter]--;
+		}
+	
+	SetAllLock(0);
+	
+	//clear and lock the rest
+	while(cur_symbol<num_symbols)
+	{
+		symbols[cur_symbol].plain=0;
+		locked[cur_symbol]=true;
+		cur_symbol++;
+	}
+}*/
+
+void Map::Init(int first)
+{
+	int x, y, xx, letter, set_symbols=0, max_letter, index=0;
+	double n[26];
+	char alphasort[256];
+	float unitemp[27], maxtemp=0;
+	
+	if(first<0) return;
+	first=num_symbols;
+	
+	memset(alphasort,0,256*sizeof(char));
+	memcpy(unitemp,unigraphs,27*sizeof(float));
+    
+	//create frequency-sorted alphabet
+	for(y=0; y<26; y++) {
+		letter=-1; n[y]=0;
+		for(x=0; x<26; x++) {
+			if(unitemp[x]-0.095>maxtemp) { maxtemp=unitemp[x]; letter=xx=x; }
+		}
+		unitemp[xx]=0; maxtemp=0;
+		if(letter != -1) { alphasort[index]=letter+'A'; index++; }
+	}
+ 
+	y=set_symbols=(int)strlen(alphasort);
+	
+	for(x=0; x<y; x++)
+	         symbols[x].plain=alphasort[x];
+
+	//calculate real number of occurances for each letter
+	for(letter=0; letter<26; letter++)
+	{
+		n[letter]=((unigraphs[letter]/100)*first)-1;
+		set_symbols+=int(n[letter]);
+	}
+
+	while(set_symbols<first)
+	{
+		//find the letter with the highest decimal
+		max_letter=0;
+
+		for(letter=0; letter<26; letter++)
+			if(DECIMAL(n[letter])>DECIMAL(n[max_letter])) 
+				max_letter=letter;
+	
+		//set that letter to the next whole number
+		n[max_letter]=int(n[max_letter])+1;
+		set_symbols++;
+	}
+
+	//set symbols
+//	int cur_symbol=0;
+	int cur_symbol=(int)strlen(alphasort);
 
 	for(letter=0; letter<26; letter++)
 		while(n[letter]>=1)
