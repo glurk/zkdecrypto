@@ -96,33 +96,7 @@ int LoadMessage(char *filename)
 	return 1;
 }
 
-/*
-int LoadDictionary(char *filename)
-{
-	if(!message.Read(filename)) 
-	{
-		sprintf(szText,"Cannot open %s",(const char*)filename);
-		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
-		return 0;
-	}
 
-	FILE *dictionary_file;
-
-	dictionary_file=fopen(filename,"r");
-
-	if(!dictionary_file) return 0;
-
-	while(!feof(dictionary_file)) 
-	{
-		char *word;
-		fscanf(dictionary_file,"%s",word);
-		dictionary.insert(word);
-	}
-
-	fclose(dictionary_file);
-	return 1;
-}
-*/
 int LoadMap(char *filename)
 {
 	Map temp_map;

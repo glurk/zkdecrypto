@@ -197,6 +197,31 @@ void SetPriority(int iNewPriority)
 			MessageBox(hMainWnd,"Could not set Priority","Error",MB_ICONEXCLAMATION);
 }
 
+int LoadDictionary(char *filename)
+{
+	FILE *dictionary_file;
+
+	dictionary_file=fopen(filename,"r");
+
+	if(!dictionary_file)
+	{	
+		sprintf(szText,"Cannot open %s",(const char*)filename);
+		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
+		return 0;
+	}
+	int i = 1;
+	while(!feof(dictionary_file)) 
+	{
+		char *word;
+		fscanf(dictionary_file,"%s",word);
+		dictionary[word] = i;
+		i++;
+	}
+
+	fclose(dictionary_file);
+	return 1;
+}
+
 //set language and load data files
 void SetLanguage()
 {
@@ -228,6 +253,9 @@ void SetLanguage()
 			//SendMessage(hMainWnd,WM_CLOSE,0,0);
 		}
 	}
+
+	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"dictionary.txt");
+	LoadDictionary(szGraphName);
 	
 	//sprintf(szText,"%s%s",szExeDir,LANG_DIR);
 	//read_ngraphs(szText,"eng");
