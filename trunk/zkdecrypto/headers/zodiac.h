@@ -64,7 +64,7 @@ long lRowCol;
 SOLVEINFO siSolveInfo;
 int iUseGraphs=USE_BI+USE_TRI+USE_TETRA+USE_PENTA;
 int iPriority, iLang, iBestScore=0;
-char szExtraLtr[MAX_EXTRA+1]="WBVKXZQJ";
+char szExtraLtr[MAX_EXTRA+1]="";
 
 //Win32 object handles
 HWND		hMainWnd, hKey, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
