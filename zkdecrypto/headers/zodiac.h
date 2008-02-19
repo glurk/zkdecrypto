@@ -2,6 +2,7 @@
 
 #include "message.h"
 #include "z340.h"
+#include <map>
 
 //program
 #define PROG_NAME	"Zodiac Decrypto"
@@ -34,6 +35,7 @@ int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
 int iNumber;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
+std::map<char *,int> dictionary;
 
 //GUI data
 char szTitle[64], szText[1024], szExeDir[1024]; 
