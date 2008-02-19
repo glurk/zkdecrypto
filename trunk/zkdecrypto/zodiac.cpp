@@ -342,7 +342,7 @@ LRESULT CALLBACK AboutProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hWnd,IDC_PROG,szText);
 			
 			strcpy(szText,"Wesley Hopper (hopperw2000@yahoo.com)\r\n\r\n");
-			strcat(szText,"Brax Sisco (xenex@bardstowncable.net)\r\n\r\n");
+			strcat(szText,"Brax Sisco (brax_sisco@hotmail.com)\r\n\r\n");
 			strcat(szText,"Michael Eaton (michaeleaton@gmail.com)\r\n\r\n");
 
 			SetDlgItemText(hWnd,IDC_ABOUT,szText);
@@ -897,9 +897,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	
 	/*init solve info*/
 	memset(&siSolveInfo,0,sizeof(SOLVEINFO));
-	siSolveInfo.max_fail=100;
+	siSolveInfo.max_fail=2000;
 	siSolveInfo.swaps=5;
-	siSolveInfo.revert=120*5-1;
+	siSolveInfo.revert=400;
 	siSolveInfo.disp_all=disp_all;
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;
