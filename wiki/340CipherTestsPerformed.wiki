@@ -2,8 +2,10 @@
 
 = Introduction =
 
-Add your content here.
-
+The current cipher decryption engine works well on character substitution ciphers,
+but does NOT work on transposition ciphers.  So, rearranging the cipher, saving it
+to another text file and running it through the decryption engine should solve the
+cipher if the transposition was done correctly.
 
 = Details =
 
@@ -12,3 +14,5 @@ Test #1
 This attempt involved moving the 9th column to the 1st column.
 
 Please download the rearranged file from the download section.
+
+AuthUser
