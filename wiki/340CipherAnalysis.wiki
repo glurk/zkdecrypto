@@ -2,12 +2,8 @@
 
 = Introduction =
 
-Add your content here.
-
+This page should be used to discuss all cipher analysis.  For example, repeating patterns in the cipher, character frequencies, etc.
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+No content yet.
