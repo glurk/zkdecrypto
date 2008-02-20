@@ -11,3 +11,8 @@ Some of these are obvious, but will be stated here so that *all* facts are inclu
 1 - there are 340 symbols in the 340 cipher.
 
 2 - there are 63 unique symbols.
+
+3 - this is not a proven fact, but the 340 cipher is not a simple substitution cipher.
+
+4 - this is not a proven fact, but it is now believed that the 340 cipher is a character
+    substitution + character transposition cipher.
