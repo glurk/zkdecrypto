@@ -6,7 +6,7 @@ Some of these are obvious, but will be stated here so that *all* facts are inclu
 
 = Details =
 
-==Fact==
+==Facts==
 
 1 - there are 340 symbols in the 340 cipher.
 
