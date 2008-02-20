@@ -2,12 +2,15 @@
 
 = Introduction =
 
-Add your content here.
-
+This page should be used for all of those 'crazy' ideas
+that we have about which tests might reveal the contents
+of the cipher.
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+I'd like to determine all encryption/decryption routines
+that were available during the late 1950s to the mid 1970s.
+
+One of these will be the IBM DES (Data Encryption System)
+I believe it was released for production around 1975, but
+had been worked on for a number of years before that as well.
