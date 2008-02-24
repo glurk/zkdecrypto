@@ -12,7 +12,7 @@ I will try to explain some concepts that concern ciphers in general.
 
 3 - first, our team converted those symbols into ASCII characters (the characters on your keyboard) on a one-to-one basis.
 
-4 - once we had the converted text, we save it to a file.  Please note, there can be no CR/LFs (carriage return/line feeds) embedded in the text.  The CR/LFs are invisible, but can be seen with a hex editor.  So, all other characters MUST be removed from the converted file.
+4 - once we have the converted text, we save it to a file.
 
 5 - once this has been done, open a command line window, go to the directory where the file is located and enter 'dir' at the command prompt.  Your file should be 340 bytes in length.  If it is any other size, something is wrong.  You'll have to fix the problem before continuing.  (if you look at the file through Windows Explorer, it will show a file size of 1k (1,000 bytes) - this is because Windows allocates 1k as it's smallest allocation size)
 
