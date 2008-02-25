@@ -42,6 +42,7 @@
 
 #pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
 
+int GetUniques(const char*, char*, int*);
 float IoC(const char*);
 float Entropy(const char*);
 float ChiSquare(const char*);
@@ -80,6 +81,7 @@ public:
 	void SwapSymbols(int,int);
 	void SymbolTable(char*);
 	long SymbolGraph(wchar *dest);
+	long GetExclusions(wchar*,int);
 
 	void MergeSymbols(char,char);
 	
@@ -90,7 +92,7 @@ public:
 	void SetLock(int index, int lock) {locked[index]=lock;}
 	void ToggleLock(int index) {locked[index]=!locked[index];}
 	void SetAllLock(int lock) {memset(locked,lock,num_symbols);}
-	const char* GetLocked() {return locked;}
+	const char* GetLocked() {return locked;}	
 
 	//set this map equal to another
 	void operator = (Map src_map) 
