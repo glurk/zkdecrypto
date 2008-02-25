@@ -385,17 +385,24 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	for(int position=0; position<=msg_len-word_len; position++)
 	{		
 		msg.cur_map=org_map;
+		
+		fail=false;
 
 		//set word in current position
 		for(int chr=0; chr<word_len; chr++)
 		{
-			symbol.cipher=cipher[position+chr];
+			int index=msg.cur_map.FindByCipher(cipher[position+chr]);
+			msg.cur_map.GetSymbol(index,&symbol);
+			
+			//fail on exclusion
+			if(strchr(symbol.exclude,word[chr])) {fail=true;  break;}
+			
 			symbol.plain=word[chr];
 			msg.cur_map.AddSymbol(symbol,0);
 			msg.cur_map.SetLock(msg.cur_map.FindByCipher(symbol.cipher),true);
 		}
 		
-		fail=false;
+		if(fail) continue;		
 		
 		//check validity	
 		plain=msg.GetPlain();

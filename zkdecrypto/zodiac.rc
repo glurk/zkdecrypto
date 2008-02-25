@@ -92,6 +92,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Symbol Graph",               IDM_VIEW_SYMGRAPH
         MENUITEM "&Letter Graph",               IDM_VIEW_LTRGRAPH
+        MENUITEM "&Exclusions",                 IDM_VIEW_EXCLUSIONS
         MENUITEM SEPARATOR
         POPUP "Sort &Patterns"
         BEGIN

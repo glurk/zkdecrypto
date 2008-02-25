@@ -600,14 +600,15 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				/*key menu*/
 				case IDM_KEY_INIT:
-					strcpy(szNumberTitle,"Symbols to Set");
+					//strcpy(szNumberTitle,"Symbols to Set");
+					//iNumber=message.cur_map.GetNumSymbols();
 					iNumber=message.cur_map.GetNumSymbols();
-					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
-					{
+					//if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
+					//{
 						SetUndo();
 						message.cur_map.Init(iNumber);
 						SetDlgInfo();
-					}
+					//}
 					return 0;
 
 				case IDM_KEY_SCRAMBLE:
@@ -636,7 +637,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcpy(szString,symbol.exclude);
 					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
 					{
-						strcpy(symbol.exclude,szString);
+						GetUniques(szString,szText,NULL);
+						strcpy(symbol.exclude,szText);
 						message.cur_map.AddSymbol(symbol,false);
 					}
 					return 0;
@@ -685,6 +687,13 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcpy(szGraphTitle,"Letter Frequencies");
 					hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					ShowWindow(hGraph,SW_SHOWNORMAL);
+					return 0;
+					
+				case IDM_VIEW_EXCLUSIONS:
+					lRowCol=message.cur_map.GetExclusions(szGraph,4);
+					strcpy(szGraphTitle,"Letter Exclusions");
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+					//MessageBox(hMainWnd,szText,"Exclusions",MB_OK);
 					return 0;
 
 				case IDM_VIEW_BYSTRING: SetSort(0); return 0;

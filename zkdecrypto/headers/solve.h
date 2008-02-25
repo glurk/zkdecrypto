@@ -255,7 +255,7 @@ void SetLanguage()
 	}
 
 	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"dictionary.txt");
-	LoadDictionary(szGraphName);
+	//LoadDictionary(szGraphName);
 	
 	//sprintf(szText,"%s%s",szExeDir,LANG_DIR);
 	//read_ngraphs(szText,"eng");

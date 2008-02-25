@@ -5,7 +5,7 @@
 /*Map*/
 
 //count frequencies of chars in a string
-int GetFreqs(const char *string, int *freqs)
+int GetUniques(const char *string, char *unique_str, int *unique_freq)
 {
 	int length, index, ascii_index[256], unique=0;
 	
@@ -18,7 +18,13 @@ int GetFreqs(const char *string, int *freqs)
 
 	for(index=0; index<256; index++)
 		if(ascii_index[index])
-			freqs[unique++]=ascii_index[index];
+		{
+			if(unique_str) unique_str[unique]=index;
+			if(unique_freq) unique_freq[unique]=ascii_index[index];
+			unique++;
+		}
+		
+	if(unique_str) unique_str[unique]='\0';
 
 	return unique;
 }
@@ -35,7 +41,7 @@ float IoC(const char *string)
 
 	if(length<2) return 0;	
 
-	unique=GetFreqs(string,freqs);
+	unique=GetUniques(string,NULL,freqs);
 
 	//calculate index of conincidence
 	for(int sym_index=0; sym_index<unique; sym_index++)
@@ -58,7 +64,7 @@ float Entropy(const char *string)
 	
 	if(length<0) return 0;
 
-	unique=GetFreqs(string,freqs);
+	unique=GetUniques(string,NULL,freqs);
 
 	//for log base conversion
 	log2=log((float)2);
@@ -84,7 +90,7 @@ float ChiSquare(const char *string)
 	
 	if(length<0) return 0;
 
-	unique=GetFreqs(string,freqs);
+	unique=GetUniques(string,NULL,freqs);
 
 	//calculate chi2
 	for(int sym_index=0; sym_index<unique; sym_index++)
@@ -439,6 +445,8 @@ int Map::GetSymbol(int index, SYMBOL *symbol)
 void Map::SwapSymbols(int swap1, int swap2)
 {
 	if(locked[swap1] || locked[swap2]) return;
+	if(strchr(symbols[swap1].exclude,symbols[swap2].plain)) return; 
+	if(strchr(symbols[swap2].exclude,symbols[swap1].plain)) return;
 	
 	char temp=symbols[swap1].plain;
 	symbols[swap1].plain=symbols[swap2].plain;
@@ -570,6 +578,30 @@ long Map::SymbolGraph(wchar *dest)
 
 	//rows in the high word, cols in the low
 	return (rows+2)<<16 | (num_symbols+8);
+}
+
+long Map::GetExclusions(wchar *dest, int num_cols)
+{
+	char temp[64];
+	int rows=0, col=0;
+	
+	dest[0]='\0';
+	
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	{
+		if(col==num_cols) 
+		{
+			ustrcat(dest,"\n\n");
+			col=0;
+			rows++;
+		}
+		
+		sprintf(temp,"%c  %-26s  ",symbols[cur_symbol].cipher,symbols[cur_symbol].exclude);
+		ustrcat(dest,temp);
+		col++;
+	}
+	
+	return (rows<<1)<<16 | (num_cols*32);
 }
 
 //hillclimb key <-> Map class conversion

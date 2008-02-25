@@ -131,6 +131,7 @@
 #define IDM_CIPHER_VERT					40044
 #define IDM_CIPHER_REV					40045
 #define IDM_KEY_EXCLUDE					40046
+#define IDM_VIEW_EXCLUSIONS				40047
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 
