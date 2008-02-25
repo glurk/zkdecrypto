@@ -1,1 +1,376 @@
-<HTML><BODY><div id="main" style="margin: 10px 10px 10px 30px;"><b><u>TABLE OF CONTENTS</u></b><br><br><a href="#howtouse">1. &nbsp;How to use the program</a><br><a href="#howtoadd">2. &nbsp;How to add extra characters to the key</a><br><a href="#howtoeditcipher">3. &nbsp;How to edit the cipher</a><br><a href="#howtosavekey">4. &nbsp;How to save current best key</a><br><a href="#howtoopenkey">5. &nbsp;How to open a saved key</a><br><a href="#howtosavetext">6. &nbsp;How to save the text</a><br><a href="#switchlanguage">7. &nbsp;How to switch language</a><br><a href="#changepriority">8. &nbsp;How to change process priority (system resources used)</a><br><a href="#lock">9. &nbsp;How to lock a character to a symbol (and unlock)</a><br><a href="#merge">10. &nbsp;How to merge symbols and simplify the cipher</a><br><a href="#wordplug">11. &nbsp;Word plug</a><br><a href="#exclude">12. &nbsp;Excluding letters from symbols</a><br><a href="#failure">13. &nbsp;Changing the maximum allowable failure</a><br><a href="#swaps">14. &nbsp;Changing the number of random swaps on a key after a failure</a><br><a href="#revert">15. &nbsp;Changing the revert period</a><br><a href="#transpose">16. &nbsp;Transposing the cipher text</a><br><a href="#poly">17. &nbsp;Performing polyalphabetic analysis (Vignere ect...)</a><br><a href="#ioc">18. &nbsp;Performing row/column index of coincidence analysis</a><br><a href="#undo">19. &nbsp;Undo changes</a><br><a href="#erase">20. &nbsp;Erasing the key</a><br></u></font>______________________________________________________________________<br><br><a name="howtouse"></a><b>1.&nbsp;How to use the program</b><br>1. &nbsp;Open the program<br>2. &nbsp;Select File&gt;Open Cipher (Alternatively Ctrl+O)<br>3. &nbsp;Browse to the ascii file that contains the cipher, click on the file, and then click the "Open" button<br>4. &nbsp;Select Key&gt;Init Key (Alternatively Ctrl+I) and select "OK" (this will give you a standard frequency key).<br>5. &nbsp;Now you can select the "start" button and the main window<br>6. &nbsp;The program will run until it finds what it considers an optimal solution<br>7. &nbsp;The Start/Stop buttons do precisely what they say<br>8. &nbsp;The reset button internally resets the solver back to the beginning<br>______________________________________________________________________<br><a name="howtoadd"></a><br><b>2.&nbsp;How to add extra characters to the key</b><br><img src="images/Image35.jpg" /><br>1. &nbsp;Select Solve&gt;Options<br>2. &nbsp;You should see a text box labeled "Additional Key Letters"<br>3. &nbsp;Add any extra characters that you want the solver to consider to this text box<br>4. &nbsp;Uncommon characters make great "Additional Key Letters"<br>5. &nbsp;Click "OK", the new settings take effect immediately<br>______________________________________________________________________<br><a name="howtoeditcipher"></a><br><b>3.&nbsp;How to edit the cipher</b><br><img src="images/editcipher.jpg" /><br>1. &nbsp;Select Edit&gt;Edit Cipher<br>2. &nbsp;A basic text editor will open up containing your cipher, do not worry about spacing, the program automatically<br>removes extra spaces.<br>3. &nbsp;Make desired changes to cipher<br>4. &nbsp;Click File&gt;Save<br>______________________________________________________________________<br><a name="howtosavekey"></a><br><b>4.&nbsp;How to save the current best key</b><br><img src="images/savekey.jpg" /><br>1. &nbsp;Select File&gt;Save Key (Alternatively Ctrl+S)<br>2. &nbsp;Browse to the desired save directory<br>3. &nbsp;Give your key file an appropriate name and click save<br>______________________________________________________________________<br><a name="howtoopenkey"></a><br><b>5.&nbsp;How to open a saved key</b><br><img src="images/openkey.jpg" /><br>1. &nbsp;Select File&gt;Open Key<br>2. &nbsp;Browse to the directory that contains the key file<br>3. &nbsp;Click the file and click the "Open" button<br>4. &nbsp;This essentially gives the program the state as when you saved the file<br>______________________________________________________________________<br><a name="howtosavetext"></a><br><b>6.&nbsp;How to save the plain text</b><br><img src="images/saveplain.jpg" /><br>1. &nbsp;Select&gt;Save Plain Text<br>2. &nbsp;Browse to the desired save directory<br>3. &nbsp;Give your key file an appropriate name and click save<br>4. &nbsp;If you are interested in preserving the current solution, you may want to save the key along side with the plain text<br>______________________________________________________________________<br><a name="switchlanguage"></a><br><b>7.&nbsp;How to switch the solving language</b><br><img src="images/Image37.jpg" /><br>1. &nbsp;Select Solve&gt;Options<br>2. &nbsp;In the "Misc Options" section you should see a drop down list labeled "Language"<br>3. &nbsp;Select your desired language and click "OK"<br>4. &nbsp;The settings take effect immediately<br>______________________________________________________________________<br><a name="changepriority"></a><br><b>8.&nbsp;How to change the system resources the program uses (How much it slows your system)</b><br><img src="images/Image35.jpg" /><br>1. &nbsp;Select Solve&gt;Thread Priority<br>2. &nbsp;You should see a list of priorities, High being the most system intensive, idle being the least intensive<br>3. &nbsp;Select your desired priority and a check-mark should appear next to it<br>______________________________________________________________________<br><a name="lock"></a><br><b>9.&nbsp;How to lock a character to a symbol (and unlock)</b><br><img src="images/locksymbol.jpg" /><br>1. &nbsp;A character-symbol combination will lock by double clicking (Alternatively by selecting and Ctrl+L)<br>2. &nbsp;Square brackets will appear around a locked symbol<br>3. &nbsp;You can also lock a character-symbol combination by highlighting it and select Key&gt;Lock Symbol<br>4. &nbsp;You can unlock by double clicking or repeating step 3 and selecting Key&gt;Unlock Symbol (Alternatively by selecting and Ctrl+U)<br>5. &nbsp;You can lock and unlock all symbols by select Key&gt;Lock All or Unlock All<br>______________________________________________________________________<br><a name="merge"></a><br><b>10.&nbsp;How to merge symbols and simplify the cipher<br></b>If you suspect that two symbols represent the same plain-text character, it is beneficial to the solver to merge those characters<br>together. &nbsp;In general, the fewer the symbols the easier it is to solve (if its homophonic). &nbsp;The downfall may be that the merging of <br>symbols destroys the natural expected frequencies between plain characters and cipher characters.<br>To use this feature:<br>1. &nbsp;Select Cipher&gt;Merge Symbols (Alternatively Ctrl+M)<br><img src="images/Image20.jpg" /><br>2. &nbsp;Select the two symbols you would like to merge in each of the drop downs<br>3. &nbsp;Click "OK" and the symbols will be automatically merge<br>If you would like the program decide which symbols are the best to merge you can use the simplify feature.<br>To use this feature:<br>1. &nbsp;Select Cipher&gt;Simplify<br><img src="images/simplify1.jpg" /><br>2. &nbsp;It may take 30 or more seconds, but once the program determines which symbols to merge, it will report them to you and<br>give you the option to merge them.<br>______________________________________________________________________<br><br><a name="wordplug"></a><b>11.&nbsp;Using the word-plug feature</b><br>The word-plug feature takes a word as input and attempts to place that word in an optimal location within the cipher.<br>It automatically adjusts the key when it places the word and locks those character-symbol combinations. &nbsp;This is a more<br>advanced feature that takes practice using. &nbsp;It is good to test it out on practice ciphers. &nbsp;Just because it places a word, it doesn't<br>mean that the word it in the actual correct solution.<br>To use the feature:<br><img src="images/wordplug.jpg" /><br>1. &nbsp;Select Solve&gt;Wordplug (Alternatively Ctrl+W)<br>2. &nbsp;Type in the word that you want the word-plugger to place<br>3. &nbsp;Click "OK" and it will automatically be placed<br>______________________________________________________________________<br><br><a name="exclude"></a><b>12.&nbsp;Excluding letters from symbols</b><br>Excluding letters allows you to prevent a symbol from taking on a certain letter.  This feature is usefull for controlling the behavior of symbols.<br>To use the feature:<br>1. &nbsp;Right click the desired symbol in the key area and select "Exclude Letters" (Alternatively Shift+Ctrl+X)<br><img src="images/exclude1.jpg" /><br>2. &nbsp;Type in all of the letters that you would like to be excluded from that symbol<br><img src="images/exclude2.jpg" /><br>3. &nbsp;Click "OK" and your changes will take effect<br>______________________________________________________________________<br><br><a name="failure"></a><b>13.&nbsp;Changing the maximum allowable failure</b><br>This will allow the program more time to work its way out of local maxima when attempting to solve a cipher.<br>To use the feature:<br>1. &nbsp;Select Solve&gt;Options<br><img src="images/failure1.jpg" /><br>2. &nbsp;Change the value located in the "Max Failures" textbox to your desired value<br><img src="images/failure2.jpg" /><br>3. &nbsp;Click "OK" and your changes will take effect (you should notice the failure number is updated on the "Solve" tab)<br>______________________________________________________________________<br><br><a name="swaps"></a><b>14.&nbsp;Changing the number of random swaps on a key after a failure</b><br>This will also help the program more time to work its way out of local maxima when attempting to solve a cipher.<br>To use the feature:<br>1. &nbsp;Select Solve&gt;Options<br><img src="images/swaps1.jpg" /><br>2. &nbsp;Change the value located in the "Random Swaps" textbox to your desired value<br>3. &nbsp;Click "OK" and your changes will take effect<br>______________________________________________________________________<br><br><a name="revert"></a><b>15.&nbsp;Changing the revert period</b><br>The revert period is how many iterations to perform before reverting back to the previous best key which is also important<br />to getting unstuck from local maxima.<br>To use the feature:<br>1. &nbsp;Select Solve&gt;Options<br><img src="images/revert1.jpg" /><br>2. &nbsp;Change the value located in the "Revert Period" textbox to your desired value<br>3. &nbsp;Click "OK" and your changes will take effect<br>______________________________________________________________________<br><br><a name="transposition"></a><b>16.&nbsp;Transposing the cipher text</b><br><img src="images/transpose1.jpg" /><br>1. &nbsp;Select Cipher and "Flip Horizontal" or "Flip Vertical" or "Reverse"<br>2. &nbsp;Your change should take effect immediately<br>______________________________________________________________________<br><br><a name="poly"></a><b>17.&nbsp;Performing polyalphabetic analysis (Vignere ect...)</b><br>This feature is useful for analysing polyalphabetic ciphers.  This feature generates a graph with key length on the x-axis and index<br>of coincidence on the y-axis.  Vignere ciphers tend to have a peak index of coincidence on the correct key length.<br>To use the feature:<br><img src="images/polyalph1.jpg" /><br>1. &nbsp;Select Cipher&gt;Polyalphabet Analysis<br>2. &nbsp;Put in a max key length and select "OK"<br><img src="images/polyalph2.jpg" /><br>3. &nbsp;You should now see a graph<br>______________________________________________________________________<br><br><a name="ioc"></a><b>18.&nbsp;Performing row/column index of coincidence analysis</b><br>This feature is for analyzing the level of coincident on rows an columns<br><img src="images/ioc1.jpg" /><br>1. &nbsp;Select Cipher&gt;Row/Column IoC<br><img src="images/ioc2.jpg" /><br>2. &nbsp;You should now see a graph with the row/column index of coincidence values<br>______________________________________________________________________<br><br><a name="undo"></a><b>19.&nbsp;Undo changes</b><br><img src="images/undo1.jpg" /><br>1. &nbsp;Select Edit&gt;Undo (Alternatively Ctrl+Z)<br>2. &nbsp;Your change should now be reverted<br>______________________________________________________________________<br><br><a name="erase"></a><b>20.&nbsp;Erasing the key</b><br><img src="images/erase1.jpg" /><br>1. &nbsp;Select Key&gt;Erase Key (Alternatively Ctrl+E)<br>2. &nbsp;The key should be erased<br><br><br><br></div></BODY></HTML>
+<HTML>
+
+<BODY>
+<div id="main" style="margin: 10px 10px 10px 30px;">
+<b><u>TABLE OF CONTENTS</u></b><br>
+
+<br><a href="#howtouse">1. &nbsp;How to use the program</a>
+<br><a href="#howtoadd">2. &nbsp;How to add extra characters to the key</a>
+<br><a href="#howtoeditcipher">3. &nbsp;How to edit the cipher</a>
+<br><a href="#howtosavekey">4. &nbsp;How to save current best key</a>
+<br><a href="#howtoopenkey">5. &nbsp;How to open a saved key</a>
+<br><a href="#howtosavetext">6. &nbsp;How to save the text</a>
+<br><a href="#switchlanguage">7. &nbsp;How to switch language</a>
+<br><a href="#changepriority">8. &nbsp;How to change process priority (system resources used)</a>
+<br><a href="#lock">9. &nbsp;How to lock a character to a symbol (and unlock)</a>
+<br><a href="#merge">10. &nbsp;How to merge symbols and simplify the cipher</a>
+<br><a href="#wordplug">11. &nbsp;Using the word-plug feature</a>
+<br><a href="#exclude">12. &nbsp;Excluding letters from symbols</a>
+<br><a href="#failure">13. &nbsp;Changing the maximum allowable failure</a>
+<br><a href="#swaps">14. &nbsp;Changing the number of random swaps on a key after a failure</a>
+<br><a href="#revert">15. &nbsp;Changing the revert period</a>
+<br><a href="#transpose">16. &nbsp;Transposing the cipher text</a>
+<br><a href="#poly">17. &nbsp;Performing polyalphabetic analysis (Vignere ect...)</a>
+<br><a href="#ioc">18. &nbsp;Performing row/column index of coincidence analysis</a>
+<br><a href="#undo">19. &nbsp;Undo changes</a>
+<br><a href="#erase">20. &nbsp;Erasing the key</a>
+<br></u></font>______________________________________________________________________
+
+<br>
+
+<br>
+<a name="howtouse"></a>
+<b>
+1.&nbsp;How to use the program
+</b>
+<br>1. &nbsp;Open the program
+
+<br>2. &nbsp;Select File&gt;Open Cipher (Alternatively Ctrl+O)
+
+<br>3. &nbsp;Browse to the ascii file that contains the cipher, click on the file, and then click the "Open" button
+
+<br>4. &nbsp;Select Key&gt;Init Key (Alternatively Ctrl+I) and select "OK" (this will give you a standard frequency key).
+
+<br>5. &nbsp;Now you can select the "start" button in the main window
+
+<br>6. &nbsp;The program will run until it reaches maximum failures
+
+<br>7. &nbsp;The Start/Stop buttons do precisely what they say
+
+<br>8. &nbsp;The reset button internally resets the solver back to the beginning
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="howtoadd"></a>
+<br><b>2.&nbsp;How to add extra characters to the key</b>
+<br><img src="images/Image37.jpg" />
+<br>1. &nbsp;Select Solve&gt;Options
+
+<br>2. &nbsp;You should see a text box labeled "Additional Key Letters"
+
+<br>3. &nbsp;Add any extra characters that you want the solver to consider to this text box
+
+<br>4. &nbsp;Uncommon characters make great "Additional Key Letters"
+
+<br>5. &nbsp;Click "OK", the new settings take effect immediately
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="howtoeditcipher"></a>
+<br><b>3.&nbsp;How to edit the cipher</b>
+<br><img src="images/editcipher.jpg" />
+<br>1. &nbsp;Select Edit&gt;Edit Cipher
+
+<br>2. &nbsp;A basic text editor will open up containing your cipher, do not worry about spacing, the program automatically
+
+<br>removes extra spaces.
+
+<br>3. &nbsp;Make desired changes to cipher
+
+<br>4. &nbsp;Click File&gt;Save
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="howtosavekey"></a>
+<br><b>4.&nbsp;How to save the current best key</b>
+<br><img src="images/savekey.jpg" />
+<br>1. &nbsp;Select File&gt;Save Key (Alternatively Ctrl+S)
+
+<br>2. &nbsp;Browse to the desired save directory
+
+<br>3. &nbsp;Give your key file an appropriate name and click save
+
+<br>______________________________________________________________________
+
+<br>
+<a name="howtoopenkey"></a>
+<br><b>5.&nbsp;How to open a saved key</b>
+<br><img src="images/openkey.jpg" />
+<br>1. &nbsp;Select File&gt;Open Key
+
+<br>2. &nbsp;Browse to the directory that contains the key file
+
+<br>3. &nbsp;Click the file and click the "Open" button
+
+<br>4. &nbsp;This essentially gives the program the state as when you saved the file
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="howtosavetext"></a>
+<br><b>6.&nbsp;How to save the plain text</b>
+<br><img src="images/saveplain.jpg" />
+<br>1. &nbsp;Select&gt;Save Plain Text
+
+<br>2. &nbsp;Browse to the desired save directory
+
+<br>3. &nbsp;Give your key file an appropriate name and click save
+
+<br>4. &nbsp;If you are interested in preserving the current solution, you may want to save the key along with the plain text
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="switchlanguage"></a>
+<br><b>7.&nbsp;How to switch the solving language</b>
+<br><img src="images/Image37.jpg" />
+<br>1. &nbsp;Select Solve&gt;Options
+
+<br>2. &nbsp;In the "Misc Options" section you should see a drop down list labeled "Language"
+
+<br>3. &nbsp;Select your desired language and click "OK"
+
+<br>4. &nbsp;The settings take effect immediately
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="changepriority"></a>
+<br><b>8.&nbsp;How to change the system resources the program uses (How much it slows your system)</b>
+<br><img src="images/Image35.jpg" />
+<br>1. &nbsp;Select Solve&gt;Thread Priority
+
+<br>2. &nbsp;You should see a list of priorities, High being the most system intensive, Idle being the least intensive
+
+<br>3. &nbsp;Select your desired priority and a check-mark should appear next to it
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="lock"></a>
+<br><b>9.&nbsp;How to lock a character to a symbol (and unlock)</b>
+<br><img src="images/locksymbol.jpg" />
+<br>1. &nbsp;A character-symbol combination will lock by double clicking (Alternatively by selecting and Ctrl+L)
+
+<br>2. &nbsp;Square brackets will appear around a locked symbol
+
+<br>3. &nbsp;You can also lock a character-symbol combination by highlighting it and select Key&gt;Lock Symbol
+
+<br>4. &nbsp;You can unlock by double clicking or repeating step 3 and selecting Key&gt;Unlock Symbol (Alternatively by selecting and Ctrl+U)
+
+<br>5. &nbsp;You can lock and unlock all symbols by select Key&gt;Lock All or Unlock All
+
+<br>______________________________________________________________________
+
+<br>
+
+<a name="merge"></a>
+<br><b>10.&nbsp;How to merge symbols and simplify the cipher
+
+<br></b>If you suspect that two symbols represent the same plain-text character, it is beneficial to the solver to merge those characters
+
+<br>together. &nbsp;In general, the fewer the symbols the easier it is to solve (if its homophonic). &nbsp;The downfall may be that the merging of 
+
+<br>symbols destroys the natural expected frequencies between plain characters and cipher characters.
+
+<br>To use this feature:
+
+<br>1. &nbsp;Select Cipher&gt;Merge Symbols (Alternatively Ctrl+M)
+
+<br><img src="images/Image20.jpg" />
+
+<br>2. &nbsp;Select the two symbols you would like to merge in each of the drop downs
+
+<br>3. &nbsp;Click "OK" and the symbols will be automatically merged
+
+<br>If you would like the program decide which symbols are the best to merge you can use the simplify feature.
+
+<br>To use this feature:
+
+<br>1. &nbsp;Select Cipher&gt;Simplify
+<br><img src="images/simplify1.jpg" />
+<br>2. &nbsp;It may take 30 or more seconds, but once the program determines which symbols to merge, it will report them to you and
+
+<br>give you the option to merge them.
+
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+<a name="wordplug"></a>
+<b>11.&nbsp;Using the word-plug feature</b>
+
+<br>The word-plug feature takes a word as input and attempts to place that word in an optimal location within the cipher.
+
+<br>It automatically adjusts the key when it places the word and locks those character-symbol combinations. &nbsp;This is a more
+
+<br>advanced feature that takes practice using. &nbsp;It is good to test it out on practice ciphers. &nbsp;Just because it places a word, it doesn't
+
+<br>mean that the word is in the actual correct solution.
+
+<br>To use the feature:
+<br><img src="images/wordplug.jpg" />
+<br>1. &nbsp;Select Solve&gt;Wordplug (Alternatively Ctrl+W)
+
+<br>2. &nbsp;Type in the word that you want the word-plugger to place
+
+<br>3. &nbsp;Click "OK" and it will automatically be placed
+
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="exclude"></a>
+<b>12.&nbsp;Excluding letters from symbols</b>
+
+<br>Excluding letters allows you to prevent a symbol from taking on a certain letter.  This feature is useful for controlling the behavior of symbols.
+<br>To use the feature:
+
+<br>1. &nbsp;Right click the desired symbol in the key area and select "Exclude Letters" (Alternatively Shift+Ctrl+X)
+<br><img src="images/exclude1.jpg" />
+<br>2. &nbsp;Type in all of the letters that you would like to be excluded from that symbol
+<br><img src="images/exclude2.jpg" />
+<br>3. &nbsp;Click "OK" and your changes will take effect
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="failure"></a>
+<b>13.&nbsp;Changing the maximum allowable failure</b>
+
+<br>This feature effectively allows you to control how long the program runs on a given cipher.
+<br>To use the feature:
+
+<br>1. &nbsp;Select Solve&gt;Options
+<br><img src="images/failure1.jpg" />
+<br>2. &nbsp;Change the value located in the "Max Failures" textbox to your desired value
+<br><img src="images/failure2.jpg" />
+<br>3. &nbsp;Click "OK" and your changes will take effect (you should notice the failure number is updated on the "Solve" tab)
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="swaps"></a>
+<b>14.&nbsp;Changing the number of random swaps on a key after a failure</b>
+
+<br>This will help give the program more time to work its way out of local maxima when attempting to solve a cipher.
+<br>To use the feature:
+
+<br>1. &nbsp;Select Solve&gt;Options
+<br><img src="images/swaps1.jpg" />
+<br>2. &nbsp;Change the value located in the "Random Swaps" textbox to your desired value
+<br>3. &nbsp;Click "OK" and your changes will take effect
+<br>4. &nbsp;The default value is 5
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="revert"></a>
+<b>15.&nbsp;Changing the revert period</b>
+
+<br>The revert period is how many iterations to perform before reverting back to the previous best key which is also important<br />
+to getting unstuck from local maxima.
+<br>To use the feature:
+
+<br>1. &nbsp;Select Solve&gt;Options
+<br><img src="images/revert1.jpg" />
+<br>2. &nbsp;Change the value located in the "Revert Period" textbox to your desired value
+<br>3. &nbsp;Click "OK" and your changes will take effect
+<br>4. &nbsp;The default value is 400
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="transpose"></a>
+<b>16.&nbsp;Transposing the cipher text</b>
+<br><img src="images/transpose1.jpg" />
+<br>1. &nbsp;Select Cipher and "Flip Horizontal" or "Flip Vertical" or "Reverse"
+<br>2. &nbsp;Your change should take effect immediately
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="poly"></a>
+<b>17.&nbsp;Performing polyalphabetic analysis (Vignere ect...)</b>
+
+<br>This feature is useful for analysing polyalphabetic ciphers.  This feature generates a graph with key length on the x-axis and index
+<br>of coincidence on the y-axis.  Vignere ciphers tend to have a peak index of coincidence on the correct key length.
+<br>To use the feature:
+<br><img src="images/polyalph1.jpg" />
+<br>1. &nbsp;Select Cipher&gt;Polyalphabet Analysis
+<br>2. &nbsp;Put in a max key length and select "OK"
+<br><img src="images/polyalph2.jpg" />
+<br>3. &nbsp;You should now see a graph
+
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="ioc"></a>
+<b>18.&nbsp;Performing row/column index of coincidence analysis</b>
+
+<br>This feature is for analyzing the level of coincidence on rows and columns
+<br><img src="images/ioc1.jpg" />
+<br>1. &nbsp;Select Cipher&gt;Row/Column IoC
+<br><img src="images/ioc2.jpg" />
+<br>2. &nbsp;You should now see a graph with the row/column index of coincidence values
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="undo"></a>
+<b>19.&nbsp;Undo changes</b>
+
+<br><img src="images/undo1.jpg" />
+<br>1. &nbsp;Select Edit&gt;Undo (Alternatively Ctrl+Z)
+<br>2. &nbsp;Your change should now be reverted
+<br>______________________________________________________________________
+
+<br>
+
+<br>
+
+<a name="erase"></a>
+<b>20.&nbsp;Erasing the key</b>
+
+<br><img src="images/erase1.jpg" />
+<br>1. &nbsp;Select Key&gt;Erase Key (Alternatively Ctrl+E)
+<br>2. &nbsp;The key should be erased
+<br>
+
+<br>
+<br>
+
+<br>
+</div>
+</BODY>
+
+</HTML>
+
