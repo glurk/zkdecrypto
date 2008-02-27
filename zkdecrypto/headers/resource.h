@@ -134,6 +134,7 @@
 #define IDM_VIEW_EXCLUSIONS				40047
 #define IDM_CIPHER_BESTSEC				40048
 #define IDM_VIEW_MERGE_LOG				40049
+#define IDM_VIEW_WORDS					40052
 #define UDM_DISPALL                     40050
 #define UDM_DISPINFO                    40051
 

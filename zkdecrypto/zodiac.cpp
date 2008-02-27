@@ -70,6 +70,61 @@ void BestSection()
 	delete[] section;
 }
 
+long FoundWords(wchar *dest, int num_cols)
+{
+	int msg_len, rows=0, col=0;
+	const char *plain;
+	char plain_word[32], temp[64];
+	DICTMAP::iterator dict_itr;
+	std::string word_str;
+	int cur_id, words_found[1024], num_words=0, duplicate;
+
+	msg_len=message.GetLength();
+	plain=message.GetPlain();
+
+	dest[0]='\0';
+
+	for(int index=0; index<msg_len; index++)
+		for(int word_len=1; word_len<10; word_len++)
+		{
+			memcpy(plain_word,plain+index,word_len);
+			plain_word[word_len]='\0';
+			word_str=plain_word;
+
+			//cur_id=dictionary.find(word_str)->second;
+
+			if(dictionary.count(word_str))
+			{
+				if(col==num_cols) 
+				{
+					ustrcat(dest,"\r\n");
+					col=0;
+					rows++;
+				}
+
+				cur_id=dictionary.find(word_str)->second;
+
+				duplicate=false;
+
+				for(int cur_word=0; cur_word<num_words; cur_word++)
+					if(words_found[cur_word]==cur_id) duplicate=true;
+
+				if(!duplicate)
+				{
+					words_found[num_words]=cur_id;
+					num_words++;
+
+					sprintf(temp,"%-16s",plain_word);
+					ustrcat(dest,temp);
+					
+					col++;
+				}
+			}
+	}
+	
+	return ((rows)+2)<<16 | (num_cols*16);
+}
+
 //change letter mapped to symbol
 void ChangePlain()
 {
@@ -729,6 +784,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 					
 				case IDM_VIEW_LTRGRAPH:
+					if(hGraph) SendMessage(hGraph,WM_CLOSE,0,0);
 					lRowCol=message.LetterGraph(szGraph);
 					strcpy(szGraphTitle,"Letter Frequencies");
 					hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
@@ -746,6 +802,14 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcpy(szGraphTitle,"Letter Exclusions");
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					//MessageBox(hMainWnd,szText,"Exclusions",MB_OK);
+					return 0;
+
+				case IDM_VIEW_WORDS:
+					if(hGraph) SendMessage(hGraph,WM_CLOSE,0,0);
+					lRowCol=FoundWords(szGraph,8);
+					strcpy(szGraphTitle,"Found Words");
+					hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+					ShowWindow(hGraph,SW_SHOWNORMAL);
 					return 0;
 
 				case IDM_VIEW_BYSTRING: SetSort(0); return 0;

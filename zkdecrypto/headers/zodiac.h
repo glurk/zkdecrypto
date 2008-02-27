@@ -3,6 +3,7 @@
 #include "message.h"
 #include "z340.h"
 #include <map>
+#include <string>
 
 //program
 #define PROG_NAME	"Zodiac Decrypto"
@@ -35,7 +36,8 @@ int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
 int iNumber;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
-std::map<char *,int> dictionary;
+typedef std::map<std::string,int> DICTMAP;
+DICTMAP dictionary;
 
 //GUI data
 char szTitle[64], szText[1024], szExeDir[1024]; 
@@ -58,7 +60,7 @@ POINT pntClickPoint; //click point
 int iTextBorder=4;
 
 //graphs
-wchar szGraph[20480];
+wchar szGraph[40960];//[20480];
 char szGraphTitle[128];
 long lRowCol;
 

@@ -204,6 +204,7 @@ int LoadDictionary(char *filename)
 {
 	FILE *dictionary_file;
 	char word[32];
+	std::string word_str;
 
 	dictionary_file=fopen(filename,"r");
 
@@ -217,7 +218,8 @@ int LoadDictionary(char *filename)
 	while(!feof(dictionary_file)) 
 	{
 		fscanf(dictionary_file,"%s",word);
-		dictionary[word] = i;
+		word_str=word;
+		dictionary[word_str] = i;
 		i++;
 	}
 

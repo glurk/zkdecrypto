@@ -95,6 +95,7 @@ BEGIN
         MENUITEM "&Letter Graph",               IDM_VIEW_LTRGRAPH
 	   MENUITEM "&Merge Log",			   IDM_VIEW_MERGE_LOG
         MENUITEM "&Exclusions",                 IDM_VIEW_EXCLUSIONS
+	   MENUITEM "&Found Words",                IDM_VIEW_WORDS
         MENUITEM SEPARATOR
         POPUP "Sort &Patterns"
         BEGIN
