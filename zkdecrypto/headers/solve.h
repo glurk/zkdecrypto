@@ -16,6 +16,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_PLAIN,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_MERGE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_SIMPLIFY,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_BESTSEC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_POLYIC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_RC_IOC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_NGRAPHS,MF_BYCOMMAND | menu_state);
@@ -36,6 +37,8 @@ void MsgEnable(int enabled)
 	EnableMenuItem(hMainMenu,IDM_EDIT_MSG,MF_BYCOMMAND | menu_state);
 	EnableMenuItem(hMainMenu,IDM_VIEW_SYMGRAPH,MF_BYCOMMAND | menu_state);
 	EnableMenuItem(hMainMenu,IDM_VIEW_LTRGRAPH,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_VIEW_MERGE_LOG,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_VIEW_EXCLUSIONS,MF_BYCOMMAND | menu_state);
 }
 
 //enable/disable menu items & buttons associated with a loaded key
@@ -200,6 +203,7 @@ void SetPriority(int iNewPriority)
 int LoadDictionary(char *filename)
 {
 	FILE *dictionary_file;
+	char word[32];
 
 	dictionary_file=fopen(filename,"r");
 
@@ -212,7 +216,6 @@ int LoadDictionary(char *filename)
 	int i = 1;
 	while(!feof(dictionary_file)) 
 	{
-		char *word;
 		fscanf(dictionary_file,"%s",word);
 		dictionary[word] = i;
 		i++;
@@ -255,10 +258,7 @@ void SetLanguage()
 	}
 
 	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"dictionary.txt");
-	//LoadDictionary(szGraphName);
-	
-	//sprintf(szText,"%s%s",szExeDir,LANG_DIR);
-	//read_ngraphs(szText,"eng");
+	LoadDictionary(szGraphName);
 	
 	GetUnigraphs(unigraphs);
 	message.cur_map.SetUnigraphs(unigraphs);

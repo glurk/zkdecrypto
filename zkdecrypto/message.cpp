@@ -257,6 +257,7 @@ void Map::Clear(int mode)
 		num_symbols=0;
 		memset(symbols,0,MAX_SYM*sizeof(SYMBOL));
 		memset(locked,0,MAX_SYM);
+		merge_log[0]='\0';
 		return;
 	}
 	
@@ -456,6 +457,7 @@ void Map::SwapSymbols(int swap1, int swap2)
 void Map::MergeSymbols(char symbol1, char symbol2)
 {
 	int index1, index2;
+	char log[3];
 
 	index1=FindByCipher(symbol1);
 	index2=FindByCipher(symbol2);
@@ -464,6 +466,10 @@ void Map::MergeSymbols(char symbol1, char symbol2)
 	symbols[index1].freq+=symbols[index2].freq;
 	memmove(&symbols[index2],&symbols[index2+1],(num_symbols-index2)*sizeof(SYMBOL));
 	memmove(&locked[index2],&locked[index2+1],num_symbols-index2);
+
+	//append to log
+	sprintf(log,"%c%c",symbol1,symbol2);
+	strcat(merge_log,log);
 
 	SortByFreq();
 }
@@ -580,6 +586,24 @@ long Map::SymbolGraph(wchar *dest)
 	return (rows+2)<<16 | (num_symbols+8);
 }
 
+long Map::GetMergeLog(wchar *dest)
+{
+	char temp[64];
+	int length;
+	
+	length=strlen(merge_log)>>1;
+
+	dest[0]='\0';
+
+	for(int cur_merge=0; cur_merge<length; cur_merge++)
+	{
+		sprintf(temp,"%2i. %c %c\n",cur_merge+1,merge_log[cur_merge<<1],merge_log[(cur_merge<<1)+1]);
+		ustrcat(dest,temp);
+	}
+
+	return (length+2)<<16 | 15;
+}
+
 long Map::GetExclusions(wchar *dest, int num_cols)
 {
 	char temp[64];
@@ -601,7 +625,7 @@ long Map::GetExclusions(wchar *dest, int num_cols)
 		col++;
 	}
 	
-	return (rows<<1)<<16 | (num_cols*32);
+	return ((rows<<1)+2)<<16 | (num_cols*32);
 }
 
 //hillclimb key <-> Map class conversion

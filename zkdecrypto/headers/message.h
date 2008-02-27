@@ -80,7 +80,8 @@ public:
 	float GetUnigraph(int letter) {return unigraphs[letter];}
 	void SwapSymbols(int,int);
 	void SymbolTable(char*);
-	long SymbolGraph(wchar *dest);
+	long SymbolGraph(wchar*);
+	long GetMergeLog(wchar*);
 	long GetExclusions(wchar*,int);
 
 	void MergeSymbols(char,char);
@@ -100,6 +101,7 @@ public:
 		num_symbols=src_map.num_symbols; 
 		memcpy(symbols,src_map.symbols,num_symbols*sizeof(SYMBOL));
 		memcpy(locked,src_map.locked,num_symbols);
+		strcpy(merge_log,src_map.merge_log);
 	}
 
 	//update symbols in this map to symbols in another
@@ -117,7 +119,7 @@ public:
 	
 private:	
 	SYMBOL symbols[MAX_SYM];
-	char locked[MAX_SYM];
+	char locked[MAX_SYM], merge_log[256];
 	int num_symbols;
 	float unigraphs[26];
 };
