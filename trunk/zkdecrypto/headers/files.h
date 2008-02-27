@@ -10,7 +10,7 @@ void GetBaseName(const char *filename, char *&basename)
 int GetFilename(char *szName, const char *szInitDir, int bSave)
 {
 	OPENFILENAME ofn;
-	char szNameTemp[128]="\0";
+	char szNameTemp[1024]="\0";
 	int result;
 
 	memset(&ofn,0,sizeof(OPENFILENAME));

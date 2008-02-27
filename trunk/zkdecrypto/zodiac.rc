@@ -51,6 +51,7 @@ BEGIN
     BEGIN
         MENUITEM "&Merge Symbols\tCtrl+M",      IDM_CIPHER_MERGE
         MENUITEM "&Simplify",                   IDM_CIPHER_SIMPLIFY
+        MENUITEM "&Best Section",               IDM_CIPHER_BESTSEC
         MENUITEM "&Polyalphabet Analysis",      IDM_CIPHER_POLYIC
         MENUITEM "&Row/Column IoC",             IDM_CIPHER_RC_IOC
         MENUITEM "Write &ngram Files",          IDM_CIPHER_NGRAPHS
@@ -70,8 +71,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "L&ock All\tShift+Ctrl+L",     IDM_KEY_LOCK_ALL
         MENUITEM "U&nlock All\tShift+Ctrl+U",   IDM_KEY_UNLOCK_ALL
-	   MENUITEM SEPARATOR
-	   MENUITEM "E&xclude Letters\tShift+Ctrl+X", IDM_KEY_EXCLUDE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xclude Letters\tShift+Ctrl+X", IDM_KEY_EXCLUDE
     END
     POPUP "&Solve"
     BEGIN
@@ -92,6 +93,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Symbol Graph",               IDM_VIEW_SYMGRAPH
         MENUITEM "&Letter Graph",               IDM_VIEW_LTRGRAPH
+	   MENUITEM "&Merge Log",			   IDM_VIEW_MERGE_LOG
         MENUITEM "&Exclusions",                 IDM_VIEW_EXCLUSIONS
         MENUITEM SEPARATOR
         POPUP "Sort &Patterns"
@@ -143,7 +145,7 @@ IDD_MAIN DIALOGEX 0, 0, 279, 278
 STYLE DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_ACCEPTFILES
 MENU IDR_MAIN_MENU
-FONT 9, "Lucida Console", 0, 0, 0x1
+FONT 9, "Lucida Console"
 BEGIN
     GROUPBOX        "Patterns",IDC_PAT_TITLE,9,24,114,245,BS_CENTER
     LISTBOX         IDC_PATTERNS,15,36,102,230,LBS_SORT | WS_VSCROLL | 
@@ -167,7 +169,7 @@ BEGIN
     PUSHBUTTON      "&Reset",IDC_RESET,209,247,51,15
     GROUPBOX        "Key Table",IDC_TABLE_TITLE,9,24,94,245,BS_CENTER
     LTEXT           "A\r\nB\r\nC\r\nD\r\nE\r\nF\r\nG\r\nH\r\nI\r\nJ\r\nK\r\nL\r\nM\r\nN\r\nO\r\nP\r\nQ\r\nR\r\nS\r\nT\r\nU\r\nV\r\nW\r\nX\r\nY\r\nZ",
-                    IDC_TABLE,15,55,78,208,0,SS_NOPREFIX
+                    IDC_TABLE,15,55,78,208,SS_NOPREFIX,WS_EX_TOOLWINDOW
     GROUPBOX        "Frequency Analysis",IDC_LTRFREQ_TITLE,106,24,162,245,
                     BS_CENTER
     LTEXT           "   Found Expect Differ  ",IDC_LTRFREQ_HEADER,112,42,93,
@@ -312,14 +314,6 @@ BEGIN
         RIGHTMARGIN, 161
         TOPMARGIN, 7
         BOTTOMMARGIN, 95
-    END
-
-    IDD_WORD, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 143
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 37
     END
 
     IDD_MERGE, DIALOG

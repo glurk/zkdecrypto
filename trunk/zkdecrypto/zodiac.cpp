@@ -28,6 +28,48 @@ void Undo()
 	SetCipher();
 }
 
+void BestSection()
+{
+	int msg_len=message.GetLength();
+	char *section;
+	float cur_mult, best_mult=1.0;
+	int best_start=0, best_length=msg_len;
+
+	section=new char[msg_len+1];
+
+	for(int start=0; start<msg_len; start++)
+		for(int length=1; length<=(msg_len-start); length++)
+		{
+			memcpy(section,szCipher+start,length);
+			section[length]='\0';
+			cur_mult=GetUniques(section,NULL,NULL);
+			cur_mult/=length;
+
+			//best multiplicity so far
+			if(cur_mult<best_mult)
+			{
+				best_mult=cur_mult;
+				best_start=start;
+				best_length=length;
+			}
+		}
+
+	//set cipher to best section
+	SetUndo();
+
+	memcpy(section,szCipher+best_start,best_length);
+	section[best_length]='\0';
+	message.SetCipher(section);
+
+	SetCipher();
+	SetPatterns();
+	SetDlgInfo();
+	ClearTextAreas();
+	SetText();
+
+	delete[] section;
+}
+
 //change letter mapped to symbol
 void ChangePlain()
 {
@@ -545,6 +587,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					}
 					return 0;
 
+				case IDM_CIPHER_BESTSEC:
+					BestSection();
+					return 0;
+
 				case IDM_CIPHER_POLYIC:
 					strcpy(szNumberTitle,"Max Key Length");
 					iNumber=25;
@@ -687,6 +733,12 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcpy(szGraphTitle,"Letter Frequencies");
 					hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					ShowWindow(hGraph,SW_SHOWNORMAL);
+					return 0;
+
+				case IDM_VIEW_MERGE_LOG:
+					lRowCol=message.cur_map.GetMergeLog(szGraph);
+					strcpy(szGraphTitle,"Merge Log");
+					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					return 0;
 					
 				case IDM_VIEW_EXCLUSIONS:
