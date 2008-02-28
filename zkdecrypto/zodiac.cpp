@@ -70,61 +70,6 @@ void BestSection()
 	delete[] section;
 }
 
-long FoundWords(wchar *dest, int num_cols)
-{
-	int msg_len, rows=0, col=0;
-	const char *plain;
-	char plain_word[32], temp[64];
-	DICTMAP::iterator dict_itr;
-	std::string word_str;
-	int cur_id, words_found[1024], num_words=0, duplicate;
-
-	msg_len=message.GetLength();
-	plain=message.GetPlain();
-
-	dest[0]='\0';
-
-	for(int index=0; index<msg_len; index++)
-		for(int word_len=1; word_len<10; word_len++)
-		{
-			memcpy(plain_word,plain+index,word_len);
-			plain_word[word_len]='\0';
-			word_str=plain_word;
-
-			//cur_id=dictionary.find(word_str)->second;
-
-			if(dictionary.count(word_str))
-			{
-				if(col==num_cols) 
-				{
-					ustrcat(dest,"\r\n");
-					col=0;
-					rows++;
-				}
-
-				cur_id=dictionary.find(word_str)->second;
-
-				duplicate=false;
-
-				for(int cur_word=0; cur_word<num_words; cur_word++)
-					if(words_found[cur_word]==cur_id) duplicate=true;
-
-				if(!duplicate)
-				{
-					words_found[num_words]=cur_id;
-					num_words++;
-
-					sprintf(temp,"%-16s",plain_word);
-					ustrcat(dest,temp);
-					
-					col++;
-				}
-			}
-	}
-	
-	return ((rows)+2)<<16 | (num_cols*16);
-}
-
 //change letter mapped to symbol
 void ChangePlain()
 {
@@ -145,6 +90,7 @@ void ChangePlain()
 	//update info		
 	UpdateSymbol(iCurSymbol);
 	SetPlain();
+	SetText();
 	SetTable();
 	SetFreq();
 }
@@ -715,7 +661,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_KEY_SCRAMBLE:
 					SetUndo();
 					num_symbols=message.cur_map.GetNumSymbols();
-					for(swap=0; swap<300000; swap++)
+					for(swap=0; swap<50000; swap++)
 						message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 					SetDlgInfo();
 					return 0;
@@ -770,9 +716,11 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_VIEW_DESELECT:
 					iCurPat=-1;
 					iCurSymbol=-1;
+					iCurWord=-1;
 					iTextSel=-1;
 					SendDlgItemMessage(hMainWnd,IDC_PATTERNS,LB_SETCURSEL,iCurPat,0);
 					SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
+					SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_SETCURSEL,iCurWord,0);
 					SetText();
 					SetDlgItemText(hTextWnd,IDC_TEXTINFO,"");
 					return 0;
@@ -802,14 +750,6 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcpy(szGraphTitle,"Letter Exclusions");
 					DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 					//MessageBox(hMainWnd,szText,"Exclusions",MB_OK);
-					return 0;
-
-				case IDM_VIEW_WORDS:
-					if(hGraph) SendMessage(hGraph,WM_CLOSE,0,0);
-					lRowCol=FoundWords(szGraph,8);
-					strcpy(szGraphTitle,"Found Words");
-					hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
-					ShowWindow(hGraph,SW_SHOWNORMAL);
 					return 0;
 
 				case IDM_VIEW_BYSTRING: SetSort(0); return 0;
@@ -862,6 +802,15 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							break;
 
 						case LBN_DBLCLK: ToggleLock(); break;
+					}
+					return 0;
+					
+				case IDC_WORD_LIST:
+					switch(HIWORD(wParam))
+					{
+						case LBN_SELCHANGE:
+							iCurWord=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
+							SetText();
 					}
 					return 0;
 					
@@ -967,6 +916,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hMainTab,TCM_INSERTITEM,0,(LPARAM)&tciTabItem);
 	tciTabItem.pszText="Analysis";
 	SendMessage(hMainTab,TCM_INSERTITEM,1,(LPARAM)&tciTabItem);
+	tciTabItem.pszText="Word List";
+	SendMessage(hMainTab,TCM_INSERTITEM,2,(LPARAM)&tciTabItem);
 	ShowTab(0);
 
 	/*create text window*/
@@ -995,12 +946,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	crRed=RGB(255,0,0);
 	crGreen=RGB(0,196,0);
 	crBlue=RGB(0,0,255);
+	crOrange=RGB(196,0,196);
 	crYellow=RGB(255,255,0);
 	crBlack=RGB(0,0,0);
 	crWhite=RGB(255,255,255);
 	hRedPen=CreatePen(0,0,crRed);
 	hGreenPen=CreatePen(0,0,crGreen);
 	hBluePen=CreatePen(0,0,crBlue);
+	hOrangePen=CreatePen(0,0,crOrange);
 	hWhitePen=CreatePen(0,0,crWhite);
 	hWhiteBrush=(HBRUSH)GetStockObject(WHITE_BRUSH);
 	SelectObject(hCipherDC,(HBRUSH)GetStockObject(NULL_BRUSH));
