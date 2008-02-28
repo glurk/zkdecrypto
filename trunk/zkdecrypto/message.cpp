@@ -786,16 +786,13 @@ void Message::Decode()
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
 		cur_map.GetSymbol(cur_symbol,&symbol);
-		decoder[symbol.cipher]=symbol.plain;
+		if(symbol.plain) decoder[symbol.cipher]=symbol.plain;
+		else decoder[symbol.cipher]=BLANK;
 	}
 
 	//decode string
 	for(cur_symbol=0; cur_symbol<msg_len; cur_symbol++)
-	{
 		plain[cur_symbol]=decoder[cipher[cur_symbol]];
-		if(!plain[cur_symbol]) plain[cur_symbol]=BLANK;
-		//do transposition here
-	}
 
 	plain[msg_len]='\0';
 }

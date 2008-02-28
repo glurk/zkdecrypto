@@ -80,8 +80,9 @@ void OutlineChars(HDC hDC, HPEN hPen, int iStart, int iEnd, int bOutline=false)
 //draw all the necessary outlines/underlines
 void DrawOutlines()
 {
-	int iStart, iEnd, iFreq;
+	int iStart, iEnd, iFreq, cur_symbol, word_len;
 	char szPattern[32];
+	const char *word_ptr;
 	SYMBOL symbol;
 	NGRAM pattern;
 
@@ -106,9 +107,31 @@ void DrawOutlines()
 			}
 	}
 	
+	//word outlines
+	if(iCurWord>-1)
+	{
+		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETTEXT,iCurWord,(LPARAM)szPattern);
+		
+		word_len=strlen(szPattern);
+		
+		word_ptr=szPlain+iDispStart;
+		
+		while(word_ptr=strstr(word_ptr,szPattern))
+		{
+			iStart=word_ptr-szPlain;
+			if(iStart>iDispEnd) break;
+			iEnd=iStart+word_len;
+			
+			OutlineChars(hCipherDC,hOrangePen,iStart,iEnd);
+			OutlineChars(hPlainDC,hOrangePen,iStart,iEnd);
+			
+			word_ptr+=word_len;
+		} 
+	}
+	
 	//symbol outlines
 	if(iCurSymbol>-1 && message.cur_map.GetSymbol(iCurSymbol,&symbol))
-		for(int cur_symbol=iDispStart; cur_symbol<iDispEnd; cur_symbol++)
+		for(cur_symbol=iDispStart; cur_symbol<iDispEnd; cur_symbol++)
 			if(szCipher[cur_symbol]==symbol.cipher)
 			{
 				OutlineChars(hCipherDC,hBluePen,cur_symbol,cur_symbol+1);
@@ -335,10 +358,12 @@ void UpdateSymbol(int index)
 }
 
 //refresh key list
-void SetKey()
+inline void SetKey()
 {
-	int cur_sel;
+	int cur_sel, num_symbols;
 	SYMBOL symbol;
+	
+	num_symbols=message.cur_map.GetNumSymbols();
 
 	//title
 	sprintf(szText,"Key (%i symbols)",message.cur_map.GetNumSymbols());
@@ -349,7 +374,7 @@ void SetKey()
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_RESETCONTENT,0,0);
 	
 	//add symbols
-	for(int cur_symbol=0; cur_symbol<message.cur_map.GetNumSymbols(); cur_symbol++)
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
 		message.cur_map.GetSymbol(cur_symbol,&symbol);
 		if(!symbol.plain) symbol.plain='-';
@@ -443,7 +468,56 @@ void SetPlain()
 {
 	szPlain=message.GetPlain();
 	
-	SetText();
+	//SetText();
+}
+
+void SetWordList()
+{
+	int cur_sel, msg_len, rows=0, col=0;
+	char plain_word[32];
+	std::string word_str;
+	int cur_id, words_found[1024], num_words=0, duplicate;
+
+	msg_len=message.GetLength();
+	
+	//clear list
+	cur_sel=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
+	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
+
+	for(int index=0; index<msg_len; index++)
+		for(int word_len=3; word_len<10; word_len++)
+		{
+			//get string of word
+			memcpy(plain_word,szPlain+index,word_len);
+			plain_word[word_len]='\0';
+			word_str=plain_word;
+
+			//find word id
+			cur_id=dictionary.find(word_str)->second;
+
+			if(cur_id>0) //is in dictionary
+			{
+				duplicate=false;
+
+				for(int cur_word=0; cur_word<num_words; cur_word++)
+					if(words_found[cur_word]==cur_id) 
+						{duplicate=true; break;}
+
+				if(!duplicate) //not already listed
+				{
+					SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_ADDSTRING,0,(LPARAM)plain_word);
+					words_found[num_words]=cur_id;
+					num_words++;
+				}
+			}
+		}
+		
+	//reset selected symbol
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,cur_sel,0);
+	
+	//title
+	sprintf(szText,"Word List (%i words)",num_words);
+	SetDlgItemText(hMainWnd,IDC_WORD_TITLE,szText);
 }
 
 void SetGraph()
@@ -466,6 +540,7 @@ void SetDlgInfo()
 	SetKey();
 	SetFreq();
 	SetSolve();
+	SetWordList();
 	SetGraph();
 }
 
@@ -543,11 +618,15 @@ void ShowTab(int iTab)
 {
 	int iShowSolve=SW_HIDE;
 	int iShowAnalysis=SW_HIDE;
+	int iShowWord=SW_HIDE;
+	
+	iCurTab=iTab;
 
 	switch(iTab)
 	{
 		case 0: iShowSolve=SW_SHOW; break;
 		case 1: iShowAnalysis=SW_SHOW; break;
+		case 2: iShowWord=SW_SHOW; break;
 	}
 
 	//solve
@@ -580,6 +659,10 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_VOWEL_ACT_TITLE),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_VOWEL_ACT),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_VOWEL_EXP),iShowAnalysis);
+	
+	//Word List
+	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_TITLE),iShowWord);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_LIST),iShowWord);
 }
 
 void CreateTextMenu()

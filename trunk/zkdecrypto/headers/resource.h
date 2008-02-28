@@ -86,6 +86,8 @@
 #define IDC_VOWEL_ACT_TITLE             1063
 #define IDC_LTRFREQ_HEADER              1064
 #define IDC_STRING						1065
+#define IDC_WORD_TITLE					1066
+#define IDC_WORD_LIST					1067
 #define IDM_FILE_OPEN_MSG               40001
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002

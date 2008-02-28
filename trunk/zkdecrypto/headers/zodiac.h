@@ -34,20 +34,20 @@ char *szCipherBase, *szKeyBase; //file basenames
 char szLanguage[32];
 int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
-int iNumber;
+int iNumber, iCurTab;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
 typedef std::map<std::string,int> DICTMAP;
 DICTMAP dictionary;
 
 //GUI data
 char szTitle[64], szText[1024], szExeDir[1024]; 
-int iCurSymbol=-1, iCurPat=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
+int iCurSymbol=-1, iCurPat=-1, iCurWord=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
 int iSortBy=0;
 RECT rKeyRect;
 
 //text gui
-COLORREF crRed, crGreen, crBlue, crYellow, crBlack, crWhite;
+COLORREF crRed, crGreen, crBlue, crOrange, crYellow, crBlack, crWhite;
 float iCharSize=1.0; //font size multiplier
 int iLineChars=17, iLines, iDispLines; //text line data
 int iScrollPos, iMaxScroll; //scrollbar
@@ -73,7 +73,7 @@ char szExtraLtr[MAX_EXTRA+1]="";
 //Win32 object handles
 HWND		hMainWnd, hKey, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
 HACCEL		hAccel;
-HPEN 		hRedPen, hGreenPen, hBluePen, hWhitePen;
+HPEN 		hRedPen, hGreenPen, hBluePen, hOrangePen, hWhitePen;
 HBRUSH		hWhiteBrush;
 HDC 		hCipherDC=NULL, hPlainDC=NULL;
 HFONT		hTextFont=NULL;
