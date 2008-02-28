@@ -591,7 +591,7 @@ long Map::GetMergeLog(wchar *dest)
 	char temp[64];
 	int length;
 	
-	length=strlen(merge_log)>>1;
+	length=(int)strlen(merge_log)>>1;
 
 	dest[0]='\0';
 
