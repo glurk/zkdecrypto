@@ -112,7 +112,7 @@ void DrawOutlines()
 	{
 		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETTEXT,iCurWord,(LPARAM)szPattern);
 		
-		word_len=strlen(szPattern);
+		word_len=(int)strlen(szPattern);
 		
 		word_ptr=szPlain+iDispStart;
 		
