@@ -1,5 +1,6 @@
 #pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
-
+#include <map>
+#include <string>
 /*Dialog Info Functions*/
 
 //set window title
@@ -493,9 +494,10 @@ void SetWordList()
 			word_str=plain_word;
 
 			//find word id
-			cur_id=dictionary.find(word_str)->second;
+			std::map<std::string,int>::iterator iter = dictionary.find(word_str);
+			//cur_id=dictionary.find(word_str)->second;
 
-			if(cur_id>0) //is in dictionary
+			if(iter != dictionary.end()) //is in dictionary
 			{
 				duplicate=false;
 
