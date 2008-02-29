@@ -204,7 +204,7 @@ int LoadDictionary(char *filename)
 {
 	dictionary.clear();
 	FILE *dictionary_file;
-	char word[32];
+	char word[64];
 	std::string word_str;
 
 	dictionary_file=fopen(filename,"r");
