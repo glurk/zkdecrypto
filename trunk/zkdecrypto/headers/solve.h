@@ -202,6 +202,7 @@ void SetPriority(int iNewPriority)
 
 int LoadDictionary(char *filename)
 {
+	dictionary.clear();
 	FILE *dictionary_file;
 	char word[32];
 	std::string word_str;
