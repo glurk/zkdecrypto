@@ -498,6 +498,7 @@ void SetWordList()
 
 			if(iter != dictionary.end()) //is in dictionary
 			{
+				cur_id = iter->second;
 				duplicate=false;
 
 				for(int cur_word=0; cur_word<num_words; cur_word++)
