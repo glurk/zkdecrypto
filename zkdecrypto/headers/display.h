@@ -473,7 +473,7 @@ void SetPlain()
 void SetWordList()
 {
 	int cur_sel, msg_len, rows=0, col=0;
-	char plain_word[32];
+	char plain_word[64];
 	std::string word_str;
 	int cur_id, words_found[1024], num_words=0, duplicate;
 
