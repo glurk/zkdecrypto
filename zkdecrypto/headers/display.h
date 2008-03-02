@@ -193,7 +193,9 @@ void SetText()
 	OutputText(1);
 	DrawOutlines();
 	
-	sprintf(szText,"%s: Row %i, Column %i, Character %i",szLanguage,iRowSel+1,iColSel+1,iTextSel+1);
+//	sprintf(szText,"%s: Row %i, Column %i, Character %i",szLanguage,iRowSel+1,iColSel+1,iTextSel+1);
+	sprintf(szText,"%s: ",szLanguage);
+	if((iRowSel+1) && (iColSel+1) && (iTextSel+1)) sprintf(szText,"%s: Row %i, Column %i, Character %i",szLanguage,iRowSel+1,iColSel+1,iTextSel+1);
 	SetDlgItemText(hTextWnd,IDC_TEXTINFO,szText);
 }
 
