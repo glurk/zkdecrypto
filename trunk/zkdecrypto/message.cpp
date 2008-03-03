@@ -869,6 +869,8 @@ int Message::Simplify(char &simp1, char &simp2)
 	simp2=max2;
 	//if(max1!=char(0xFF)) MergeSymbols(max1,max2,true);
 
+	FindPatterns(true);
+
 	return (max_patterns-old_patterns);
 }
 
