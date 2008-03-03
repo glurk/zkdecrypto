@@ -470,6 +470,7 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				
 			SetScrollPos(hScroll,SB_CTL,iScrollPos,true);
 			
+			ClearTextAreas();
 			SetText();
 			return 0;
 
@@ -507,6 +508,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	SYMBOL symbol;
 	char filename[1024];
 	POINT ptClick;
+	HGLOBAL hgClipboard;
+	char *szClipboard;
 
 	switch(iMsg)
 	{
@@ -544,9 +547,18 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_FILE_COPY_PLAIN:
+					if(!bMsgLoaded) return 0;
+
+					//allocate clipboard data
+					hgClipboard=GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,strlen(szPlain)+1);
+					szClipboard=(char*)GlobalLock(hgClipboard);
+					strcpy(szClipboard,szPlain);
+					GlobalUnlock(hgClipboard);
+
+					//set clipboard
 					OpenClipboard(hMainWnd);
 					EmptyClipboard();
-					SetClipboardData(CF_TEXT,(void*)message.GetPlain());
+					SetClipboardData(CF_TEXT,(void*)hgClipboard);
 					CloseClipboard();
 					return 0;
 
@@ -718,6 +730,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					iCurSymbol=-1;
 					iCurWord=-1;
 					iTextSel=-1;
+					iRowSel=-1;
+					iColSel=-1;
 					SendDlgItemMessage(hMainWnd,IDC_PATTERNS,LB_SETCURSEL,iCurPat,0);
 					SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
 					SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_SETCURSEL,iCurWord,0);

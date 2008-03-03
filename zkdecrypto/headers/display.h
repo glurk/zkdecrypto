@@ -489,6 +489,8 @@ void SetWordList()
 	for(int index=0; index<msg_len; index++)
 		for(int word_len=3; word_len<10; word_len++)
 		{
+			if((msg_len-index)<word_len) break;
+
 			//get string of word
 			memcpy(plain_word,szPlain+index,word_len);
 			plain_word[word_len]='\0';
@@ -518,7 +520,7 @@ void SetWordList()
 		}
 		
 	//reset selected symbol
-	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,cur_sel,0);
+	//SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_SETCURSEL,cur_sel,0);
 	
 	//title
 	sprintf(szText,"Word List (%i words)",num_words);
