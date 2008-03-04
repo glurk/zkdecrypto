@@ -7,7 +7,7 @@
 
 //program
 #define PROG_NAME	"Zodiac Decrypto"
-#define PROG_VER	"v1.0 Beta 2"
+#define PROG_VER	"v1.0 Beta 3"
 
 //language
 #define LANG_DIR	"language"
@@ -21,7 +21,7 @@
 #define CHAR_HEIGHT 12
 #define TEXT_POS	0 //HWND_TOPMOST
 
-#define MAX_EXTRA	26
+#define MAX_EXTRA	52
 
 //macros
 #define IN_RECT(X,Y,R) (IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
@@ -43,8 +43,19 @@ DICTMAP dictionary;
 char szTitle[64], szText[1024], szExeDir[1024]; 
 int iCurSymbol=-1, iCurPat=-1, iCurWord=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
-int iSortBy=0;
-RECT rKeyRect;
+int iSortBy=0, iWordMin=1, iWordMax=10;
+RECT rPatRect, rKeyRect, rWordRect;
+int lprgiInitKey[26];
+int lprgiInitID[26]=
+{
+IDC_INIT_A_EDIT,IDC_INIT_B_EDIT,IDC_INIT_C_EDIT,IDC_INIT_D_EDIT,
+IDC_INIT_E_EDIT,IDC_INIT_F_EDIT,IDC_INIT_G_EDIT,IDC_INIT_H_EDIT,
+IDC_INIT_I_EDIT,IDC_INIT_J_EDIT,IDC_INIT_K_EDIT,IDC_INIT_L_EDIT,
+IDC_INIT_M_EDIT,IDC_INIT_N_EDIT,IDC_INIT_O_EDIT,IDC_INIT_P_EDIT,
+IDC_INIT_Q_EDIT,IDC_INIT_R_EDIT,IDC_INIT_S_EDIT,IDC_INIT_T_EDIT,
+IDC_INIT_U_EDIT,IDC_INIT_V_EDIT,IDC_INIT_W_EDIT,IDC_INIT_X_EDIT,
+IDC_INIT_Y_EDIT,IDC_INIT_Z_EDIT
+};
 
 //text gui
 COLORREF crRed, crGreen, crBlue, crOrange, crYellow, crBlack, crWhite;
@@ -71,7 +82,7 @@ int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
 
 //Win32 object handles
-HWND		hMainWnd, hKey, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
+HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
 HACCEL		hAccel;
 HPEN 		hRedPen, hGreenPen, hBluePen, hOrangePen, hWhitePen;
 HBRUSH		hWhiteBrush;

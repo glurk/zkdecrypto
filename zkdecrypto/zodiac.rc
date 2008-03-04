@@ -51,10 +51,11 @@ BEGIN
     BEGIN
         MENUITEM "&Merge Symbols\tCtrl+M",      IDM_CIPHER_MERGE
         MENUITEM "&Simplify",                   IDM_CIPHER_SIMPLIFY
-        //MENUITEM "&Best Section",               IDM_CIPHER_BESTSEC
         MENUITEM "&Polyalphabet Analysis",      IDM_CIPHER_POLYIC
         MENUITEM "&Row/Column IoC",             IDM_CIPHER_RC_IOC
         MENUITEM "Write &ngram Files",          IDM_CIPHER_NGRAPHS
+        MENUITEM SEPARATOR
+        MENUITEM "R&andom Cipher",              IDM_CIPHER_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "Flip &Horizontal",            IDM_CIPHER_HORZ
         MENUITEM "Flip &Vertical",              IDM_CIPHER_VERT
@@ -91,9 +92,12 @@ BEGIN
     BEGIN
         MENUITEM "&Deselect\tCtrl+D",           IDM_VIEW_DESELECT
         MENUITEM SEPARATOR
+        MENUITEM "Lock &Word",                  IDM_VIEW_LOCK_WORD
+        MENUITEM "Unock W&ord",                 IDM_VIEW_UNLOCK_WORD
+        MENUITEM SEPARATOR
         MENUITEM "&Symbol Graph",               IDM_VIEW_SYMGRAPH
         MENUITEM "&Letter Graph",               IDM_VIEW_LTRGRAPH
-	   MENUITEM "&Merge Log",			   IDM_VIEW_MERGE_LOG
+        MENUITEM "&Merge Log",                  IDM_VIEW_MERGE_LOG
         MENUITEM "&Exclusions",                 IDM_VIEW_EXCLUSIONS
         MENUITEM SEPARATOR
         POPUP "Sort &Patterns"
@@ -145,7 +149,7 @@ IDD_MAIN DIALOGEX 0, 0, 279, 278
 STYLE DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_ACCEPTFILES
 MENU IDR_MAIN_MENU
-FONT 9, "Lucida Console"
+FONT 9, "Lucida Console", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Patterns",IDC_PAT_TITLE,9,24,114,245,BS_CENTER
     LISTBOX         IDC_PATTERNS,15,36,102,232,LBS_SORT | WS_VSCROLL | 
@@ -188,13 +192,13 @@ BEGIN
                     WS_TABSTOP
 END
 
-IDD_OPTIONS DIALOG DISCARDABLE  0, 0, 210, 185
+IDD_OPTIONS DIALOG DISCARDABLE  0, 0, 210, 219
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Options"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,153,147,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,153,164,50,14
+    DEFPUSHBUTTON   "OK",IDOK,52,194,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,107,194,50,14
     GROUPBOX        "Algorithm Parameters",IDC_STATIC,7,7,115,76,BS_CENTER
     LTEXT           "Max Failure",IDC_STATIC,16,25,60,8
     LTEXT           "Random Swaps",IDC_STATIC,16,45,60,8
@@ -211,14 +215,20 @@ BEGIN
     CONTROL         "Pentagrams",IDC_USEPENTA,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,139,67,56,10
     GROUPBOX        "Include in Score",IDC_STATIC,127,7,76,76,BS_CENTER
-    GROUPBOX        "Misc Options",IDC_STATIC,7,85,143,93,BS_CENTER
-    LTEXT           "Characters per Line",IDC_STATIC,20,105,62,8
-    EDITTEXT        IDC_LINECHARS,96,102,40,14,ES_RIGHT | ES_NUMBER
-    LTEXT           "Language",IDC_STATIC,20,124,33,8
-    COMBOBOX        IDC_LANG,63,122,73,59,CBS_DROPDOWNLIST | 
+    GROUPBOX        "Misc Options",IDC_STATIC,7,83,196,129,BS_CENTER
+    LTEXT           "Characters per Line",IDC_STATIC,46,105,62,8
+    EDITTEXT        IDC_LINECHARS,122,102,40,14,ES_RIGHT | ES_NUMBER
+    LTEXT           "Language",IDC_STATIC,46,124,33,8
+    COMBOBOX        IDC_LANG,89,122,73,59,CBS_DROPDOWNLIST | 
                     CBS_NOINTEGRALHEIGHT | WS_TABSTOP
-    LTEXT           "Additional Key Letters",IDC_STATIC,46,144,69,8
-    EDITTEXT        IDC_EXTRA_LTR,12,157,133,14,ES_RIGHT | ES_UPPERCASE
+    LTEXT           "Additional Key Letters",IDC_STATIC,70,163,69,8
+    EDITTEXT        IDC_EXTRA_LTR,20,176,169,14,ES_CENTER | ES_UPPERCASE | 
+                    ES_AUTOHSCROLL
+    LTEXT           "Word Length",IDC_STATIC,27,146,47,8
+    EDITTEXT        IDC_WORD_MIN,92,143,30,14,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_WORD_MAX,149,143,30,14,ES_RIGHT | ES_NUMBER
+    RTEXT           "Min",IDC_STATIC,70,146,20,8
+    RTEXT           "Max",IDC_STATIC,127,146,20,8
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 168, 102
@@ -286,6 +296,147 @@ BEGIN
                     SS_NOPREFIX | WS_GROUP,7,7,123,92
 END
 
+IDD_INITKEY DIALOG DISCARDABLE  0, 0, 227, 169
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set # of Homophones for Each Letter"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,61,150,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,115,150,50,14
+    EDITTEXT        IDC_INIT_A_EDIT,19,7,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_A_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,50,7,10,14
+    EDITTEXT        IDC_INIT_B_EDIT,73,7,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_B_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,7,10,14
+    EDITTEXT        IDC_INIT_C_EDIT,127,7,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_C_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,157,7,10,14
+    EDITTEXT        IDC_INIT_D_EDIT,181,7,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_D_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,212,7,10,14
+    EDITTEXT        IDC_INIT_E_EDIT,19,27,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_E_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,50,27,10,14
+    EDITTEXT        IDC_INIT_F_EDIT,73,27,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_F_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,27,10,14
+    EDITTEXT        IDC_INIT_G_EDIT,127,27,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_G_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,157,27,10,14
+    EDITTEXT        IDC_INIT_H_EDIT,181,27,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_H_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,212,27,10,14
+    EDITTEXT        IDC_INIT_I_EDIT,19,47,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_I_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,50,47,10,14
+    EDITTEXT        IDC_INIT_J_EDIT,73,47,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_J_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,47,10,14
+    EDITTEXT        IDC_INIT_K_EDIT,127,47,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_K_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,157,47,10,14
+    EDITTEXT        IDC_INIT_L_EDIT,181,47,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_L_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,212,47,10,14
+    EDITTEXT        IDC_INIT_M_EDIT,19,67,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_M_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,50,67,10,14
+    EDITTEXT        IDC_INIT_N_EDIT,73,67,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_N_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,67,10,14
+    EDITTEXT        IDC_INIT_O_EDIT,127,67,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_O_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,157,67,10,14
+    EDITTEXT        IDC_INIT_P_EDIT,181,67,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_P_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,212,67,10,14
+    EDITTEXT        IDC_INIT_Q_EDIT,19,87,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_Q_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,50,87,10,14
+    EDITTEXT        IDC_INIT_R_EDIT,73,87,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_R_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,87,10,14
+    EDITTEXT        IDC_INIT_S_EDIT,127,87,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,157,87,10,14
+    EDITTEXT        IDC_INIT_T_EDIT,181,87,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_T_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,212,87,10,14
+    EDITTEXT        IDC_INIT_U_EDIT,19,107,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_U_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,50,107,10,14
+    EDITTEXT        IDC_INIT_V_EDIT,73,107,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_V_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,107,10,14
+    EDITTEXT        IDC_INIT_W_EDIT,127,107,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_W_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,157,107,10,14
+    EDITTEXT        IDC_INIT_X_EDIT,181,107,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_X_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,212,107,10,14
+    EDITTEXT        IDC_INIT_Y_EDIT,19,127,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_Y_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,50,127,10,14
+    EDITTEXT        IDC_INIT_Z_EDIT,73,127,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_Z_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,127,10,14
+    LTEXT           "A",IDC_STATIC,7,9,8,8
+    LTEXT           "E",IDC_STATIC,7,29,8,8
+    LTEXT           "I",IDC_STATIC,7,49,8,8
+    LTEXT           "M",IDC_STATIC,7,69,8,8
+    LTEXT           "Q",IDC_STATIC,7,89,8,8
+    LTEXT           "U",IDC_STATIC,7,109,8,8
+    LTEXT           "Y",IDC_STATIC,7,129,8,8
+    LTEXT           "B",IDC_STATIC,61,9,8,8
+    LTEXT           "F",IDC_STATIC,61,29,8,8
+    LTEXT           "J",IDC_STATIC,61,49,8,8
+    LTEXT           "N",IDC_STATIC,61,69,8,8
+    LTEXT           "R",IDC_STATIC,61,89,8,8
+    LTEXT           "V",IDC_STATIC,61,109,8,8
+    LTEXT           "Z",IDC_STATIC,62,129,8,8
+    LTEXT           "C",IDC_STATIC,115,9,8,8
+    LTEXT           "G",IDC_STATIC,115,29,8,8
+    LTEXT           "K",IDC_STATIC,115,49,8,8
+    LTEXT           "O",IDC_STATIC,115,69,8,8
+    LTEXT           "S",IDC_STATIC,115,89,8,8
+    LTEXT           "W",IDC_STATIC,115,109,8,8
+    LTEXT           "D",IDC_STATIC,169,10,8,8
+    LTEXT           "H",IDC_STATIC,169,30,8,8
+    LTEXT           "L",IDC_STATIC,169,50,8,8
+    LTEXT           "P",IDC_STATIC,169,70,8,8
+    LTEXT           "T",IDC_STATIC,169,90,8,8
+    LTEXT           "X",IDC_STATIC,169,110,8,8
+    LTEXT           "Remaining",IDC_STATIC,115,130,34,8
+    LTEXT           "",IDC_INIT_REM,158,130,25,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -308,7 +459,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 203
         TOPMARGIN, 7
-        BOTTOMMARGIN, 178
+        BOTTOMMARGIN, 212
     END
 
     IDD_ABOUT, DIALOG

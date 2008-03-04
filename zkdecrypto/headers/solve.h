@@ -111,12 +111,17 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 	if(!bMsgLoaded) return 0;
 	
 	SetThreadPriority(hSolveThread,iPriority);
+
+	num_symbols=message.cur_map.GetNumSymbols();
 	
-	//convert map to key to pass
-	message.cur_map.ToKey(key,szExtraLtr);
+	//if best key is blank, set it to empty symbols + extra letters
+	if(!strlen(siSolveInfo.best_key)) 
+		message.cur_map.ToKey(siSolveInfo.best_key,szExtraLtr);
+	
+	//key=program map + additional chars of best key
+	message.cur_map.ToKey(key,siSolveInfo.best_key+num_symbols);
 	
 	//setup exclude list
-	num_symbols=message.cur_map.GetNumSymbols();
 	exclude=new char[27*num_symbols];
 
 	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
@@ -278,5 +283,31 @@ int ToggleLock()
 	SetText();
 
 	return iCurSymbol;
+}
+
+void LockWord(int lock)
+{
+	int word_len, position, symbol;
+	const char *word_ptr;
+
+	if(iCurWord<0) return;
+
+	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETTEXT,iCurWord,(LPARAM)szText);
+	
+	word_len=(int)strlen(szText);
+	word_ptr=szPlain;
+					
+	while(word_ptr=strstr(word_ptr,szText))
+	{
+		position=word_ptr-szPlain;
+
+		for(int letter=0; letter<word_len; letter++)
+		{
+			symbol=message.cur_map.FindByCipher(szCipher[position+letter]);
+			message.cur_map.SetLock(symbol,lock);
+		}
+
+		word_ptr+=word_len;
+	}
 }
 							

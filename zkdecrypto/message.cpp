@@ -321,7 +321,7 @@ void Map::Init(int first)
 		cur_symbol++;
 	}
 }*/
-
+/*
 void Map::Init(int first)
 {
 	int x, y, xx, letter, set_symbols=0, max_letter, index=0;
@@ -391,6 +391,33 @@ void Map::Init(int first)
 		locked[cur_symbol]=true;
 		cur_symbol++;
 	}
+}
+*/
+
+void Map::Init(int *ltr_homo)
+{
+	int cur_letter=0;
+
+	memset(locked,0,num_symbols);
+
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	{
+		//skip letter if no homophones left
+		while(!ltr_homo[cur_letter] && cur_letter<26) cur_letter++; 
+
+		if(cur_letter<26) //if all letters have not been used
+		{
+			symbols[cur_symbol].plain=cur_letter+'A'; //set to letter
+			ltr_homo[cur_letter]--; //dec remaining homophones for this letter
+		}
+
+		else //all letters have been used, remaining symbols are blank
+		{
+			symbols[cur_symbol].plain=0;
+			locked[cur_symbol]=true;
+		}
+	}
+
 }
 
 //add/update a symbol; if inc_freq is true, 
