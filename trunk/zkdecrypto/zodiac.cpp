@@ -305,6 +305,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_ADDSTRING,0,(LPARAM)"Italian");
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_SETCURSEL,iLang,0);
 
+			//word length
+			SetDlgItemInt(hWnd,IDC_WORD_MIN,iWordMin,false);
+			SetDlgItemInt(hWnd,IDC_WORD_MAX,iWordMax,false);
+
 			//extra letters
 			SendDlgItemMessage(hWnd,IDC_EXTRA_LTR,EM_LIMITTEXT,MAX_EXTRA,0);
 			SetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr);
@@ -343,6 +347,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					iLang=SendDlgItemMessage(hWnd,IDC_LANG,CB_GETCURSEL,0,0);
 					if(iLang!=iPrevLang) SetLanguage();
 
+					//word length
+					iWordMin=GetDlgItemInt(hWnd,IDC_WORD_MIN,false,false);
+					iWordMax=GetDlgItemInt(hWnd,IDC_WORD_MAX,false,false);
+
 					//extra letters
 					GetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr,MAX_EXTRA);
 					
@@ -359,6 +367,9 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						MessageBox(hWnd,"At least one set of ngrams must be selected","Notice",MB_ICONEXCLAMATION);
 						return 0;
 					}
+
+					//blank best key, so that additional chars are renewed
+					siSolveInfo.best_key[0]='\0';
 					
 					//update display
 					SetScrollBar();					
@@ -375,7 +386,116 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-//about dalog
+//init key dialog
+LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int letter, num_symbols, total;
+
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:
+			num_symbols=message.cur_map.GetNumSymbols();
+
+			//set up/down control ranges
+			SendDlgItemMessage(hWnd,IDC_INIT_A_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_B_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_C_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_D_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_E_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_F_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_G_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_H_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_I_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_J_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_K_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_L_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_M_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_N_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_O_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_P_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_Q_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_R_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_S_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_T_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_U_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_V_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_W_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_X_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_Y_SPIN,UDM_SETRANGE,0,num_symbols);
+			SendDlgItemMessage(hWnd,IDC_INIT_Z_SPIN,UDM_SETRANGE,0,num_symbols);
+
+			//set letters to expected number of homophones (error of +-2)
+			for(letter=0; letter<26; letter++)
+			{
+				//Hl=S*fl ; Hl=# of homophones for letter, S=# of symbols, fl=frequency of letter 0<=f<=1
+				lprgiInitKey[letter]=ROUNDTOINT(num_symbols*(message.cur_map.GetUnigraph(letter)/100));
+				SetDlgItemInt(hWnd,lprgiInitID[letter],lprgiInitKey[letter],false);
+			}
+
+			wParam=4; //subtract from 'e' if total>num_symbols			
+
+		case UDM_INIT_TOTAL:
+			num_symbols=message.cur_map.GetNumSymbols();
+			total=0;
+
+			//count total homophones
+			for(letter=0; letter<26; letter++)
+				total+=lprgiInitKey[letter]=GetDlgItemInt(hWnd,lprgiInitID[letter],false,false);
+
+			if(total>num_symbols) //reduce last edited letter if too many
+			{
+				lprgiInitKey[wParam]-=(total-num_symbols);
+				SetDlgItemInt(hWnd,lprgiInitID[wParam],lprgiInitKey[wParam],false);
+				total=num_symbols;
+			}			
+
+			//set remaining available homohpones
+			SetDlgItemInt(hWnd,IDC_INIT_REM,num_symbols-total,false);
+			return 0;
+			
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				//homophones for a letter edited, recalculate total
+				case IDC_INIT_A_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,0,0); return 0;
+				case IDC_INIT_B_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,1,0); return 0;
+				case IDC_INIT_C_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,2,0); return 0;
+				case IDC_INIT_D_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,3,0); return 0;
+				case IDC_INIT_E_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,4,0); return 0;
+				case IDC_INIT_F_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,5,0); return 0;
+				case IDC_INIT_G_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,6,0); return 0;
+				case IDC_INIT_H_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,7,0); return 0;
+				case IDC_INIT_I_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,8,0); return 0;
+				case IDC_INIT_J_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,9,0); return 0;
+				case IDC_INIT_K_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,10,0); return 0;
+				case IDC_INIT_L_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,11,0); return 0;
+				case IDC_INIT_M_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,12,0); return 0;
+				case IDC_INIT_N_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,13,0); return 0;
+				case IDC_INIT_O_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,14,0); return 0;
+				case IDC_INIT_P_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,15,0); return 0;
+				case IDC_INIT_Q_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,16,0); return 0;
+				case IDC_INIT_R_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,17,0); return 0;
+				case IDC_INIT_S_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,18,0); return 0;
+				case IDC_INIT_T_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,19,0); return 0;
+				case IDC_INIT_U_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,20,0); return 0;
+				case IDC_INIT_V_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,21,0); return 0;
+				case IDC_INIT_W_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,22,0); return 0;
+				case IDC_INIT_X_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,23,0); return 0;
+				case IDC_INIT_Y_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,24,0); return 0;
+				case IDC_INIT_Z_EDIT: SendMessage(hWnd,UDM_INIT_TOTAL,25,0); return 0;					
+				
+				case IDOK: EndDialog(hWnd,1); return 0;				
+				case IDCANCEL: EndDialog(hWnd,0); return 0;	
+			}				
+
+			return 0;
+	}
+
+	return 0;
+}
+
+//about dialog
 LRESULT CALLBACK AboutProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(iMsg)
@@ -510,6 +630,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	POINT ptClick;
 	HGLOBAL hgClipboard;
 	char *szClipboard;
+	RECT rListRect;
+	HWND hList;
 
 	switch(iMsg)
 	{
@@ -659,15 +781,14 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				/*key menu*/
 				case IDM_KEY_INIT:
-					//strcpy(szNumberTitle,"Symbols to Set");
-					//iNumber=message.cur_map.GetNumSymbols();
-					iNumber=message.cur_map.GetNumSymbols();
-					//if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
-					//{
+					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_INITKEY),hMainWnd,(DLGPROC)InitProc))
+					{
 						SetUndo();
-						message.cur_map.Init(iNumber);
+						siSolveInfo.best_key[0]='\0';
+						message.cur_map.Init(lprgiInitKey);
 						SetDlgInfo();
-					//}
+					}
+					
 					return 0;
 
 				case IDM_KEY_SCRAMBLE:
@@ -691,9 +812,11 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_KEY_EXCLUDE:
 					if(iCurSymbol<0) return 0;
-					strcpy(szStringTitle,"Letters to Exclude");
+
 					message.cur_map.GetSymbol(iCurSymbol,&symbol);
+					sprintf(szStringTitle,"Exclude Letters for '%c'",symbol.cipher);
 					strcpy(szString,symbol.exclude);
+					
 					if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
 					{
 						GetUniques(szString,szText,NULL);
@@ -738,6 +861,9 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					SetText();
 					SetDlgItemText(hTextWnd,IDC_TEXTINFO,"");
 					return 0;
+
+				case IDM_VIEW_LOCK_WORD: LockWord(true); SetKey(); return 0;
+				case IDM_VIEW_UNLOCK_WORD: LockWord(false); SetKey(); return 0;
 
 				case IDM_VIEW_SYMGRAPH:
 					lRowCol=message.cur_map.SymbolGraph(szGraph);
@@ -841,20 +967,42 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_CONTEXTMENU:
 			//rect of key window in screen coordinates
+			GetWindowRect(GetDlgItem(hMainWnd,IDC_PATTERNS),&rPatRect);
 			GetWindowRect(GetDlgItem(hMainWnd,IDC_MAP),&rKeyRect);
+			GetWindowRect(GetDlgItem(hMainWnd,IDC_WORD_LIST),&rWordRect);
 			
 			//click point in screen coordinates
 			ptClick.x=LOWORD(lParam);
 			ptClick.y=HIWORD(lParam);
 
-			if(IN_RECT(ptClick.x,ptClick.y,rKeyRect))
+			hList=NULL;
+
+			if(iCurTab==0 && IN_RECT(ptClick.x,ptClick.y,rPatRect))
 			{
-				//convert click to key window coordinates
-				lParam=(ptClick.x-rKeyRect.left) | (ptClick.y-rKeyRect.top)<<16;
+				memcpy(&rListRect,&rPatRect,sizeof(RECT));
+				hList=hPat;
+			}
+
+			if(iCurTab==0 && IN_RECT(ptClick.x,ptClick.y,rKeyRect))
+			{
+				memcpy(&rListRect,&rKeyRect,sizeof(RECT));
+				hList=hKey;
+			}
+			
+			if(iCurTab==2 && IN_RECT(ptClick.x,ptClick.y,rWordRect)) 
+			{
+				memcpy(&rListRect,&rWordRect,sizeof(RECT));
+				hList=hWord;
+			}
+
+			//convert click to key window coordinates
+			lParam=(ptClick.x-rListRect.left) | (ptClick.y-rListRect.top)<<16;
 				
-				//send click message
-				SendMessage(hKey,WM_LBUTTONDOWN,0,lParam);
-				SendMessage(hKey,WM_LBUTTONUP,0,lParam);
+			//send click message
+			if(hList)
+			{
+				SendMessage(hList,WM_LBUTTONDOWN,0,lParam);
+				SendMessage(hList,WM_LBUTTONUP,0,lParam);
 				
 				CreateTextMenu();
 			}
@@ -918,7 +1066,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hMainWnd,WM_SETICON,ICON_BIG,(WPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_ZODIAC)));
 	hMainMenu=GetMenu(hMainWnd);
 	hAccel=LoadAccelerators(hInst,MAKEINTRESOURCE(IDR_ACCEL));
+	hPat=GetDlgItem(hMainWnd,IDC_PATTERNS);
 	hKey=GetDlgItem(hMainWnd,IDC_MAP);
+	hWord=GetDlgItem(hMainWnd,IDC_WORD_LIST);
 
 	/*setup tabs*/
 	hMainTab=GetDlgItem(hMainWnd,IDC_MAIN_TAB);

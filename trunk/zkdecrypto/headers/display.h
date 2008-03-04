@@ -487,7 +487,7 @@ void SetWordList()
 	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
 
 	for(int index=0; index<msg_len; index++)
-		for(int word_len=3; word_len<10; word_len++)
+		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
 		{
 			if((msg_len-index)<word_len) break;
 
@@ -683,6 +683,9 @@ void CreateTextMenu()
 	AppendMenu(hTextMenu,0,IDM_KEY_EXCLUDE,"E&xclude Letters");
 	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
 	AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
+	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
+	AppendMenu(hTextMenu,0,IDM_VIEW_LOCK_WORD,"Lock &Word");
+	AppendMenu(hTextMenu,0,IDM_VIEW_UNLOCK_WORD,"Unlock W&ord");
 											
 	TrackPopupMenu(hTextMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,
 							 pntClickPoint.x,pntClickPoint.y,0,hMainWnd,0);
