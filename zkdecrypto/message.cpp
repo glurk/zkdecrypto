@@ -837,6 +837,7 @@ int Message::Simplify(char &simp1, char &simp2)
 	FindPatterns(false);
 	old_patterns=max_patterns=good_pat;
 	num_symbols=cur_map.GetNumSymbols();
+	max_patterns=0;
 	
 	test_msg+=*this;
 
@@ -856,7 +857,8 @@ int Message::Simplify(char &simp1, char &simp2)
 			//good substitution
 			if(test_msg.good_pat>max_patterns)
 			{
-				max_patterns=test_msg.good_pat;
+			//	max_patterns=test_msg.good_pat;
+			    max_patterns++;
 				max1=symbol1.cipher;
 				max2=symbol2.cipher;
 			}
