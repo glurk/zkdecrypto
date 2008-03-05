@@ -707,13 +707,13 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					time2=GetTickCount();
 					SetCursor(LoadCursor(0,IDC_ARROW));
 
-					if(simp1==char(0xFF)) //no good substituion found
-						return MessageBox(hMainWnd,"No substitions found","Subsitution",MB_YESNO);
+					if(simp1==char(0xFF)) //no good substitution found
+						return MessageBox(hMainWnd,"No Substitutions found","Substitution",MB_OK);
 
 					sprintf(szText,"Merge '%c' with '%c'? (%.2fs)",simp1,simp2,double(time2-time1)/1000);
 					
 					//merge if yes
-					if(MessageBox(hMainWnd,szText,"Subsitution",MB_YESNO | MB_ICONQUESTION)==IDYES)
+					if(MessageBox(hMainWnd,szText,"Substitution",MB_YESNO | MB_ICONQUESTION)==IDYES)
 					{
 						SetUndo();
 						message.MergeSymbols(simp1,simp2,true);
