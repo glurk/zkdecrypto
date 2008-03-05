@@ -1,3 +1,87 @@
+/*Edit Functions*/
+
+void SetUndo()
+{
+	bUndo=true;
+	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_ENABLED);
+	undo_message+=message;
+}
+
+void Undo()
+{
+	bUndo=false;
+	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_GRAYED);
+	message=undo_message;
+	SetCipher();
+}
+
+void BestSection()
+{
+	int msg_len=message.GetLength();
+	char *section;
+	float cur_mult, best_mult=1.0;
+	int best_start=0, best_length=msg_len;
+
+	section=new char[msg_len+1];
+
+	for(int start=0; start<msg_len; start++)
+		for(int length=1; length<=(msg_len-start); length++)
+		{
+			memcpy(section,szCipher+start,length);
+			section[length]='\0';
+			cur_mult=GetUniques(section,NULL,NULL);
+			cur_mult/=length;
+
+			//best multiplicity so far
+			if(cur_mult<best_mult)
+			{
+				best_mult=cur_mult;
+				best_start=start;
+				best_length=length;
+			}
+		}
+
+	//set cipher to best section
+	SetUndo();
+
+	memcpy(section,szCipher+best_start,best_length);
+	section[best_length]='\0';
+	message.SetCipher(section);
+
+	SetCipher();
+	SetPatterns();
+	SetDlgInfo();
+	ClearTextAreas();
+	SetText();
+
+	delete[] section;
+}
+
+//change letter mapped to symbol
+void ChangePlain()
+{
+	SYMBOL symbol;
+
+	if(iCurSymbol<0) return;
+
+	SetUndo();
+	
+	//get new letter
+	GetDlgItemText(hMainWnd,IDC_MAP_VALUE,szText,10);
+	
+	//get and update symbol
+	message.cur_map.GetSymbol(iCurSymbol,&symbol);
+	symbol.plain=szText[0];
+	message.cur_map.AddSymbol(symbol,0);
+	
+	//update info		
+	UpdateSymbol(iCurSymbol);
+	SetPlain();
+	SetText();
+	SetTable();
+	SetFreq();
+}
+
 /*Solver Functions*/
 
 //enable/disable menu items & buttons associated with a loaded cipher
@@ -10,7 +94,8 @@ void MsgEnable(int enabled)
 
 	if(enabled==false || bMsgLoaded) 
 	{
-		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_MSG,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_ASC,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_NUM,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_MAP,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_MAP,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_PLAIN,MF_BYCOMMAND | menu_state);
@@ -20,6 +105,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_CIPHER_POLYIC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_RC_IOC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_NGRAPHS,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_RANDOM,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_HORZ,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_VERT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_REV,MF_BYCOMMAND | menu_state);

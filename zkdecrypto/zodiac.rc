@@ -30,7 +30,8 @@ IDR_MAIN_MENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Open Cipher\tCtrl+O",        IDM_FILE_OPEN_MSG
+        MENUITEM "Open &Ascii\tCtrl+A",         IDM_FILE_OPEN_ASC
+	    MENUITEM "Open &Numeric\tCtrl+N",       IDM_FILE_OPEN_NUM
         MENUITEM SEPARATOR
         MENUITEM "Open &Key",                   IDM_FILE_OPEN_MAP
         MENUITEM "&Save Key\tCtrl+S",           IDM_FILE_SAVE_MAP
@@ -55,8 +56,8 @@ BEGIN
         MENUITEM "&Row/Column IoC",             IDM_CIPHER_RC_IOC
         MENUITEM "Write &ngram Files",          IDM_CIPHER_NGRAPHS
         MENUITEM SEPARATOR
-        //MENUITEM "R&andom Cipher",              IDM_CIPHER_RANDOM
-       // MENUITEM SEPARATOR
+        MENUITEM "Homophone Sets",              IDM_CIPHER_RANDOM
+        MENUITEM SEPARATOR
         MENUITEM "Flip &Horizontal",            IDM_CIPHER_HORZ
         MENUITEM "Flip &Vertical",              IDM_CIPHER_VERT
         MENUITEM "&Reverse",                    IDM_CIPHER_REV
@@ -297,13 +298,13 @@ BEGIN
                     SS_NOPREFIX | WS_GROUP,7,7,123,92
 END
 
-IDD_INITKEY DIALOG DISCARDABLE  0, 0, 227, 169
+IDD_INITKEY DIALOG DISCARDABLE  0, 0, 227, 191
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Set # of Homophones for Each Letter"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,61,150,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,115,150,50,14
+    DEFPUSHBUTTON   "OK",IDOK,61,171,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,115,171,50,14
     EDITTEXT        IDC_INIT_A_EDIT,19,7,30,14,ES_NUMBER
     CONTROL         "A",IDC_INIT_A_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
@@ -400,28 +401,28 @@ BEGIN
     CONTROL         "A",IDC_INIT_X_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,212,107,10,14
-    EDITTEXT        IDC_INIT_Y_EDIT,19,127,30,14,ES_NUMBER
+    EDITTEXT        IDC_INIT_Y_EDIT,74,127,30,14,ES_NUMBER
     CONTROL         "A",IDC_INIT_Y_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS,50,127,10,14
-    EDITTEXT        IDC_INIT_Z_EDIT,73,127,30,14,ES_NUMBER
+                    UDS_NOTHOUSANDS,105,127,10,14
+    EDITTEXT        IDC_INIT_Z_EDIT,128,127,30,14,ES_NUMBER
     CONTROL         "A",IDC_INIT_Z_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS,103,127,10,14
+                    UDS_NOTHOUSANDS,158,127,10,14
     LTEXT           "A",IDC_STATIC,7,9,8,8
     LTEXT           "E",IDC_STATIC,7,29,8,8
     LTEXT           "I",IDC_STATIC,7,49,8,8
     LTEXT           "M",IDC_STATIC,7,69,8,8
     LTEXT           "Q",IDC_STATIC,7,89,8,8
     LTEXT           "U",IDC_STATIC,7,109,8,8
-    LTEXT           "Y",IDC_STATIC,7,129,8,8
+    LTEXT           "Y",IDC_STATIC,62,129,8,8
     LTEXT           "B",IDC_STATIC,61,9,8,8
     LTEXT           "F",IDC_STATIC,61,29,8,8
     LTEXT           "J",IDC_STATIC,61,49,8,8
     LTEXT           "N",IDC_STATIC,61,69,8,8
     LTEXT           "R",IDC_STATIC,61,89,8,8
     LTEXT           "V",IDC_STATIC,61,109,8,8
-    LTEXT           "Z",IDC_STATIC,62,129,8,8
+    LTEXT           "Z",IDC_STATIC,117,129,8,8
     LTEXT           "C",IDC_STATIC,115,9,8,8
     LTEXT           "G",IDC_STATIC,115,29,8,8
     LTEXT           "K",IDC_STATIC,115,49,8,8
@@ -434,8 +435,13 @@ BEGIN
     LTEXT           "P",IDC_STATIC,169,70,8,8
     LTEXT           "T",IDC_STATIC,169,90,8,8
     LTEXT           "X",IDC_STATIC,169,110,8,8
-    LTEXT           "Remaining",IDC_STATIC,115,130,34,8
-    LTEXT           "",IDC_INIT_REM,158,130,25,8
+    EDITTEXT        IDC_INIT_TARGET_EDIT,74,149,30,14,ES_NUMBER
+    CONTROL         "A",IDC_INIT_TARGET_SPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,105,149,10,14
+    LTEXT           "Remaining",IDC_STATIC,131,152,34,8
+    LTEXT           "",IDC_INIT_REM,173,152,25,8
+    LTEXT           "Target Symbols",IDC_STATIC,19,152,50,8
 END
 
 
@@ -521,6 +527,7 @@ IDI_ZODIAC              ICON    DISCARDABLE     "zodiac.ico"
 
 IDR_ACCEL ACCELERATORS DISCARDABLE 
 BEGIN
+    "A",            IDM_FILE_OPEN_ASC,      VIRTKEY, CONTROL, NOINVERT
     "C",            IDM_FILE_COPY_PLAIN,    VIRTKEY, CONTROL, NOINVERT
     "D",            IDM_VIEW_DESELECT,      VIRTKEY, CONTROL, NOINVERT
     "E",            IDM_KEY_CLEAR,          VIRTKEY, CONTROL, NOINVERT
@@ -529,7 +536,7 @@ BEGIN
     "L",            IDM_KEY_LOCK_ALL,       VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "M",            IDM_CIPHER_MERGE,       VIRTKEY, CONTROL, NOINVERT
-    "O",            IDM_FILE_OPEN_MSG,      VIRTKEY, CONTROL, NOINVERT
+    "N",            IDM_FILE_OPEN_NUM,      VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_FILE_SAVE_MAP,      VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK_ALL,     VIRTKEY, SHIFT, CONTROL, 
