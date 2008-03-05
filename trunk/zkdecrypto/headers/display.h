@@ -680,12 +680,14 @@ void CreateTextMenu()
 									
 	AppendMenu(hTextMenu,0,IDM_KEY_LOCK,"&Lock Symbol");
 	AppendMenu(hTextMenu,0,IDM_KEY_UNLOCK,"&Unlock Symbol");
+	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
 	AppendMenu(hTextMenu,0,IDM_KEY_EXCLUDE,"E&xclude Letters");
+	AppendMenu(hTextMenu,0,IDM_KEY_CLEAR_EXCLUDE,"&Clear Exclude");
+	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
+	AppendMenu(hTextMenu,0,IDM_VIEW_LOCK_WORD,"Lock Wo&rd");
+	AppendMenu(hTextMenu,0,IDM_VIEW_UNLOCK_WORD,"Unloc&k Word");
 	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
 	AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
-	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
-	AppendMenu(hTextMenu,0,IDM_VIEW_LOCK_WORD,"Lock &Word");
-	AppendMenu(hTextMenu,0,IDM_VIEW_UNLOCK_WORD,"Unlock W&ord");
 											
 	TrackPopupMenu(hTextMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,
 							 pntClickPoint.x,pntClickPoint.y,0,hMainWnd,0);
