@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "unicode.h"
+#include "strarray.h"
 
 #define MAX_SYM		256
 #define MAX_PAT_LEN	15
@@ -164,7 +165,7 @@ public:
 
 	void MergeSymbols(char,char,int);
 	int Simplify(char&,char&);
-	void HomophoneSet(char*,char,int,int,float);
+	void SeqHomo(char*);
 	void Flip(int,int);
 
 	long LetterGraph(wchar*);

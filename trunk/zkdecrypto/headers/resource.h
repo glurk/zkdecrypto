@@ -145,7 +145,8 @@
 #define IDC_INIT_Y_SPIN                 1117
 #define IDC_INIT_Z_EDIT                 1118
 #define IDC_INIT_Z_SPIN                 1119
-#define IDM_FILE_OPEN_MSG               40001
+#define IDC_INIT_TARGET_EDIT			1120
+#define IDC_INIT_TARGET_SPIN			1121
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
 #define IDM_FILE_EXIT                   40003
@@ -197,9 +198,12 @@
 #define IDM_VIEW_MERGE_LOG              40049
 #define IDM_VIEW_WORDS                  40050
 #define IDM_KEY_CLEAR_EXCLUDE           40051
+#define IDM_FILE_OPEN_ASC               40052
+#define IDM_FILE_OPEN_NUM               40053
 #define UDM_DISPALL                     40100
 #define UDM_DISPINFO                    40101
 #define UDM_INIT_TOTAL                  40102
+#define UDM_INIT_TARGET                 40103
 
 // Next default values for new objects
 // 

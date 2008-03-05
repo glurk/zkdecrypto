@@ -96,6 +96,10 @@ SOURCE=.\message.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\strarray.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\unicode.cpp
 # End Source File
 # Begin Source File
@@ -116,7 +120,15 @@ SOURCE=.\zodiac.rc
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\headers\command.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\headers\display.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\headers\dlgprocs.h
 # End Source File
 # Begin Source File
 
@@ -133,6 +145,10 @@ SOURCE=.\headers\resource.h
 # Begin Source File
 
 SOURCE=.\headers\solve.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\headers\strarray.h
 # End Source File
 # Begin Source File
 

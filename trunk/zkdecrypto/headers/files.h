@@ -215,3 +215,41 @@ int SaveINI()
 
 	return 1;
 }
+
+//convert numeric cipher to ascii
+int Num2Asc(char *in_name, char *out_name)
+{
+    FILE *in_file, *out_file;
+    char number[8];
+    int ascii;
+    
+    in_file=fopen(in_name,"r");
+    out_file=fopen(out_name,"w");
+    
+    if(!in_file || !out_file) return 0;
+    
+    while(fscanf(in_file,"%s",number)!=EOF)
+    {
+		ascii=atoi(number);
+		
+		if(ascii>0 && ascii<128) 
+			putc(char(ascii+0x20),out_file);
+	}
+	
+	fclose(in_file);
+	fclose(out_file);
+    
+    return 1;
+}
+
+//generate random cipher
+void RandCipher(int length, int symbols)
+{
+	FILE *rand_cipher;
+
+	sprintf(szText,"%s%s",szExeDir,"random.txt");
+	if(!(rand_cipher=fopen(szText,"w"))) return;
+	for(int x=0; x<340; x++) putc((rand()%63)+0x21,rand_cipher);
+	fclose(rand_cipher);
+	LoadMessage(szText);
+}

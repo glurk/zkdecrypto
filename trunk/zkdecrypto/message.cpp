@@ -178,7 +178,6 @@ void Message::Flip(int flip_dir, int row_len)
 	FindPatterns(true);
 }
 
-
 int Map::Read(const char *filename)
 {
 	FILE *mapfile;
@@ -1447,44 +1446,48 @@ long Message::RowColIoC(wchar *dest, int cols)
 	return (rows+2)<<16 | ((lines+cols+1)*3)+6;
 }
 
-
-void Message::HomophoneSet(char *msg, char letter, int avg_min, int avg_max, float freq_tol)
+void Message::SeqHomo(char *dest)
 {
-	int set_size;
-	float avg_freq;
-	char temp[512], set[128];
+	int num_symbols, str_len;
+	StringArray symbol_strings, sect_strings;
+	char temp[1024], dest_temp[256], *last_pos, *cur_pos;
 	SYMBOL symbol;
 
-	letter-='A';
+	num_symbols=cur_map.GetNumSymbols();
+	cur_map.GetSymbol(0,&symbol);
 
-	msg[0]='\0';
+	dest[0]='\0';
 
-	for(int num_homo=2; num_homo<10; num_homo++)
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
-		//average frequency for homophones
-		avg_freq=float(exp_freq[letter])/num_homo;
+		cur_map.GetSymbol(cur_symbol,&symbol);
 
-		//skip if average is not within bounds
-		if(!IS_BETWEEN(avg_freq,avg_min,avg_max)) continue;
+		//get strings between instances of this symbol
+		last_pos=strchr(cipher,symbol.cipher);
 
-		//find set
-		set_size=0;
-
-		for(int cur_symbol=0; cur_symbol<cur_map.GetNumSymbols(); cur_symbol++)
+		while(cur_pos=strchr(last_pos+1,symbol.cipher))
 		{
-			cur_map.GetSymbol(cur_symbol,&symbol);
+			//add this string
+			str_len=cur_pos-last_pos-1;
+			memcpy(temp,last_pos+1,str_len);
+			temp[str_len]='\0';
+			symbol_strings.AddString(temp);
 
-			if(CLOSE_TO(symbol.freq,avg_freq,freq_tol))
-			{
-				set[set_size]=symbol.cipher;
-				set_size++;
-			}
+			//setup for next position
+			last_pos=cur_pos;
 		}
-		
-		set[set_size]='\0';
 
-		sprintf(temp,"N - %i A - %.2f\t%s\n\n",num_homo,avg_freq,set); 
-		strcat(msg,temp);
+		//get symbols that are in all strings
+		symbol_strings.Intersect(temp);
+		symbol_strings.Clear();
+		sect_strings.AddString(temp);
+
+		if(!temp[0]) continue;
+
+		if(cur_symbol>50) continue;
+
+		sprintf(dest_temp,"%c - %s\n",symbol.cipher,temp);
+		strcat(dest,dest_temp);
 	}
 }
 
