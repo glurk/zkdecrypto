@@ -824,6 +824,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						message.cur_map.AddSymbol(symbol,false);
 					}
 					return 0;
+					
+				case IDM_KEY_CLEAR_EXCLUDE: message.cur_map.Clear(CLR_EXCLUDE); return 0;
 
 				/*solve menu*/
 				case IDM_SOLVE_WORD:
