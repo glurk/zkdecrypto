@@ -1,3 +1,4 @@
+#pragma warning( disable : 4996)
 #pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
 
 #include "headers/strarray.h"
@@ -12,7 +13,7 @@ int StringArray::AddString(const char *new_string)
 int StringArray::GetString(int string, char *dest_string)
 {
 	strcpy(dest_string,strings[string]);
-	return strlen(dest_string);
+	return (int)strlen(dest_string);
 }
 
 int StringArray::Intersect(char *sect_string)
@@ -28,7 +29,7 @@ int StringArray::Intersect(char *sect_string)
 	for(int string_a=0; string_a<num_strings; string_a++)
 	{
 		//for each character in this string
-		str_len=strlen(strings[string_a]);
+		str_len=(int)strlen(strings[string_a]);
 
 		for(int cur_char=0; cur_char<str_len; cur_char++)
 		{

@@ -198,6 +198,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\strarray.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\unicode.cpp"
 				>
 			</File>
@@ -220,7 +224,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\headers\command.h"
+				>
+			</File>
+			<File
 				RelativePath="headers\display.h"
+				>
+			</File>
+			<File
+				RelativePath=".\headers\dlgprocs.h"
 				>
 			</File>
 			<File
@@ -237,6 +249,10 @@
 			</File>
 			<File
 				RelativePath="headers\solve.h"
+				>
+			</File>
+			<File
+				RelativePath=".\headers\strarray.h"
 				>
 			</File>
 			<File
