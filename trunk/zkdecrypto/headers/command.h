@@ -79,6 +79,8 @@ inline int CommandEdit(int cmd_id)
 		case IDM_EDIT_MSG: if(bMsgLoaded) OpenWith(szCipherName); return 0;
 		case IDM_EDIT_MAP: if(bMsgLoaded) OpenWith(szKeyName); return 0;
 	}
+
+	return 0;
 }
 
 inline int CommandCipher(int cmd_id)
