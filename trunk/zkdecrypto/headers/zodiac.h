@@ -82,7 +82,7 @@ int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
 
 //Win32 object handles
-HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hGraph=NULL, hScroll;
+HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hLetter=NULL, hHomo=NULL, hScroll;
 HACCEL		hAccel;
 HPEN 		hRedPen, hGreenPen, hBluePen, hOrangePen, hWhitePen;
 HBRUSH		hWhiteBrush;
