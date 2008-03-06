@@ -1,7 +1,7 @@
 [Project]
 FileName=zodiac.dev
 Name=zodiac
-UnitCount=21
+UnitCount=19
 Type=0
 Ver=1
 ObjFiles=
@@ -30,26 +30,6 @@ CompilerSet=0
 CompilerSettings=0000000000000001000000
 
 [Unit1]
-FileName=hashtable.cpp
-CompileCpp=1
-Folder=zodiac
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit2]
-FileName=hashtable.h
-CompileCpp=1
-Folder=zodiac
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit3]
 FileName=message.cpp
 CompileCpp=1
 Folder=zodiac
@@ -59,7 +39,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit4]
+[Unit2]
 FileName=mt19937ar-cok.cpp
 CompileCpp=1
 Folder=zodiac
@@ -69,7 +49,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit5]
+[Unit3]
 FileName=unicode.cpp
 CompileCpp=1
 Folder=zodiac
@@ -79,7 +59,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit6]
+[Unit4]
 FileName=z340.cpp
 CompileCpp=1
 Folder=zodiac
@@ -89,7 +69,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit7]
+[Unit5]
 FileName=zodiac.cpp
 CompileCpp=1
 Folder=zodiac
@@ -99,8 +79,9 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit8]
+[Unit6]
 FileName=zodiac.rc
+CompileCpp=1
 Folder=zodiac
 Compile=1
 Link=0
@@ -108,7 +89,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit9]
+[Unit7]
 FileName=headers\display.h
 CompileCpp=1
 Folder=zodiac
@@ -118,17 +99,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit10]
+[Unit8]
 FileName=headers\files.h
-CompileCpp=1
 Folder=zodiac
 Compile=1
 Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
+CompileCpp=1
 
-[Unit11]
+[Unit9]
 FileName=headers\message.h
 CompileCpp=1
 Folder=zodiac
@@ -138,7 +119,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit12]
+[Unit10]
 FileName=headers\resource.h
 CompileCpp=1
 Folder=zodiac
@@ -148,7 +129,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit13]
+[Unit11]
 FileName=headers\solve.h
 CompileCpp=1
 Folder=zodiac
@@ -158,7 +139,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit14]
+[Unit12]
 FileName=headers\unicode.h
 CompileCpp=1
 Folder=zodiac
@@ -168,7 +149,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit15]
+[Unit13]
 FileName=headers\z340.h
 CompileCpp=1
 Folder=zodiac
@@ -178,7 +159,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit16]
+[Unit14]
 FileName=headers\z340Globals.h
 CompileCpp=1
 Folder=zodiac
@@ -188,8 +169,28 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit17]
+[Unit15]
 FileName=headers\zodiac.h
+CompileCpp=1
+Folder=zodiac
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit16]
+FileName=strarray.cpp
+CompileCpp=1
+Folder=zodiac
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit17]
+FileName=headers\strarray.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -217,7 +218,7 @@ ProductVersion=
 AutoIncBuildNr=0
 
 [Unit18]
-FileName=strarray.cpp
+FileName=headers\dlgprocs.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
@@ -227,7 +228,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit19]
-FileName=headers\strarray.h
+FileName=headers\command.h
 CompileCpp=1
 Folder=zodiac
 Compile=1
