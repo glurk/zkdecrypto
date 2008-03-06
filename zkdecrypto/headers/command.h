@@ -1,7 +1,24 @@
+void SetClipboardText(const char *szClipText)
+{
+	HGLOBAL hgClipboard;
+	char *szClipboard;
+	
+	//allocate clipboard data
+	hgClipboard=GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,strlen(szClipText)+1);
+	szClipboard=(char*)GlobalLock(hgClipboard);
+	strcpy(szClipboard,szClipText);
+	GlobalUnlock(hgClipboard);
+
+	//set clipboard
+	OpenClipboard(hMainWnd);
+	EmptyClipboard();
+	SetClipboardData(CF_TEXT,(void*)hgClipboard);
+	CloseClipboard();
+}
+
 inline int CommandFile(int cmd_id)
 {
-	char filename[1024], num2asc_name[1024], *szBase, *szClipboard;
-	HGLOBAL hgClipboard;
+	char filename[1024], num2asc_name[1024], *szBase;
 
 	switch(cmd_id)
 	{
@@ -50,17 +67,7 @@ inline int CommandFile(int cmd_id)
 			return 0;
 			case IDM_FILE_COPY_PLAIN:
 			if(!bMsgLoaded) return 0;
-				//allocate clipboard data
-			hgClipboard=GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,strlen(szPlain)+1);
-			szClipboard=(char*)GlobalLock(hgClipboard);
-			strcpy(szClipboard,szPlain);
-			GlobalUnlock(hgClipboard);
-
-			//set clipboard
-			OpenClipboard(hMainWnd);
-			EmptyClipboard();
-			SetClipboardData(CF_TEXT,(void*)hgClipboard);
-			CloseClipboard();
+			SetClipboardText(szPlain);
 			return 0;
 
 		case IDM_FILE_EXIT:
@@ -153,8 +160,13 @@ inline int CommandCipher(int cmd_id)
 
 		case IDM_CIPHER_RANDOM:
 			//RandCipher(340,63);
-			message.SeqHomo(szText);
-			MessageBox(hMainWnd,szText,"SeqHomo",MB_OK);
+
+			lRowCol=message.SeqHomo(szGraph,szText);
+			SetClipboardText(szText);
+			strcpy(szGraphTitle,"Homophone Analysis");
+			//DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			hHomo=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			ShowWindow(hHomo,SW_SHOWNORMAL);
 			return 0;
 
 		case IDM_CIPHER_HORZ: 
@@ -296,11 +308,10 @@ inline int CommandView(int cmd_id)
 			return 0;
 			
 		case IDM_VIEW_LTRGRAPH:
-			if(hGraph) SendMessage(hGraph,WM_CLOSE,0,0);
 			lRowCol=message.LetterGraph(szGraph);
 			strcpy(szGraphTitle,"Letter Frequencies");
-			hGraph=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
-			ShowWindow(hGraph,SW_SHOWNORMAL);
+			hLetter=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			ShowWindow(hLetter,SW_SHOWNORMAL);
 			return 0;
 
 		case IDM_VIEW_MERGE_LOG:

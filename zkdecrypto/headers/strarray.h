@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-#define MAX_STRINGS 256
+#define MAX_STRINGS 1024
 
 class StringArray
 {
@@ -12,8 +12,12 @@ class StringArray
 		~StringArray() {Clear();}
 
 		int AddString(const char*);
+		int DeleteString(int);
 		int GetString(int,char*);
-		int Intersect(char*);
+		int SortString(int);
+		int SortStrings(int);
+		int RemoveDups();
+		int Intersect(char*,float);
 		int GetNumStrings() {return num_strings;}
 		void Clear();
 	
@@ -23,5 +27,4 @@ class StringArray
 };
 
 #endif
-
 

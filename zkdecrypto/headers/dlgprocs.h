@@ -74,7 +74,8 @@ LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDOK:
 				case IDCANCEL:
 					EndDialog(hWnd,0);
-					hGraph=NULL;
+					if(hLetter) hLetter=NULL;
+					if(hHomo) hHomo=NULL;
 					return 0;
 			}
 	}

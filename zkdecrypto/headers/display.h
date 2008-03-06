@@ -529,10 +529,10 @@ void SetWordList()
 
 void SetGraph()
 {
-	if(!hGraph) return ;
+	if(!hLetter) return;
 
 	lRowCol=message.LetterGraph(szGraph);
-	SendMessage(hGraph,WM_INITDIALOG,0,0);
+	SendMessage(hLetter,WM_INITDIALOG,0,0);
 }
 
 void SetDlgInfo()
