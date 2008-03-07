@@ -32,7 +32,7 @@ int StringArray::GetString(int string, char *dest_string)
 
 int StringArray::SortString(int string)
 {
-	int str_len=strlen(strings[string]);
+	int str_len=(int)strlen(strings[string]);
 	char temp, swap;
 	
 	if(string<0 || string>=num_strings) return 0;
