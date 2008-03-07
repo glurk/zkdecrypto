@@ -40,7 +40,7 @@ typedef std::map<std::string,int> DICTMAP;
 DICTMAP dictionary;
 
 //GUI data
-char szTitle[64], szText[1024], szExeDir[1024]; 
+char szTitle[64], szText[2048], szExeDir[1024]; 
 int iCurSymbol=-1, iCurPat=-1, iCurWord=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
 int iSortBy=0, iWordMin=1, iWordMax=10;

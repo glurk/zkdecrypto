@@ -12,17 +12,19 @@ int StringArray::AddString(const char *new_string)
 
 int StringArray::DeleteString(int string)
 {
-	if(string<0 || string>num_strings) return 0;
+	if(string<0 || string>=num_strings) return 0;
 	
 	if(strings[string]) delete strings[string];
 	
 	memmove(&strings[string],&strings[string+1],(num_strings-string-1)*sizeof(char*));
 	num_strings--;
+
+	return num_strings;
 }
 
 int StringArray::GetString(int string, char *dest_string)
 {
-	if(string<0 || string>num_strings) return 0;
+	if(string<0 || string>=num_strings) return 0;
 	
 	strcpy(dest_string,strings[string]);
 	return (int)strlen(dest_string);
@@ -33,7 +35,7 @@ int StringArray::SortString(int string)
 	int str_len=strlen(strings[string]);
 	char temp, swap;
 	
-	if(string<0 || string>num_strings) return 0;
+	if(string<0 || string>=num_strings) return 0;
 	
 	do
 	{
@@ -49,9 +51,11 @@ int StringArray::SortString(int string)
 					swap=true;
 				}
 	} while(swap);
+
+	return 1;
 }
 
-int StringArray::SortStrings(int order)
+void StringArray::SortStrings(int order)
 {
 	char *temp, swap;
 	int cmp;
