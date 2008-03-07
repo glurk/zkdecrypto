@@ -1448,9 +1448,9 @@ long Message::RowColIoC(wchar *dest, int cols)
 
 long Message::SeqHomo(wchar *dest, char *clip)
 {
-	int cur_symbol, num_symbols, str_len, set_len;
-	StringArray symbol_strings, sect_strings, homo_strings;
-	char temp[1024], dest_temp[256], cur_str[256], find_str[256];
+	int cur_symbol, symbol_a, symbol_b, num_symbols, str_len;
+	StringArray string_set1, string_set2, string_set3, string_set4;
+	char temp[1024];
 	char *last_pos, *cur_pos;
 	SYMBOL symbol;
 	int rows=0, cols=10;
@@ -1475,71 +1475,92 @@ long Message::SeqHomo(wchar *dest, char *clip)
 			str_len=cur_pos-last_pos;
 			memcpy(temp,last_pos,str_len);
 			temp[str_len]='\0';
-			symbol_strings.AddString(temp);
+			string_set1.AddString(temp);
 
 			//setup for next position
 			last_pos=cur_pos;
 		}
 
 		//get symbols that are in all strings
-		symbol_strings.Intersect(temp,1);
-		symbol_strings.Clear();
-		sect_strings.AddString(temp);
+		string_set1.Intersect(temp,float(.80));
+		string_set1.Clear();
+		string_set2.AddString(temp);
 		
 		if(!temp[1]) continue;
 		
 		strcat(clip,temp);
 		strcat(clip,"\n");
-		
-		//homo_strings.AddString(temp);
+	}
+
+	//
+	char str_a[256], str_b[256], str_c[256];
+
+	for(symbol_a=0; symbol_a<num_symbols; symbol_a++)
+	{
+		string_set2.GetString(symbol_a,str_a);
+		str_c[0]=str_a[0];
+		str_len=1;
+
+		for(symbol_b=1; symbol_b<(int)strlen(str_a); symbol_b++)
+		{
+			cur_symbol=cur_map.FindByCipher(str_a[symbol_b]);
+			string_set2.GetString(cur_symbol,str_b);
+
+			if(strchr(str_b,str_a[0]))
+				if(!strchr(str_c,str_a[symbol_b]))
+					str_c[str_len++]=str_a[symbol_b];	
+		}
+
+		str_c[str_len]='\0';
+
+		if(str_len>=2 && str_len<=10) string_set4.AddString(str_c);
 	}
 	
-	//find symbols that appear together often in possible homophone sets
-	for(int symbol_a=0; symbol_a<num_symbols-1; symbol_a++)
+	//find symbols that appear together often in possible set
+	/*for(symbol_a=0; symbol_a<num_symbols-1; symbol_a++)
 	{
 		cur_map.GetSymbol(symbol_a,&symbol);
 		char sym_a=symbol.cipher;
 		
-		for(int symbol_b=symbol_a+1; symbol_b<num_symbols; symbol_b++)
+		for(symbol_b=symbol_a+1; symbol_b<num_symbols; symbol_b++)
 		{
-			if(homo_strings.GetNumStrings()>=MAX_STRINGS) break;
+			//if(string_set4.GetNumStrings()>=MAX_STRINGS) break;
 			
 			cur_map.GetSymbol(symbol_b,&symbol);
 			char sym_b=symbol.cipher;
 			
 			int times=0;
 			
-			for(cur_symbol=0; cur_symbol<sect_strings.GetNumStrings(); cur_symbol++)
+			for(cur_symbol=0; cur_symbol<string_set3.GetNumStrings(); cur_symbol++)
 			{
-				sect_strings.GetString(cur_symbol,temp);
+				string_set3.GetString(cur_symbol,temp);
 				if(strchr(temp,sym_a) && strchr(temp,sym_b)) times++;
 			}
 			
 			if(times<2) continue;
 		
 			sprintf(temp,"%02i %c %c",times,sym_a,sym_b);
-			homo_strings.AddString(temp);
+			string_set4.AddString(temp);
 		}
-	}	
+	}*/
 	
 	//sort and reduce homophone sets
-	//for(cur_symbol=0; cur_symbol<homo_strings.GetNumStrings(); cur_symbol++)
-	//	homo_strings.SortString(cur_symbol);
+	for(cur_symbol=0; cur_symbol<string_set4.GetNumStrings(); cur_symbol++)
+		string_set4.SortString(cur_symbol);
 	
-	//homo_strings.RemoveDups();
-	homo_strings.SortStrings(1);
+	//string_set4.RemoveDups();
+	string_set4.SortStrings(1);
 	
 	for(cur_symbol=0; cur_symbol<200; cur_symbol++)
 	{
-		if(!homo_strings.GetString(cur_symbol,temp)) break;
+		if(!string_set4.GetString(cur_symbol,temp)) break;
 		
-		sprintf(dest_temp,"%s\t",temp);
-		if(!((cur_symbol+1)%cols)) 
-		{
-			strcat(dest_temp,"\n");
-			rows++;
-		}
-		ustrcat(dest,dest_temp);
+		ustrcat(dest,temp);
+		ustrcat(dest,"\n");
+		rows++;
+		
+		//if(!((cur_symbol+1)%cols)) 
+		//	{ustrcat(dest,"\n"); rows++;}
 	}
 	
 	return (rows+2)<<16 | (cols*8)+6;

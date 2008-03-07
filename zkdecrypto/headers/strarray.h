@@ -15,7 +15,7 @@ class StringArray
 		int DeleteString(int);
 		int GetString(int,char*);
 		int SortString(int);
-		int SortStrings(int);
+		void SortStrings(int);
 		int RemoveDups();
 		int Intersect(char*,float);
 		int GetNumStrings() {return num_strings;}
