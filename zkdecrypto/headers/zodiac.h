@@ -43,7 +43,7 @@ DICTMAP dictionary;
 char szTitle[64], szText[2048], szExeDir[1024]; 
 int iCurSymbol=-1, iCurPat=-1, iCurWord=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
-int iSortBy=0, iWordMin=1, iWordMax=10;
+int iSortBy=0, iWordMin=4, iWordMax=20;
 RECT rPatRect, rKeyRect, rWordRect;
 int lprgiInitKey[26];
 int lprgiInitID[26]=
