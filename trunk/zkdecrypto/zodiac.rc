@@ -301,7 +301,7 @@ END
 IDD_INITKEY DIALOG DISCARDABLE  0, 0, 227, 191
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Set # of Homophones for Each Letter"
-FONT 8, "MS Sans Serif"
+FONT 8, "Lucida Console"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,61,171,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,115,171,50,14
@@ -310,103 +310,103 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,50,7,10,14
     EDITTEXT        IDC_INIT_B_EDIT,73,7,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_B_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "B",IDC_INIT_B_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,103,7,10,14
     EDITTEXT        IDC_INIT_C_EDIT,127,7,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_C_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "C",IDC_INIT_C_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,157,7,10,14
     EDITTEXT        IDC_INIT_D_EDIT,181,7,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_D_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "D",IDC_INIT_D_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,212,7,10,14
     EDITTEXT        IDC_INIT_E_EDIT,19,27,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_E_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "E",IDC_INIT_E_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,50,27,10,14
     EDITTEXT        IDC_INIT_F_EDIT,73,27,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_F_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "F",IDC_INIT_F_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,103,27,10,14
     EDITTEXT        IDC_INIT_G_EDIT,127,27,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_G_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "G",IDC_INIT_G_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,157,27,10,14
     EDITTEXT        IDC_INIT_H_EDIT,181,27,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_H_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "H",IDC_INIT_H_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,212,27,10,14
     EDITTEXT        IDC_INIT_I_EDIT,19,47,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_I_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "I",IDC_INIT_I_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,50,47,10,14
     EDITTEXT        IDC_INIT_J_EDIT,73,47,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_J_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "J",IDC_INIT_J_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,103,47,10,14
     EDITTEXT        IDC_INIT_K_EDIT,127,47,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_K_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "K",IDC_INIT_K_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,157,47,10,14
     EDITTEXT        IDC_INIT_L_EDIT,181,47,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_L_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "L",IDC_INIT_L_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,212,47,10,14
     EDITTEXT        IDC_INIT_M_EDIT,19,67,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_M_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "M",IDC_INIT_M_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,50,67,10,14
     EDITTEXT        IDC_INIT_N_EDIT,73,67,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_N_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "N",IDC_INIT_N_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,103,67,10,14
     EDITTEXT        IDC_INIT_O_EDIT,127,67,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_O_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "O",IDC_INIT_O_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,157,67,10,14
     EDITTEXT        IDC_INIT_P_EDIT,181,67,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_P_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "P",IDC_INIT_P_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,212,67,10,14
     EDITTEXT        IDC_INIT_Q_EDIT,19,87,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_Q_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "Q",IDC_INIT_Q_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,50,87,10,14
     EDITTEXT        IDC_INIT_R_EDIT,73,87,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_R_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "R",IDC_INIT_R_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,103,87,10,14
     EDITTEXT        IDC_INIT_S_EDIT,127,87,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "S",IDC_INIT_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,157,87,10,14
     EDITTEXT        IDC_INIT_T_EDIT,181,87,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_T_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "T",IDC_INIT_T_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,212,87,10,14
     EDITTEXT        IDC_INIT_U_EDIT,19,107,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_U_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "U",IDC_INIT_U_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,50,107,10,14
     EDITTEXT        IDC_INIT_V_EDIT,73,107,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_V_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "V",IDC_INIT_V_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,103,107,10,14
     EDITTEXT        IDC_INIT_W_EDIT,127,107,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_W_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "W",IDC_INIT_W_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,157,107,10,14
     EDITTEXT        IDC_INIT_X_EDIT,181,107,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_X_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "X",IDC_INIT_X_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,212,107,10,14
     EDITTEXT        IDC_INIT_Y_EDIT,74,127,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_Y_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "Y",IDC_INIT_Y_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,105,127,10,14
     EDITTEXT        IDC_INIT_Z_EDIT,128,127,30,14,ES_NUMBER
-    CONTROL         "A",IDC_INIT_Z_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+    CONTROL         "Z",IDC_INIT_Z_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,158,127,10,14
     LTEXT           "A",IDC_STATIC,7,9,8,8
@@ -444,6 +444,26 @@ BEGIN
     LTEXT           "Target Symbols",IDC_STATIC,19,152,50,8
 END
 
+IDD_SEQHOMO DIALOG DISCARDABLE  0, 0, 200, 400
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set # of Homophones for Each Letter"
+FONT 8, "Lucida Console"
+BEGIN
+    EDITTEXT        IDC_HOMO_TOL_EDIT,75,7,30,14,ES_NUMBER
+    CONTROL         "Tolerance",IDC_HOMO_TOL_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,80,7,10,14
+    EDITTEXT        IDC_HOMO_LEN_EDIT,75,30,30,14,ES_NUMBER
+    CONTROL         "Max Length",IDC_HOMO_LEN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,103,7,10,14
+
+    LTEXT           "Tolerance",IDC_STATIC,7,9,50,8
+    LTEXT           "Max Length",IDC_STATIC,7,32,50,8
+    
+    LTEXT           "Possible Homophones",IDC_STATIC,50,80,150,8
+    LTEXT           "",IDC_HOMO_SETS,10,100,78,300,SS_NOPREFIX,WS_EX_TOOLWINDOW
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //

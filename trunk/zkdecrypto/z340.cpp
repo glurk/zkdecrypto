@@ -351,6 +351,7 @@ int ReadNGraphs(const char *filename, int n)
 		
 		//set ngraph
 		if(n==1) unigraphs[index]=percent;
+		//else ngraphs[index]=int(10*log((double)freq));
 		else ngraphs[index]=freq;
 	}
 

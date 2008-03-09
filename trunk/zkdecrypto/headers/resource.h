@@ -20,6 +20,7 @@
 #define IDD_GRAPHS                      118
 #define IDD_STRING                      119
 #define IDD_INITKEY                     120
+#define IDD_SEQHOMO						121
 #define IDR_ACCEL                       122
 #define IDC_PLAIN                       1000
 #define IDC_CIPHER                      1001
@@ -147,6 +148,11 @@
 #define IDC_INIT_Z_SPIN                 1119
 #define IDC_INIT_TARGET_EDIT			1120
 #define IDC_INIT_TARGET_SPIN			1121
+#define IDC_HOMO_TOL_EDIT               1122
+#define IDC_HOMO_TOL_SPIN               1123
+#define IDC_HOMO_LEN_EDIT               1124
+#define IDC_HOMO_LEN_SPIN               1125
+#define IDC_HOMO_SETS                   1126
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
 #define IDM_FILE_EXIT                   40003
@@ -204,6 +210,7 @@
 #define UDM_DISPINFO                    40101
 #define UDM_INIT_TOTAL                  40102
 #define UDM_INIT_TARGET                 40103
+#define UDM_HOMO_UPDATE                 40104
 
 // Next default values for new objects
 // 

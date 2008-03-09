@@ -165,7 +165,7 @@ public:
 
 	void MergeSymbols(char,char,int);
 	int Simplify(char&,char&);
-	long SeqHomo(wchar*,char*);
+	long SeqHomo(wchar*,char*,float,int);
 	void Flip(int,int);
 
 	long LetterGraph(wchar*);

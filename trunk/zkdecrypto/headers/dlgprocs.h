@@ -75,7 +75,6 @@ LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDCANCEL:
 					EndDialog(hWnd,0);
 					if(hLetter) hLetter=NULL;
-					if(hHomo) hHomo=NULL;
 					return 0;
 			}
 	}
@@ -412,6 +411,45 @@ LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				
 				case IDOK: EndDialog(hWnd,1); return 0;				
 				case IDCANCEL: EndDialog(hWnd,0); return 0;	
+			}				
+
+			return 0;
+	}
+
+	return 0;
+}
+
+//init key dialog
+LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int tolerance=100, max_len=10;
+	char szHomo[1024];
+	
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:
+			//set up/down control ranges
+			SendDlgItemMessage(hWnd,IDC_HOMO_TOL_SPIN,UDM_SETRANGE,0,100);
+			SendDlgItemMessage(hWnd,IDC_HOMO_LEN_SPIN,UDM_SETRANGE,0,50);
+			SetDlgItemInt(hWnd,IDC_HOMO_TOL_EDIT,tolerance,false);
+			SetDlgItemInt(hWnd,IDC_HOMO_LEN_EDIT,max_len,false);
+
+		case UDM_HOMO_UPDATE:
+			tolerance=GetDlgItemInt(hWnd,IDC_HOMO_TOL_EDIT,false,false);
+			max_len=GetDlgItemInt(hWnd,IDC_HOMO_LEN_EDIT,false,false);			
+			message.SeqHomo(szGraph,szText,tolerance/100.0,max_len);
+			SetDlgItemTextW(hWnd,IDC_HOMO_SETS,(WCHAR*)szGraph);
+			
+			return 0;			
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDC_HOMO_TOL_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
+				case IDC_HOMO_LEN_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
+							
+				case IDCANCEL: EndDialog(hWnd,0); hHomo=NULL; return 0;
+				
 			}				
 
 			return 0;
