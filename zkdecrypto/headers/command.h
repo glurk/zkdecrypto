@@ -95,6 +95,7 @@ inline int CommandCipher(int cmd_id)
 	long time1,time2;
 	char simp1,simp2;
 	int new_pat;
+	float homo_tol;
 
 	switch(cmd_id)
 	{
@@ -160,12 +161,9 @@ inline int CommandCipher(int cmd_id)
 
 		case IDM_CIPHER_RANDOM:
 			//RandCipher(340,63);
-
-			lRowCol=message.SeqHomo(szGraph,szText);
-			SetClipboardText(szText);
-			strcpy(szGraphTitle,"Homophone Analysis");
-			//DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
-			hHomo=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			
+		
+			hHomo=CreateDialog(hInst,MAKEINTRESOURCE(IDD_SEQHOMO),hMainWnd,(DLGPROC)HomoProc);
 			ShowWindow(hHomo,SW_SHOWNORMAL);
 			return 0;
 

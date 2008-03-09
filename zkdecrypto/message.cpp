@@ -1446,7 +1446,7 @@ long Message::RowColIoC(wchar *dest, int cols)
 	return (rows+2)<<16 | ((lines+cols+1)*3)+6;
 }
 
-long Message::SeqHomo(wchar *dest, char *clip)
+long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 {
 	int cur_symbol, symbol_a, symbol_b, num_symbols, str_len;
 	StringArray string_set1, string_set2, string_set3, string_set4;
@@ -1482,7 +1482,7 @@ long Message::SeqHomo(wchar *dest, char *clip)
 		}
 
 		//get symbols that are in all strings
-		string_set1.Intersect(temp,float(.80));
+		string_set1.Intersect(temp,occur_pcnt);
 		string_set1.Clear();
 		string_set2.AddString(temp);
 		
@@ -1500,12 +1500,16 @@ long Message::SeqHomo(wchar *dest, char *clip)
 		string_set2.GetString(symbol_a,str_a);
 		str_c[0]=str_a[0];
 		str_len=1;
-
+		
+		if(strlen(str_a)>max_len) continue;
+		
 		for(symbol_b=1; symbol_b<(int)strlen(str_a); symbol_b++)
 		{
 			cur_symbol=cur_map.FindByCipher(str_a[symbol_b]);
 			string_set2.GetString(cur_symbol,str_b);
-
+			
+			if(strlen(str_b)>max_len) continue;
+			
 			if(strchr(str_b,str_a[0]))
 				if(!strchr(str_c,str_a[symbol_b]))
 					str_c[str_len++]=str_a[symbol_b];	
@@ -1548,7 +1552,7 @@ long Message::SeqHomo(wchar *dest, char *clip)
 	for(cur_symbol=0; cur_symbol<string_set4.GetNumStrings(); cur_symbol++)
 		string_set4.SortString(cur_symbol);
 	
-	//string_set4.RemoveDups();
+	string_set4.RemoveDups();
 	string_set4.SortStrings(1);
 	
 	for(cur_symbol=0; cur_symbol<200; cur_symbol++)
