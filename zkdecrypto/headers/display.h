@@ -11,7 +11,7 @@ void BreakText(char *dest, const char *src)
 		dest[dest_index++]=src[src_index];
 		
 		if(((src_index+1)%iLineChars)==0)
-			dest[dest_index++]='\n';
+			{dest[dest_index++]='\r'; dest[dest_index++]='\n';}
 	}
 	
 	dest[dest_index]='\0';
@@ -409,7 +409,7 @@ inline void SetKey()
 	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
 		message.cur_map.GetSymbol(cur_symbol,&symbol);
-		if(!symbol.plain) symbol.plain='-';
+		if(!symbol.plain) symbol.plain=BLANK;
 		
 		//symbol is locked
 		if(message.cur_map.GetLock(cur_symbol))

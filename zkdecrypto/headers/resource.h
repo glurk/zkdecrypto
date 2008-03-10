@@ -207,6 +207,7 @@
 #define IDM_FILE_OPEN_ASC               40052
 #define IDM_FILE_OPEN_NUM               40053
 #define IDM_SOLVE_RESET                 40054
+#define IDM_EDIT_REDO                   40055
 #define UDM_DISPALL                     40100
 #define UDM_DISPINFO                    40101
 #define UDM_INIT_TOTAL                  40102

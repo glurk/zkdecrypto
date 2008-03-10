@@ -423,7 +423,6 @@ LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int tolerance=100, max_len=10;
-	char szHomo[1024];
 	
 	switch(iMsg)
 	{

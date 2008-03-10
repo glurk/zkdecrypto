@@ -85,7 +85,6 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	
-	SYMBOL symbol;
 	POINT ptClick;
 	RECT rListRect;
 	HWND hList;
@@ -113,6 +112,12 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				/*Controls*/
 				case IDC_MAP_CHANGE: ChangePlain(); return 0;
+				case IDC_MAP_VALUE:
+					switch(HIWORD(wParam))
+					{
+						case EN_CHANGE: ChangePlain(); break;
+					}
+					return 0;
 
 				case IDC_SOLVE:
 					SetUndo();

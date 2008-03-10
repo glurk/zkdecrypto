@@ -72,6 +72,7 @@ inline int CommandEdit(int cmd_id)
 	switch(cmd_id)
 	{
 		case IDM_EDIT_UNDO: Undo(); SetCipher(); return 0;
+		case IDM_EDIT_REDO: Redo(); SetCipher(); return 0;
 		case IDM_EDIT_MSG: if(bMsgLoaded) OpenWith(szCipherName); return 0;
 		case IDM_EDIT_MAP: if(bMsgLoaded) OpenWith(szKeyName); return 0;
 	}
@@ -84,7 +85,6 @@ inline int CommandCipher(int cmd_id)
 	long time1,time2;
 	char simp1,simp2;
 	int new_pat;
-	float homo_tol;
 
 	switch(cmd_id)
 	{
@@ -97,7 +97,8 @@ inline int CommandCipher(int cmd_id)
 			//run simplify
 			SetCursor(LoadCursor(0,IDC_WAIT));
 			time1=GetTickCount();
-			new_pat=message.Simplify(simp1,simp2);
+			new_pat=message.Simplify(simp1,simp2,szText);
+			SetClipboardText(szText);
 			time2=GetTickCount();
 			SetCursor(LoadCursor(0,IDC_ARROW));
 
