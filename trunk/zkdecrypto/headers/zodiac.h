@@ -29,7 +29,7 @@
 //cipher/key data & files
 Message message; //cipher & main key
 Message undo_message; //undo key
-char szCipherName[1024], szKeyName[1024], szGraphName[1024]; //filenames
+char szCipherName[1024], szKeyName[1024], szPlainName[1024], szGraphName[1024]; //filenames
 char *szCipherBase, *szKeyBase; //file basenames
 char szLanguage[32];
 int bMsgLoaded=false, bMapLoaded=false, bUndo=false;

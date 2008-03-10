@@ -80,6 +80,7 @@ BEGIN
     POPUP "&Solve"
     BEGIN
         MENUITEM "&Word Plug\tCtrl+W",          IDM_SOLVE_WORD
+        MENUITEM "&Reset Extra Letters\tCtrl+R", IDM_SOLVE_RESET
         MENUITEM SEPARATOR
         MENUITEM "Lock Wo&rd",                  IDM_VIEW_LOCK_WORD
         MENUITEM "Unoc&k Word",                 IDM_VIEW_UNLOCK_WORD
@@ -301,7 +302,7 @@ END
 IDD_INITKEY DIALOG DISCARDABLE  0, 0, 227, 191
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Set # of Homophones for Each Letter"
-FONT 8, "Lucida Console"
+FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,61,171,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,115,171,50,14
@@ -415,14 +416,14 @@ BEGIN
     LTEXT           "M",IDC_STATIC,7,69,8,8
     LTEXT           "Q",IDC_STATIC,7,89,8,8
     LTEXT           "U",IDC_STATIC,7,109,8,8
-    LTEXT           "Y",IDC_STATIC,62,129,8,8
+    LTEXT           "Y",IDC_STATIC,61,129,8,8
     LTEXT           "B",IDC_STATIC,61,9,8,8
     LTEXT           "F",IDC_STATIC,61,29,8,8
     LTEXT           "J",IDC_STATIC,61,49,8,8
     LTEXT           "N",IDC_STATIC,61,69,8,8
     LTEXT           "R",IDC_STATIC,61,89,8,8
     LTEXT           "V",IDC_STATIC,61,109,8,8
-    LTEXT           "Z",IDC_STATIC,117,129,8,8
+    LTEXT           "Z",IDC_STATIC,115,129,8,8
     LTEXT           "C",IDC_STATIC,115,9,8,8
     LTEXT           "G",IDC_STATIC,115,29,8,8
     LTEXT           "K",IDC_STATIC,115,49,8,8
@@ -439,15 +440,15 @@ BEGIN
     CONTROL         "A",IDC_INIT_TARGET_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS,105,149,10,14
-    LTEXT           "Remaining",IDC_STATIC,131,152,34,8
+    LTEXT           "Remaining",IDC_STATIC,130,152,40,8
     LTEXT           "",IDC_INIT_REM,173,152,25,8
     LTEXT           "Target Symbols",IDC_STATIC,19,152,50,8
 END
 
 IDD_SEQHOMO DIALOG DISCARDABLE  0, 0, 200, 400
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Set # of Homophones for Each Letter"
-FONT 8, "Lucida Console"
+CAPTION "Homophones Analysis"
+FONT 8, "MS Sans Serif"
 BEGIN
     EDITTEXT        IDC_HOMO_TOL_EDIT,75,7,30,14,ES_NUMBER
     CONTROL         "Tolerance",IDC_HOMO_TOL_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -557,6 +558,8 @@ BEGIN
                                                     NOINVERT
     "M",            IDM_CIPHER_MERGE,       VIRTKEY, CONTROL, NOINVERT
     "N",            IDM_FILE_OPEN_NUM,      VIRTKEY, CONTROL, NOINVERT
+    
+    "R",            IDM_SOLVE_RESET,        VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_FILE_SAVE_MAP,      VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK_ALL,     VIRTKEY, SHIFT, CONTROL, 

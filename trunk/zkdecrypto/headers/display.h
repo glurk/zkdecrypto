@@ -1,6 +1,22 @@
 #pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
 /*Dialog Info Functions*/
 
+//add line breaks to text
+void BreakText(char *dest, const char *src)
+{
+	int src_index, dest_index=0, src_len=(int)strlen(src);
+	
+	for(src_index=0; src_index<src_len; src_index++)
+	{
+		dest[dest_index++]=src[src_index];
+		
+		if(((src_index+1)%iLineChars)==0)
+			dest[dest_index++]='\n';
+	}
+	
+	dest[dest_index]='\0';
+}
+
 //set window title
 void SetTitle()
 {
@@ -200,6 +216,20 @@ void SetText()
 	SetDlgItemText(hTextWnd,IDC_TEXTINFO,szText);
 }
 
+//update when the selected symbol changes
+void UpdateSelectedSymbol()
+{
+	SYMBOL symbol;
+	
+	iCurSymbol=SendDlgItemMessage(hMainWnd,IDC_MAP,LB_GETCURSEL,0,0);
+	if(iCurSymbol<0) return;
+
+	message.cur_map.GetSymbol(iCurSymbol,&symbol);
+	sprintf(szText,"%c",symbol.plain);
+	SetDlgItemText(hMainWnd,IDC_MAP_VALUE,szText);
+	SetText();
+}
+
 //handle click in text area
 int TextClick(int click_x, int click_y)
 {
@@ -232,8 +262,8 @@ int TextClick(int click_x, int click_y)
 	iTextSel=text_index;
 	iRowSel=text_row+iScrollPos;
 	iColSel=text_col;
-
-	SetText();
+	
+	UpdateSelectedSymbol();
 
 	return 1;
 }

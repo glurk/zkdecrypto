@@ -1,27 +1,14 @@
-void SetClipboardText(const char *szClipText)
-{
-	HGLOBAL hgClipboard;
-	char *szClipboard;
-	
-	//allocate clipboard data
-	hgClipboard=GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,strlen(szClipText)+1);
-	szClipboard=(char*)GlobalLock(hgClipboard);
-	strcpy(szClipboard,szClipText);
-	GlobalUnlock(hgClipboard);
-
-	//set clipboard
-	OpenClipboard(hMainWnd);
-	EmptyClipboard();
-	SetClipboardData(CF_TEXT,(void*)hgClipboard);
-	CloseClipboard();
-}
-
 inline int CommandFile(int cmd_id)
 {
 	char filename[1024], num2asc_name[1024], *szBase;
 
 	switch(cmd_id)
 	{
+		case IDM_FILE_OPEN_ASC:
+			if(!GetFilename(filename,szCipherName,0)) return 0;
+			LoadMessage(filename);				
+			return 0;
+
 		case IDM_FILE_OPEN_NUM:
 			if(!GetFilename(filename,szCipherName,0)) return 0;
 			strcpy(num2asc_name,filename);
@@ -32,15 +19,15 @@ inline int CommandFile(int cmd_id)
 			else strcat(szCipherName,".ascii.txt");
 
 			//convert and load
-			Num2Asc(filename,num2asc_name);
-			LoadMessage(num2asc_name);				
+			if(!Num2Asc(filename,num2asc_name))
+			{
+				sprintf(szText,"Error loading \"%s\"",filename);
+				MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
+			}
+			
+			else LoadMessage(num2asc_name);				
 			return 0;
-
-		case IDM_FILE_OPEN_ASC:
-			if(!GetFilename(filename,szCipherName,0)) return 0;
-			LoadMessage(filename);				
-			return 0;
-
+			
 		case IDM_FILE_OPEN_MAP:
 			if(!GetFilename(filename,szKeyName,0)) return 0;
 			LoadMap(filename);
@@ -58,16 +45,18 @@ inline int CommandFile(int cmd_id)
 
 		case IDM_FILE_SAVE_PLAIN:
 			if(!bMsgLoaded) return 0;
-			if(GetFilename(filename,szCipherName,1)!=1) return 0;
+			if(GetFilename(filename,szPlainName,2)!=1) return 0;
 			if(!SavePlain(filename))
 			{
 				sprintf(szText,"Could not save \"%s\"",filename);
 				MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
 			}
+			else strcpy(szPlainName,filename);
 			return 0;
-			case IDM_FILE_COPY_PLAIN:
+			
+		case IDM_FILE_COPY_PLAIN:
 			if(!bMsgLoaded) return 0;
-			SetClipboardText(szPlain);
+			SavePlain(NULL);
 			return 0;
 
 		case IDM_FILE_EXIT:
@@ -263,6 +252,11 @@ inline int CommandSolve(int cmd_id)
 				iBestScore=WordPlug(message,szString,iUseGraphs);
 				SetDlgInfo();
 			}
+			return 0;
+			
+		case IDM_SOLVE_RESET:
+			//blank best key, so that additional chars are renewed
+			siSolveInfo.best_key[0]='\0';
 			return 0;
 
 		case IDM_SOLVE_OPTIONS:

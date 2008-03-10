@@ -114,7 +114,11 @@ public:
 			int symbol=src_map.FindByCipher(symbols[cur_symbol].cipher);
 
 			//if it is, set it the copy map's symbol
-			if(symbol!=-1) AddSymbol(src_map.symbols[symbol],0);
+			if(symbol!=-1) 
+			{
+				AddSymbol(src_map.symbols[symbol],0);
+				locked[symbol]=src_map.locked[symbol];
+			}
 		}
 	}
 	

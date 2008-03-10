@@ -30,7 +30,8 @@ int GetFilename(char *szName, const char *szInitDir, int bSave)
 
 	else //save
 	{
-		if(szKeyBase) strcpy(szNameTemp,szKeyBase);
+		if(bSave==1 && szKeyBase) strcpy(szNameTemp,szKeyBase);
+		
 		ofn.lpstrFile=szNameTemp;
 		ofn.lpstrTitle="Save File";
 		ofn.Flags|=OFN_OVERWRITEPROMPT;
@@ -130,17 +131,50 @@ int LoadMap(char *filename)
 	return 1;
 }
 
+//set given text to clipboard
+void SetClipboardText(const char *szClipText)
+{
+	HGLOBAL hgClipboard;
+	char *szClipboard;
+	
+	//allocate clipboard data
+	hgClipboard=GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,strlen(szClipText)+1);
+	szClipboard=(char*)GlobalLock(hgClipboard);
+	strcpy(szClipboard,szClipText);
+	GlobalUnlock(hgClipboard);
+
+	//set clipboard
+	OpenClipboard(hMainWnd);
+	EmptyClipboard();
+	SetClipboardData(CF_TEXT,(void*)hgClipboard);
+	CloseClipboard();
+}
+
+//save plaintext to file/clipboard
 int SavePlain(char *filename)
 {
 	FILE *pfPlain;
-
-	pfPlain=fopen(filename,"w");
-
-	if(!pfPlain) return 0;
+	char *szPlainText;
+	int msg_len=message.GetLength();
 	
-	if(!fprintf(pfPlain,message.GetPlain())) return 0;
+	szPlainText=new char[msg_len+((iLines+1)*3)+1];
+	BreakText(szPlainText,message.GetPlain());
+	
+	//save as file
+	if(filename) 
+	{
+		pfPlain=fopen(filename,"w");
 
-	fclose(pfPlain);
+		if(!pfPlain) {delete[] szPlainText; return 0;}
+		fprintf(pfPlain,szPlainText);
+		fclose(pfPlain);
+	}
+	
+	else SetClipboardText(szPlainText);
+	
+	
+	
+	delete[] szPlainText;
 
 	return 1;
 }
@@ -169,6 +203,7 @@ int LoadINI()
 
 		if(!stricmp(option,"cipher")) strcpy(szCipherName,value);
 		else if(!stricmp(option,"key")) strcpy(szKeyName,value);
+		else if(!stricmp(option,"plain")) strcpy(szPlainName,value);
 		else if(!stricmp(option,"fail")) siSolveInfo.max_fail=atoi(value);
 		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
 		else if(!stricmp(option,"revert")) siSolveInfo.revert=atoi(value);
@@ -201,6 +236,7 @@ int SaveINI()
 
 	fprintf(ini_file,"cipher = %s\n",szCipherName);
 	fprintf(ini_file,"key = %s\n",szKeyName);
+	fprintf(ini_file,"plain = %s\n",szPlainName);
 	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_fail);
 	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
 	fprintf(ini_file,"revert = %i\n",siSolveInfo.revert);
@@ -220,11 +256,15 @@ int SaveINI()
 int Num2Asc(char *in_name, char *out_name)
 {
     FILE *in_file, *out_file;
-    char number[8];
+    char *number;
     int ascii;
     
     in_file=fopen(in_name,"r");
     out_file=fopen(out_name,"w");
+    
+    fseek(in_file,0,SEEK_END);
+    number=new char[ftell(in_file)+1];
+    fseek(in_file,0,SEEK_SET);
     
     if(!in_file || !out_file) return 0;
     
@@ -238,6 +278,8 @@ int Num2Asc(char *in_name, char *out_name)
 	
 	fclose(in_file);
 	fclose(out_file);
+	
+	delete number;
     
     return 1;
 }

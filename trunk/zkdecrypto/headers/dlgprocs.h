@@ -261,7 +261,7 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					}
 
 					//blank best key, so that additional chars are renewed
-					siSolveInfo.best_key[0]='\0';
+					//siSolveInfo.best_key[0]='\0';
 					
 					//update display
 					SetScrollBar();					
@@ -419,7 +419,7 @@ LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-//init key dialog
+//homophone dialog
 LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int tolerance=100, max_len=10;
@@ -437,9 +437,8 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case UDM_HOMO_UPDATE:
 			tolerance=GetDlgItemInt(hWnd,IDC_HOMO_TOL_EDIT,false,false);
 			max_len=GetDlgItemInt(hWnd,IDC_HOMO_LEN_EDIT,false,false);			
-			message.SeqHomo(szGraph,szText,tolerance/100.0,max_len);
+			message.SeqHomo(szGraph,NULL,tolerance/100.0,max_len);
 			SetDlgItemTextW(hWnd,IDC_HOMO_SETS,(WCHAR*)szGraph);
-			
 			return 0;			
 
 		case WM_COMMAND:
@@ -449,7 +448,6 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_HOMO_LEN_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
 							
 				case IDCANCEL: EndDialog(hWnd,0); hHomo=NULL; return 0;
-				
 			}				
 
 			return 0;

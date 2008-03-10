@@ -181,43 +181,34 @@ void Message::Flip(int flip_dir, int row_len)
 int Map::Read(const char *filename)
 {
 	FILE *mapfile;
-	char cur;
-	int in_chars, cur_symbol;
-	SYMBOL entries[MAX_SYM];
+	char map_cipher[256], map_letter[256], map_locked[256], map_exclude[256];
+	int num_symbols, cur_symbol, has_locked=false;
+	SYMBOL symbol;
 
 	if(!(mapfile=fopen(filename,"r"))) return 0;
 
-	in_chars=0;
-	cur_symbol=0;
-
-	memset(entries,0,MAX_SYM*sizeof(SYMBOL));
-
-	while(fscanf(mapfile,"%c",&cur)!=EOF)
+	//cipher, letters, & locked
+	fscanf(mapfile,"%s\n",&map_cipher);
+	fscanf(mapfile,"%s\n",&map_letter);
+	if(fscanf(mapfile,"%s\n",&map_locked)!=EOF) has_locked=true;
+	
+	num_symbols=(int)strlen(map_cipher);
+	
+	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
-		//start letters
-		if(cur==0x0D || cur==0x0A) 
-		{
-			if(in_chars) break;
-			in_chars=1;
-			cur_symbol=0;
-		}
-
-		if(!IS_ASCII(cur)) continue;
-		if(cur_symbol>127) continue;
+		//blank exclude if not read
+		if(fscanf(mapfile,"%s\n",&map_exclude)==EOF)
+			map_exclude[0]='\0';
 		
-		if(cur==' ') //blank 
-		{
-			if(!in_chars) continue;
-			cur=0x00;
-		}
+		symbol.cipher=map_cipher[cur_symbol];
+		symbol.plain=map_letter[cur_symbol];
+		strcpy(symbol.exclude,map_exclude);
+		AddSymbol(symbol,0);
 		
-		if(!in_chars) entries[cur_symbol].cipher=cur;
-		else entries[cur_symbol].plain=cur;
-
-		AddSymbol(entries[cur_symbol],0);
-		cur_symbol++;
+		if(has_locked) locked[cur_symbol]=map_locked[cur_symbol]-'0';
+		else locked[cur_symbol]=0;
 	}
-
+	
 	fclose(mapfile);
 
 	return 1;
@@ -232,16 +223,30 @@ int Map::Write(const char *filename)
 
 	if(!mapfile) return 0;
 
+	//cipher symbols
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 		putc(symbols[cur_symbol].cipher,mapfile);
 
 	putc('\n',mapfile);
 
+	//letters
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
 		if(!symbols[cur_symbol].plain) putc(' ',mapfile);
 		else putc(symbols[cur_symbol].plain,mapfile);
 	}
+	
+	putc('\n',mapfile);
+	
+	//locks
+	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		fprintf(mapfile,"%i",locked[cur_symbol]);
+		
+	putc('\n',mapfile);
+
+	//exclusions
+	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		fprintf(mapfile,"%s\n",symbols[cur_symbol].exclude);
 
 	fclose(mapfile);
 
@@ -1488,8 +1493,7 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 		
 		if(!temp[1]) continue;
 		
-		strcat(clip,temp);
-		strcat(clip,"\n");
+		if(clip) {strcat(clip,temp); strcat(clip,"\n");}
 	}
 
 	//

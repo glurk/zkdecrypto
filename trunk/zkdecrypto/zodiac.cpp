@@ -138,13 +138,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					switch(HIWORD(wParam))
 					{
 						case LBN_SELCHANGE:
-							iCurSymbol=SendDlgItemMessage(hMainWnd,IDC_MAP,LB_GETCURSEL,0,0);
-							if(iCurSymbol<0) return 0;
-
-							message.cur_map.GetSymbol(iCurSymbol,&symbol);
-							sprintf(szText,"%c",symbol.plain);
-							SetDlgItemText(hMainWnd,IDC_MAP_VALUE,szText);
-							SetText();
+							UpdateSelectedSymbol();
 							break;
 
 						case LBN_DBLCLK: ToggleLock(); break;
@@ -364,6 +358,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//set open/save dir as executable dir
 	strcpy(szCipherName,szExeDir);
 	strcpy(szKeyName,szExeDir);
+	strcpy(szPlainName,szExeDir);
 
 	//show the windows
 	GetWindowRect(hMainWnd,&rMainRect);
