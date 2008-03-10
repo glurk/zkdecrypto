@@ -4,6 +4,7 @@ void SetUndo()
 {
 	bUndo=true;
 	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_ENABLED);
+	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_GRAYED);
 	undo_message+=message;
 }
 
@@ -11,7 +12,19 @@ void Undo()
 {
 	bUndo=false;
 	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_GRAYED);
+	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_ENABLED);
+	redo_message=message;
 	message=undo_message;
+	SetCipher();
+}
+
+void Redo()
+{
+	bUndo=true;
+	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_ENABLED);
+	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_GRAYED);
+	undo_message=message;
+	message=redo_message;
 	SetCipher();
 }
 
@@ -64,7 +77,7 @@ void ChangePlain()
 
 	if(iCurSymbol<0) return;
 
-	SetUndo();
+	//SetUndo();
 	
 	//get new letter
 	GetDlgItemText(hMainWnd,IDC_MAP_VALUE,szText,10);
@@ -113,6 +126,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_KEY_SCRAMBLE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_CLEAR,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_SOLVE_WORD,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_SOLVE_RESET,MF_BYCOMMAND | menu_state);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_CHANGE),enabled);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_RESET),enabled);
 	}
@@ -144,6 +158,7 @@ void MapEnable(int enabled)
 	else menu_state=MF_GRAYED;
 
 	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | menu_state);
 	
 	if(bMapLoaded) menu_state=MF_ENABLED;
 	else menu_state=MF_GRAYED;

@@ -857,10 +857,12 @@ void Message::MergeSymbols(char symbol1, char symbol2, int do_near)
 }
 
 //try to identify homophones and merge them
-int Message::Simplify(char &simp1, char &simp2)
+int Message::Simplify(char &simp1, char &simp2, char *dest)
 {
 	int max_patterns, old_patterns, num_symbols;
-	char max1=char(0xFF), max2;
+	char max1=char(0xFF), max2, adj_sym1[3], adj_sym2[3];
+	long *best_merge;
+	int num_best=0, increase;
 	Message test_msg;
 	SYMBOL symbol1, symbol2;
 	
@@ -868,9 +870,10 @@ int Message::Simplify(char &simp1, char &simp2)
 	FindPatterns(false);
 	old_patterns=max_patterns=good_pat;
 	num_symbols=cur_map.GetNumSymbols();
-	max_patterns=0;
+	best_merge=new long[num_symbols*num_symbols];
 	
-	test_msg+=*this;
+	//test_msg+=*this;
+	test_msg.min_pat_len=2;
 
 	//find the best of all possible sustitutions 
 	for(int cur_sym1=0; cur_sym1<num_symbols-1; cur_sym1++)
@@ -880,27 +883,55 @@ int Message::Simplify(char &simp1, char &simp2)
 
 		for(int cur_sym2=cur_sym1+1; cur_sym2<num_symbols; cur_sym2++)
 		{
+			test_msg+=*this;
+
 			if(cur_map.GetLock(cur_sym2)) continue;
 			cur_map.GetSymbol(cur_sym2,&symbol2);
 
 			test_msg.MergeSymbols(symbol1.cipher,symbol2.cipher,false);
 			
-			//good substitution
+			//test for possibility
+			increase=test_msg.good_pat-old_patterns;
+			if(increase<3) continue;
+
+			//rule out if symbols exist next to each other in cipher
+			/*adj_sym1[0]=symbol1.cipher;
+			adj_sym1[1]=symbol2.cipher;
+			adj_sym2[0]=symbol1.cipher;
+			adj_sym2[1]=symbol2.cipher;
+			adj_sym1[2]=adj_sym2[2]='\0';
+
+			if(strstr(cipher,adj_sym1) || strstr(cipher,adj_sym2)) continue;*/
+			
+
+			//best list
+			best_merge[num_best]=symbol1.cipher<<24 | symbol2.cipher<<16 | test_msg.good_pat-old_patterns;
+			num_best++;
+
+			//the max number of added patterns
 			if(test_msg.good_pat>max_patterns)
 			{
-			//	max_patterns=test_msg.good_pat;
-			    max_patterns++;
+				max_patterns=test_msg.good_pat;
 				max1=symbol1.cipher;
 				max2=symbol2.cipher;
-			}
-
-			test_msg+=*this;
+			}			
 		}
 	}
 
 	simp1=max1;
 	simp2=max2;
-	//if(max1!=char(0xFF)) MergeSymbols(max1,max2,true);
+
+	min_pat_len=2;
+
+	dest[0]='\0';
+
+	for(int cur_best=0; cur_best<num_best; cur_best++)
+	{
+		sprintf(dest,"%c\t%c\t%i\r\n",best_merge[cur_best]>>24,(best_merge[cur_best]>>16)&0xFF,best_merge[cur_best]&0xFFFF);
+		dest+=strlen(dest);
+	}
+
+	delete[] best_merge;
 
 	FindPatterns(true);
 
@@ -1141,7 +1172,7 @@ void Message::FindPatterns(int do_near)
 	pattern.positions=new int[pattern.pos_size];
 
 	//exact patterns
-	for(length=2; length<=MAX_PAT_LEN; length++)
+	for(length=min_pat_len; length<=MAX_PAT_LEN; length++)
 	{	
 		for(int index=0; index<msg_len-length+1; index++)
 		{
@@ -1467,6 +1498,8 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 	if(clip) clip[0]='\0';
 
 	//make strings for possible homophone sets
+	//symbols that occur TOL% of the time between the current symbol
+	//are it's possible homophones
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
 		cur_map.GetSymbol(cur_symbol,&symbol);
@@ -1496,7 +1529,8 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 		if(clip) {strcat(clip,temp); strcat(clip,"\n");}
 	}
 
-	//
+	//make strings for symbols that both say are possible homophones of each other
+	//i.e. throw out all symbols in possible sets that do not have a corralary
 	char str_a[256], str_b[256], str_c[256];
 
 	for(symbol_a=0; symbol_a<num_symbols; symbol_a++)
@@ -1505,14 +1539,14 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 		str_c[0]=str_a[0];
 		str_len=1;
 		
-		if(strlen(str_a)>max_len) continue;
+		if(int(strlen(str_a))>max_len) continue;
 		
 		for(symbol_b=1; symbol_b<(int)strlen(str_a); symbol_b++)
 		{
 			cur_symbol=cur_map.FindByCipher(str_a[symbol_b]);
 			string_set2.GetString(cur_symbol,str_b);
 			
-			if(strlen(str_b)>max_len) continue;
+			if(int(strlen(str_b))>max_len) continue;
 			
 			if(strchr(str_b,str_a[0]))
 				if(!strchr(str_c,str_a[symbol_b]))
@@ -1525,18 +1559,20 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 	}
 	
 	//sort and reduce homophone sets
+	//remove duplicate strings after sorting
 	for(cur_symbol=0; cur_symbol<string_set4.GetNumStrings(); cur_symbol++)
 		string_set4.SortString(cur_symbol);
 	
 	string_set4.RemoveDups();
 	string_set4.SortStrings(1);
 	
+	//make display string
 	for(cur_symbol=0; cur_symbol<200; cur_symbol++)
 	{
 		if(!string_set4.GetString(cur_symbol,temp)) break;
 		
+		if(cur_symbol) ustrcat(dest,"\r\n");
 		ustrcat(dest,temp);
-		ustrcat(dest,"\n");
 		rows++;
 	}
 	

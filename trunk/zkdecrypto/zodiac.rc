@@ -31,7 +31,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "Open &Ascii\tCtrl+A",         IDM_FILE_OPEN_ASC
-	    MENUITEM "Open &Numeric\tCtrl+N",       IDM_FILE_OPEN_NUM
+        MENUITEM "Open &Numeric\tCtrl+N",       IDM_FILE_OPEN_NUM
         MENUITEM SEPARATOR
         MENUITEM "Open &Key",                   IDM_FILE_OPEN_MAP
         MENUITEM "&Save Key\tCtrl+S",           IDM_FILE_SAVE_MAP
@@ -44,6 +44,7 @@ BEGIN
     POPUP "&Edit"
     BEGIN
         MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO
+	   MENUITEM "&Redo\tCtrl+Y",               IDM_EDIT_REDO
         MENUITEM SEPARATOR
         MENUITEM "Edit &Cipher",                IDM_EDIT_MSG
         MENUITEM "Edit &Key",                   IDM_EDIT_MAP
@@ -161,7 +162,7 @@ BEGIN
     LISTBOX         IDC_MAP,133,36,59,210,WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_MAP_VALUE,133,247,21,15,ES_UPPERCASE | 
                     ES_AUTOHSCROLL
-    PUSHBUTTON      "&Change",IDC_MAP_CHANGE,157,247,35,15
+    //PUSHBUTTON      "&Change",IDC_MAP_CHANGE,157,247,35,15
     GROUPBOX        "Solve",IDC_SOLVE_TITLE,202,24,66,245,BS_CENTER
     CTEXT           "Time",IDC_TIME_TITLE,207,44,56,11,SS_CENTERIMAGE
     CTEXT           "",IDC_TIME,207,56,56,11,SS_CENTERIMAGE
@@ -445,26 +446,26 @@ BEGIN
     LTEXT           "Target Symbols",IDC_STATIC,19,152,50,8
 END
 
-IDD_SEQHOMO DIALOG DISCARDABLE  0, 0, 200, 400
+IDD_SEQHOMO DIALOG DISCARDABLE  0, 0, 119, 145
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Homophones Analysis"
+CAPTION "Homophone Analysis"
 FONT 8, "MS Sans Serif"
 BEGIN
-    EDITTEXT        IDC_HOMO_TOL_EDIT,75,7,30,14,ES_NUMBER
-    CONTROL         "Tolerance",IDC_HOMO_TOL_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS,80,7,10,14
-    EDITTEXT        IDC_HOMO_LEN_EDIT,75,30,30,14,ES_NUMBER
-    CONTROL         "Max Length",IDC_HOMO_LEN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS,103,7,10,14
-
-    LTEXT           "Tolerance",IDC_STATIC,7,9,50,8
-    LTEXT           "Max Length",IDC_STATIC,7,32,50,8
-    
-    LTEXT           "Possible Homophones",IDC_STATIC,50,80,150,8
-    LTEXT           "",IDC_HOMO_SETS,10,100,78,300,SS_NOPREFIX,WS_EX_TOOLWINDOW
+    EDITTEXT        IDC_HOMO_TOL_EDIT,66,7,30,14,ES_NUMBER
+    CONTROL         "Tolerance",IDC_HOMO_TOL_SPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,97,7,10,14
+    EDITTEXT        IDC_HOMO_LEN_EDIT,66,27,30,14,ES_NUMBER
+    CONTROL         "Max Length",IDC_HOMO_LEN_SPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,97,27,10,14
+    LTEXT           "Tolerance",IDC_STATIC,12,9,50,8
+    LTEXT           "Max Length",IDC_STATIC,12,29,50,8
+    CTEXT           "Possible Homophones",IDC_STATIC,17,53,85,8
+    EDITTEXT        IDC_HOMO_SETS,9,66,101,71,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    ES_READONLY | WS_VSCROLL
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -558,7 +559,6 @@ BEGIN
                                                     NOINVERT
     "M",            IDM_CIPHER_MERGE,       VIRTKEY, CONTROL, NOINVERT
     "N",            IDM_FILE_OPEN_NUM,      VIRTKEY, CONTROL, NOINVERT
-    
     "R",            IDM_SOLVE_RESET,        VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_FILE_SAVE_MAP,      VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
@@ -567,6 +567,8 @@ BEGIN
     "W",            IDM_SOLVE_WORD,         VIRTKEY, CONTROL, NOINVERT
     "X",            IDM_KEY_EXCLUDE,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+										  
+    "Y",            IDM_EDIT_REDO,          VIRTKEY, CONTROL, NOINVERT
     "Z",            IDM_EDIT_UNDO,          VIRTKEY, CONTROL, NOINVERT
     VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
     VK_F3,          IDM_FILE_SAVE_MAP,      VIRTKEY, NOINVERT

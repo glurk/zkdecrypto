@@ -145,7 +145,7 @@ struct NGRAM
 class Message
 {
 public:
-	Message() {msg_len=0; patterns=NULL; num_patterns=0; good_pat=0; cipher=NULL; plain=NULL;}
+	Message() {msg_len=0; patterns=NULL; num_patterns=0; good_pat=0; min_pat_len=2; cipher=NULL; plain=NULL;}
 	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(patterns) ClearPatterns(patterns);}
 
 	int Read(const char*);
@@ -168,7 +168,7 @@ public:
 	float Multiplicity() {return float(cur_map.GetNumSymbols())/msg_len;}
 
 	void MergeSymbols(char,char,int);
-	int Simplify(char&,char&);
+	int Simplify(char&,char&,char*);
 	long SeqHomo(wchar*,char*,float,int);
 	void Flip(int,int);
 
@@ -219,7 +219,7 @@ private:
 	long WritePatterns(NGRAM*,int);
 	
 	char *cipher, *plain;
-	int msg_len;
+	int msg_len, min_pat_len;
 	int exp_freq[26];
 	NGRAM *patterns;
 	int num_patterns, good_pat;
