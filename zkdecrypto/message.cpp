@@ -1454,7 +1454,7 @@ long Message::RowColIoC(wchar *dest, int cols)
 long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 {
 	int cur_symbol, symbol_a, symbol_b, num_symbols, str_len;
-	StringArray string_set1, string_set2, string_set3, string_set4;
+	StringArray string_set1, string_set2, string_set4;
 	char temp[1024];
 	char *last_pos, *cur_pos;
 	SYMBOL symbol;
@@ -1464,7 +1464,7 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 	cur_map.GetSymbol(0,&symbol);
 
 	dest[0]='\0';
-	clip[0]='\0';
+	if(clip) clip[0]='\0';
 
 	//make strings for possible homophone sets
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
@@ -1524,34 +1524,6 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 		if(str_len>=2 && str_len<=10) string_set4.AddString(str_c);
 	}
 	
-	//find symbols that appear together often in possible set
-	/*for(symbol_a=0; symbol_a<num_symbols-1; symbol_a++)
-	{
-		cur_map.GetSymbol(symbol_a,&symbol);
-		char sym_a=symbol.cipher;
-		
-		for(symbol_b=symbol_a+1; symbol_b<num_symbols; symbol_b++)
-		{
-			//if(string_set4.GetNumStrings()>=MAX_STRINGS) break;
-			
-			cur_map.GetSymbol(symbol_b,&symbol);
-			char sym_b=symbol.cipher;
-			
-			int times=0;
-			
-			for(cur_symbol=0; cur_symbol<string_set3.GetNumStrings(); cur_symbol++)
-			{
-				string_set3.GetString(cur_symbol,temp);
-				if(strchr(temp,sym_a) && strchr(temp,sym_b)) times++;
-			}
-			
-			if(times<2) continue;
-		
-			sprintf(temp,"%02i %c %c",times,sym_a,sym_b);
-			string_set4.AddString(temp);
-		}
-	}*/
-	
 	//sort and reduce homophone sets
 	for(cur_symbol=0; cur_symbol<string_set4.GetNumStrings(); cur_symbol++)
 		string_set4.SortString(cur_symbol);
@@ -1566,9 +1538,6 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 		ustrcat(dest,temp);
 		ustrcat(dest,"\n");
 		rows++;
-		
-		//if(!((cur_symbol+1)%cols)) 
-		//	{ustrcat(dest,"\n"); rows++;}
 	}
 	
 	return (rows+2)<<16 | (cols*8)+6;
