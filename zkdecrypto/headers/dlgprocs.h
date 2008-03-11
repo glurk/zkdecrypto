@@ -281,13 +281,41 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 void LetterDist(int target, HWND hWnd)
 {
 	int letter, set_symbols=0, max_letter;
-	double n[26];
+	int n[26];
+	int x, y;
+	int index=0;
+	char alphasort[256];
+	float unitemp[27], maxtemp=0, skewvalue=0.095;
 
-	//calculate real number of occurances for each letter
-	for(letter=0; letter<26; letter++)
-	{
-		n[letter]=(message.cur_map.GetUnigraph(letter)/100)*target;
-		set_symbols+=int(n[letter]);
+	memset(alphasort,0,256*sizeof(char));
+	memset(n,0,26*sizeof(int));
+	memset(unitemp,0,sizeof(float));
+
+	//I really need to find the derivitive function here,  26/0.095 vs 340/12.4 for skewvalue
+	//anyone good at calculus??
+
+	for(letter=0; letter<26; letter++) unitemp[letter]=message.cur_map.GetUnigraph(letter);
+
+	//create frequency-sorted alphabet
+	for(y=0; y<26; y++) {
+		letter=-1;
+		for(x=0; x<26; x++) {
+			if(unitemp[x]-skewvalue>maxtemp) { maxtemp=unitemp[x]; letter=index=x; }
+		}
+		unitemp[index]=0; maxtemp=0;
+		if(letter != -1 && index<target) { alphasort[index]=letter+'A'; n[letter]++; index++; }
+	}
+	
+	set_symbols=index;
+
+	if(set_symbols<target) {
+
+		//calculate real number of occurances for each letter
+		for(letter=0; letter<26; letter++)
+		{
+			n[letter]+=(message.cur_map.GetUnigraph(letter)/100)*target;
+			set_symbols+=int(n[letter]);
+		}
 	}
 
 	while(set_symbols<target)
