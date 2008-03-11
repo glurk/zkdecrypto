@@ -281,6 +281,37 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 void LetterDist(int target, HWND hWnd)
 {
 	int letter, set_symbols=0, max_letter;
+	double n[26];
+
+	//calculate real number of occurances for each letter
+	for(letter=0; letter<26; letter++)
+	{
+		n[letter]=(message.cur_map.GetUnigraph(letter)/100)*target;
+		set_symbols+=int(n[letter]);
+	}
+
+	while(set_symbols<target)
+	{
+		//find the letter with the highest decimal
+		max_letter=0;
+
+		for(letter=0; letter<26; letter++)
+			if(DECIMAL(n[letter])>DECIMAL(n[max_letter])) 
+				max_letter=letter;
+	
+		//set that letter to the next whole number
+		n[max_letter]=int(n[max_letter])+1;
+		set_symbols++;
+	}
+
+	for(letter=0; letter<26; letter++)
+		SetDlgItemInt(hWnd,lprgiInitID[letter],int(n[letter]),false);
+}
+
+/*
+void LetterDist(int target, HWND hWnd)
+{
+	int letter, set_symbols=0, max_letter;
 	int n[26];
 	int x, y;
 	int index=0;
@@ -334,7 +365,7 @@ void LetterDist(int target, HWND hWnd)
 
 	for(letter=0; letter<26; letter++)
 		SetDlgItemInt(hWnd,lprgiInitID[letter],int(n[letter]),false);
-}
+}*/
 
 //init key dialog
 LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
