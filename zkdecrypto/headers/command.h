@@ -28,6 +28,17 @@ inline int CommandFile(int cmd_id)
 			else LoadMessage(num2asc_name);				
 			return 0;
 			
+		case IDM_FILE_SAVE_CIPHER:
+			if(!bMsgLoaded) return 0;
+			if(GetFilename(filename,szCipherName,1)!=1) return 0;
+			if(message.Write(filename)) strcpy(szCipherName,filename);
+			else
+			{
+				sprintf(szText,"Could not save \"%s\"",filename);
+				MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
+			}
+			return 0;
+			
 		case IDM_FILE_OPEN_MAP:
 			if(!GetFilename(filename,szKeyName,0)) return 0;
 			LoadMap(filename);
@@ -36,22 +47,28 @@ inline int CommandFile(int cmd_id)
 		case IDM_FILE_SAVE_MAP:
 			if(!bMsgLoaded) return 0;
 			if(GetFilename(filename,szKeyName,1)!=1) return 0;
-			if(message.cur_map.Write(filename))
+			if(message.cur_map.Write(filename)) 
+			{
 				strcpy(szKeyName,filename);
-						
-			bMapLoaded=true;
-			MapEnable(true);
+				bMapLoaded=true;
+				MapEnable(true);
+			}
+			else
+			{
+				sprintf(szText,"Could not save \"%s\"",filename);
+				MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
+			}
 			return 0;
 
 		case IDM_FILE_SAVE_PLAIN:
 			if(!bMsgLoaded) return 0;
 			if(GetFilename(filename,szPlainName,2)!=1) return 0;
-			if(!SavePlain(filename))
+			if(SavePlain(filename)) strcpy(szPlainName,filename);
+			else
 			{
 				sprintf(szText,"Could not save \"%s\"",filename);
 				MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
 			}
-			else strcpy(szPlainName,filename);
 			return 0;
 			
 		case IDM_FILE_COPY_PLAIN:
@@ -97,24 +114,24 @@ inline int CommandCipher(int cmd_id)
 			//run simplify
 			SetCursor(LoadCursor(0,IDC_WAIT));
 			time1=GetTickCount();
-			new_pat=message.Simplify(simp1,simp2,szText);
+			new_pat=message.Simplify(szText);
 			SetClipboardText(szText);
 			time2=GetTickCount();
 			SetCursor(LoadCursor(0,IDC_ARROW));
 
-			if(simp1==char(0xFF)) //no good substitution found
-				return MessageBox(hMainWnd,"No Substitutions found","Substitution",MB_OK);
-
-			sprintf(szText,"Merge '%c' with '%c'? (%.2fs)",simp1,simp2,double(time2-time1)/1000);
+			//no good substitution found
+			if(!new_pat) strcpy(szText,"No substitions found");
+			MessageBox(hMainWnd,szText,"Pattern Analysis",MB_OK);
+			/*sprintf(szText,"Merge '%c' with '%c'? (%.2fs)",simp1,simp2,double(time2-time1)/1000);
 					
 			//merge if yes
-			if(MessageBox(hMainWnd,szText,"Substitution",MB_YESNO | MB_ICONQUESTION)==IDYES)
+			if(MessageBox(hMainWnd,szText,"Pattern Analysis",MB_YESNO | MB_ICONQUESTION)==IDYES)
 			{
 				SetUndo();
 				message.MergeSymbols(simp1,simp2,true);
 				SetCipher();
 				SetDlgInfo();
-			}
+			}*/
 			return 0;
 
 		case IDM_CIPHER_BESTSEC:
@@ -149,10 +166,9 @@ inline int CommandCipher(int cmd_id)
 			message.PatternsToFile(szText,5);
 			return 0;
 
-		case IDM_CIPHER_RANDOM:
-			//RandCipher(340,63);
+		case IDM_CIPHER_RANDOM: RandCipher(340,63); return 0;
 			
-		
+		case IDM_CIPHER_SEQHOMO:
 			hHomo=CreateDialog(hInst,MAKEINTRESOURCE(IDD_SEQHOMO),hMainWnd,(DLGPROC)HomoProc);
 			ShowWindow(hHomo,SW_SHOWNORMAL);
 			return 0;
