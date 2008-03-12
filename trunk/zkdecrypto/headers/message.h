@@ -149,6 +149,7 @@ public:
 	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(patterns) ClearPatterns(patterns);}
 
 	int Read(const char*);
+	int Write(const char*);
 	void SetCipher(const char*);
 	
 	const char * GetCipher() {return cipher;}
@@ -168,7 +169,7 @@ public:
 	float Multiplicity() {return float(cur_map.GetNumSymbols())/msg_len;}
 
 	void MergeSymbols(char,char,int);
-	int Simplify(char&,char&,char*);
+	int Simplify(char*);
 	long SeqHomo(wchar*,char*,float,int);
 	void Flip(int,int);
 

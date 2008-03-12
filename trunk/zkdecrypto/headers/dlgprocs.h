@@ -344,7 +344,7 @@ void LetterDist(int target, HWND hWnd)
 		//calculate real number of occurances for each letter
 		for(letter=0; letter<26; letter++)
 		{
-			n[letter]+=(message.cur_map.GetUnigraph(letter)/100)*target;
+			n[letter]+=int((message.cur_map.GetUnigraph(letter)/100)*target);
 			set_symbols+=int(n[letter]);
 		}
 	}
@@ -365,7 +365,8 @@ void LetterDist(int target, HWND hWnd)
 
 	for(letter=0; letter<26; letter++)
 		SetDlgItemInt(hWnd,lprgiInitID[letter],int(n[letter]),false);
-}*/
+}
+*/
 
 //init key dialog
 LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -488,15 +489,16 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case WM_INITDIALOG:
 			//set up/down control ranges
 			SendDlgItemMessage(hWnd,IDC_HOMO_TOL_SPIN,UDM_SETRANGE,0,100);
-			SendDlgItemMessage(hWnd,IDC_HOMO_LEN_SPIN,UDM_SETRANGE,0,50);
+			SendDlgItemMessage(hWnd,IDC_HOMO_LEN_SPIN,UDM_SETRANGE,0,message.cur_map.GetNumSymbols());
 			SetDlgItemInt(hWnd,IDC_HOMO_TOL_EDIT,tolerance,false);
 			SetDlgItemInt(hWnd,IDC_HOMO_LEN_EDIT,max_len,false);
 
 		case UDM_HOMO_UPDATE:
 			tolerance=GetDlgItemInt(hWnd,IDC_HOMO_TOL_EDIT,false,false);
 			max_len=GetDlgItemInt(hWnd,IDC_HOMO_LEN_EDIT,false,false);			
-			message.SeqHomo(szGraph,NULL,tolerance/100.0,max_len);
+			message.SeqHomo(szGraph,szText,tolerance/100.0,max_len);
 			SetDlgItemTextW(hWnd,IDC_HOMO_SETS,(WCHAR*)szGraph);
+			SetClipboardText(szText);
 			return 0;			
 
 		case WM_COMMAND:

@@ -232,7 +232,7 @@ int Map::Write(const char *filename)
 	//letters
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
-		if(!symbols[cur_symbol].plain) putc(' ',mapfile);
+		if(!symbols[cur_symbol].plain) putc(BLANK,mapfile);
 		else putc(symbols[cur_symbol].plain,mapfile);
 	}
 	
@@ -275,129 +275,8 @@ void Map::Clear(int mode)
 		if(mode & CLR_EXCLUDE) symbols[cur_symbol].exclude[0]='\0';
 	}
 }
-/*
-void Map::Init(int first)
-{
-	int letter, set_symbols=0, max_letter;
-	double n[26];
-	
-	if(first<0) return;
-	if(first>num_symbols) first=num_symbols;
 
-	//calculate real number of occurances for each letter
-	for(letter=0; letter<26; letter++)
-	{
-		n[letter]=(unigraphs[letter]/100)*first;
-		set_symbols+=int(n[letter]);
-	}
-
-	while(set_symbols<first)
-	{
-		//find the letter with the highest decimal
-		max_letter=0;
-
-		for(letter=0; letter<26; letter++)
-			if(DECIMAL(n[letter])>DECIMAL(n[max_letter])) 
-				max_letter=letter;
-	
-		//set that letter to the next whole number
-		n[max_letter]=int(n[max_letter])+1;
-		set_symbols++;
-	}
-
-	//set symbols
-	int cur_symbol=0;
-
-	for(letter=0; letter<26; letter++)
-		while(n[letter]>=1)
-		{		
-			symbols[cur_symbol++].plain=letter+'A';
-			n[letter]--;
-		}
-	
-	SetAllLock(0);
-	
-	//clear and lock the rest
-	while(cur_symbol<num_symbols)
-	{
-		symbols[cur_symbol].plain=0;
-		locked[cur_symbol]=true;
-		cur_symbol++;
-	}
-}*/
-/*
-void Map::Init(int first)
-{
-	int x, y, xx, letter, set_symbols=0, max_letter, index=0;
-	double n[26];
-	char alphasort[256];
-	float unitemp[27], maxtemp=0;
-	
-	if(first<0) return;
-	first=num_symbols;
-	
-	memset(alphasort,0,256*sizeof(char));
-	memcpy(unitemp,unigraphs,27*sizeof(float));
-    
-	//create frequency-sorted alphabet
-	for(y=0; y<26; y++) {
-		letter=-1; n[y]=0;
-		for(x=0; x<26; x++) {
-			if(unitemp[x]-0.095>maxtemp) { maxtemp=unitemp[x]; letter=xx=x; }
-		}
-		unitemp[xx]=0; maxtemp=0;
-		if(letter != -1) { alphasort[index]=letter+'A'; index++; }
-	}
- 
-	y=set_symbols=(int)strlen(alphasort);
-	
-	for(x=0; x<y; x++)
-	         symbols[x].plain=alphasort[x];
-
-	//calculate real number of occurances for each letter
-	for(letter=0; letter<26; letter++)
-	{
-		n[letter]=((unigraphs[letter]/100)*first)-1;
-		set_symbols+=int(n[letter]);
-	}
-
-	while(set_symbols<first)
-	{
-		//find the letter with the highest decimal
-		max_letter=0;
-
-		for(letter=0; letter<26; letter++)
-			if(DECIMAL(n[letter])>DECIMAL(n[max_letter])) 
-				max_letter=letter;
-	
-		//set that letter to the next whole number
-		n[max_letter]=int(n[max_letter])+1;
-		set_symbols++;
-	}
-
-	//set symbols
-//	int cur_symbol=0;
-	int cur_symbol=(int)strlen(alphasort);
-
-	for(letter=0; letter<26; letter++)
-		while(n[letter]>=1)
-		{		
-			symbols[cur_symbol++].plain=letter+'A';
-			n[letter]--;
-		}
-	
-	SetAllLock(0);
-	
-	//clear and lock the rest
-	while(cur_symbol<num_symbols)
-	{
-		symbols[cur_symbol].plain=0;
-		locked[cur_symbol]=true;
-		cur_symbol++;
-	}
-}
-*/
-
+//initialize key to array of integers, homophones for each letter
 void Map::Init(int *ltr_homo)
 {
 	int cur_letter=0;
@@ -421,7 +300,6 @@ void Map::Init(int *ltr_homo)
 			locked[cur_symbol]=true;
 		}
 	}
-
 }
 
 //add/update a symbol; if inc_freq is true, 
@@ -485,6 +363,7 @@ void Map::SwapSymbols(int swap1, int swap2)
 	symbols[swap2].plain=temp;
 }
 
+//replace all instances of symbol2 with symbol1, reset info
 void Map::MergeSymbols(char symbol1, char symbol2)
 {
 	int index1, index2;
@@ -718,6 +597,19 @@ int Message::Read(const char *filename)
 	return msg_len;
 }
 
+int Message::Write(const char *filename)
+{
+	FILE *msgfile;
+	
+	if(!(msgfile=fopen(filename,"w"))) return 0;
+	
+	fputs(cipher,msgfile);	
+	
+	fclose(msgfile);
+	
+	return 1;
+}
+
 void Message::SetCipher(const char *new_cipher)
 {
 	msg_len=(int)strlen(new_cipher);
@@ -857,24 +749,22 @@ void Message::MergeSymbols(char symbol1, char symbol2, int do_near)
 }
 
 //try to identify homophones and merge them
-int Message::Simplify(char &simp1, char &simp2, char *dest)
+int Message::Simplify(char *dest)
 {
-	int max_patterns, old_patterns, num_symbols;
-	char max1=char(0xFF), max2, adj_sym1[3], adj_sym2[3];
-	long *best_merge;
+	int old_patterns, num_symbols;
+	char adj_sym1[3], adj_sym2[3], temp[32];
+	//long *best_merge;
 	int num_best=0, increase;
 	Message test_msg;
 	SYMBOL symbol1, symbol2;
+	StringArray best_list;
 	
 	//only use exact patterns
 	FindPatterns(false);
-	old_patterns=max_patterns=good_pat;
+	old_patterns=good_pat;
 	num_symbols=cur_map.GetNumSymbols();
-	best_merge=new long[num_symbols*num_symbols];
+	//best_merge=new long[num_symbols*num_symbols];
 	
-	//test_msg+=*this;
-	test_msg.min_pat_len=2;
-
 	//find the best of all possible sustitutions 
 	for(int cur_sym1=0; cur_sym1<num_symbols-1; cur_sym1++)
 	{
@@ -903,39 +793,37 @@ int Message::Simplify(char &simp1, char &simp2, char *dest)
 
 			if(strstr(cipher,adj_sym1) || strstr(cipher,adj_sym2)) continue;*/
 			
-
 			//best list
-			best_merge[num_best]=symbol1.cipher<<24 | symbol2.cipher<<16 | test_msg.good_pat-old_patterns;
-			num_best++;
-
-			//the max number of added patterns
-			if(test_msg.good_pat>max_patterns)
-			{
-				max_patterns=test_msg.good_pat;
-				max1=symbol1.cipher;
-				max2=symbol2.cipher;
-			}			
+			//best_merge[num_best]=symbol1.cipher<<24 | symbol2.cipher<<16 | test_msg.good_pat-old_patterns;
+			//num_best++;
+			
+			sprintf(temp,"%02i\t%c %c",test_msg.good_pat-old_patterns,symbol1.cipher,symbol2.cipher);
+			best_list.AddString(temp);
 		}
 	}
 
-	simp1=max1;
-	simp2=max2;
-
-	min_pat_len=2;
-
 	dest[0]='\0';
 
-	for(int cur_best=0; cur_best<num_best; cur_best++)
+	/*for(int cur_best=0; cur_best<num_best; cur_best++)
 	{
 		sprintf(dest,"%c\t%c\t%i\r\n",best_merge[cur_best]>>24,(best_merge[cur_best]>>16)&0xFF,best_merge[cur_best]&0xFFFF);
 		dest+=strlen(dest);
+	}*/
+
+	//delete[] best_merge;
+	
+	best_list.SortStrings(1);
+	
+	for(int cur_best=0; cur_best<best_list.GetNumStrings(); cur_best++)
+	{
+		best_list.GetString(cur_best,temp);
+		strcat(dest,temp);
+		strcat(dest,"\r\n");
 	}
-
-	delete[] best_merge;
-
+	
 	FindPatterns(true);
 
-	return (max_patterns-old_patterns);
+	return best_list.GetNumStrings();
 }
 
 //find a pattern in the tree & set dest to it
@@ -1564,7 +1452,7 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 		string_set4.SortString(cur_symbol);
 	
 	string_set4.RemoveDups();
-	string_set4.SortStrings(1);
+	string_set4.SortStrings(0);
 	
 	//make display string
 	for(cur_symbol=0; cur_symbol<200; cur_symbol++)
@@ -1579,3 +1467,101 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 	return (rows+2)<<16 | (cols*8)+6;
 }
 
+/*
+long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
+{
+	int cur_symbol, symbol_a, symbol_b, num_symbols, str_len;
+	StringArray string_set1, string_set2, string_set4;
+	char temp[1024];
+	char *last_pos, *cur_pos;
+	SYMBOL symbol;
+	int rows=0, cols=10;
+
+	num_symbols=cur_map.GetNumSymbols();
+	cur_map.GetSymbol(0,&symbol);
+
+	dest[0]='\0';
+	if(clip) clip[0]='\0';
+
+	//make strings for possible homophone sets
+	//symbols that occur TOL% of the time between the current symbol
+	//are it's possible homophones
+	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	{
+		cur_map.GetSymbol(cur_symbol,&symbol);
+
+		//get strings between instances of this symbol
+		last_pos=strchr(cipher,symbol.cipher);
+
+		while(cur_pos=strchr(last_pos+1,symbol.cipher))
+		{
+			//add this string
+			str_len=cur_pos-last_pos;
+			memcpy(temp,last_pos,str_len);
+			temp[str_len]='\0';
+			string_set1.AddString(temp);
+
+			//setup for next position
+			last_pos=cur_pos;
+		}
+
+		//get symbols that are in all strings
+		string_set1.Intersect(temp,occur_pcnt);
+		string_set1.Clear();
+		string_set2.AddString(temp);
+		
+		if(!temp[1]) continue;
+		
+		if(clip) {strcat(clip,temp); strcat(clip,"\n");}
+	}
+
+	//make strings for symbols that both say are possible homophones of each other
+	//i.e. throw out all symbols in possible sets that do not have a corralary
+	char str_a[256], str_b[256], str_c[256];
+
+	for(symbol_a=0; symbol_a<num_symbols; symbol_a++)
+	{
+		string_set2.GetString(symbol_a,str_a);
+		str_c[0]=str_a[0];
+		str_len=1;
+		
+		if(int(strlen(str_a))>max_len) continue;
+		
+		for(symbol_b=1; symbol_b<(int)strlen(str_a); symbol_b++)
+		{
+			cur_symbol=cur_map.FindByCipher(str_a[symbol_b]);
+			string_set2.GetString(cur_symbol,str_b);
+			
+			if(int(strlen(str_b))>max_len) continue;
+					
+			//2 symbols where both say the other is a possibility
+			if(strchr(str_b,str_a[0]))
+			{
+				str_c[1]=str_a[symbol_b];
+				str_c[2]='\0';
+				string_set4.AddString(str_c);
+			}	
+		}
+	}
+	
+	//sort and reduce homophone sets
+	//remove duplicate strings after sorting
+	for(cur_symbol=0; cur_symbol<string_set4.GetNumStrings(); cur_symbol++)
+		string_set4.SortString(cur_symbol);
+	
+	string_set4.RemoveDups();
+	string_set4.SortStrings(0);
+	
+	//make display string
+	for(cur_symbol=0; cur_symbol<200; cur_symbol++)
+	{
+		if(!string_set4.GetString(cur_symbol,temp)) break;
+		
+		if(cur_symbol) ustrcat(dest,"\r\n");
+		ustrcat(dest,temp);
+		rows++;
+	}
+	
+	return (rows+2)<<16 | (cols*8)+6;
+}
+*/
