@@ -16,6 +16,15 @@
 #define LANG_GER	"ger"
 #define LANG_ITA	"ita"
 
+//language IoC
+#define IOC_ENG		.066
+#define IOC_SPA		.075
+#define IOC_GER		.079
+#define IOC_ITA		.075
+#define IOC_FRE		.078
+#define IOC_POR		.075
+#define IOC_RUS		.068
+
 //text constants
 #define CHAR_WIDTH  7
 #define CHAR_HEIGHT 12

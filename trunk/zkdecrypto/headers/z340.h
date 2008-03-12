@@ -63,5 +63,6 @@ void			printfrequency(int,int *,char *,int);
 int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&,const char*,int);
 
 void 			GetUnigraphs(double*);
+void			SetIoC(float);
 int 			ReadNGraphs(const char*,int);
 int 			WordPlug(Message&,const char *, int);

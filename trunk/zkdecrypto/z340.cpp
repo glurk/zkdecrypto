@@ -145,6 +145,7 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
+	int score;
 
 	t1=solv[0]-'A'; t2=solv[1]-'A'; t3=solv[2]-'A'; t4=solv[3]-'A'; t5=solv[4]-'A';
 
@@ -174,11 +175,16 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
 	}
 
+	
+
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
+
+	score=pentascore+tetrascore+triscore+biscore;
+	score-=int(500000*ABS(IoC(solv)-lang_ioc));
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
-	return(pentascore+tetrascore+triscore+biscore);
+	return(score);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -317,6 +323,8 @@ void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //             Read the specified ngram file, of size n, into the proper array                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SetIoC(float ioc) {lang_ioc=ioc;}
 
 int ReadNGraphs(const char *filename, int n) 
 {
