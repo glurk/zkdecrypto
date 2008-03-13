@@ -122,16 +122,6 @@ inline int CommandCipher(int cmd_id)
 			//no good substitution found
 			if(!new_pat) strcpy(szText,"No substitions found");
 			MessageBox(hMainWnd,szText,"Pattern Analysis",MB_OK);
-			/*sprintf(szText,"Merge '%c' with '%c'? (%.2fs)",simp1,simp2,double(time2-time1)/1000);
-					
-			//merge if yes
-			if(MessageBox(hMainWnd,szText,"Pattern Analysis",MB_YESNO | MB_ICONQUESTION)==IDYES)
-			{
-				SetUndo();
-				message.MergeSymbols(simp1,simp2,true);
-				SetCipher();
-				SetDlgInfo();
-			}*/
 			return 0;
 
 		case IDM_CIPHER_BESTSEC:
@@ -143,7 +133,7 @@ inline int CommandCipher(int cmd_id)
 			iNumber=25;
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
 			{
-				lRowCol=message.PolyKeySize(szGraph,iNumber);
+				lRowCol=message.PolyKeySize(szGraph,iNumber,fLangIoC);
 				strcpy(szGraphTitle,"Polyalphabetic IoC Count");
 				DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			}

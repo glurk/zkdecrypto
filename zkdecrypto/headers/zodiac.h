@@ -1,5 +1,6 @@
 #ifndef _ZODIAC_H
 
+#include "map.h"
 #include "message.h"
 #include "z340.h"
 #include <map>
@@ -17,13 +18,13 @@
 #define LANG_ITA	"ita"
 
 //language IoC
-#define IOC_ENG		.066
-#define IOC_SPA		.075
-#define IOC_GER		.079
-#define IOC_ITA		.075
-#define IOC_FRE		.078
-#define IOC_POR		.075
-#define IOC_RUS		.068
+#define IOC_ENG		.0665
+#define IOC_SPA		.0746
+#define IOC_GER		.0788
+#define IOC_ITA		.0746
+#define IOC_FRE		.0777
+#define IOC_POR		.0746
+#define IOC_RUS		.0677
 
 //text constants
 #define CHAR_WIDTH  7
@@ -89,6 +90,7 @@ SOLVEINFO siSolveInfo;
 int iUseGraphs=USE_BI+USE_TRI+USE_TETRA+USE_PENTA;
 int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
+float fLangIoC;
 
 //Win32 object handles
 HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hLetter=NULL, hHomo=NULL, hScroll;
