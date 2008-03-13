@@ -158,7 +158,12 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							SetText();
 					}
 					return 0;
-					
+
+				case IDC_IOC_WEIGHT_EDIT: 
+					iIoCWeight=GetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,false,false);
+					SetIoCWeight(iIoCWeight);
+					return 0;
+
 				case UDM_DISPALL:
 					SetDlgInfo();
 					return 0;
@@ -333,6 +338,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SetTitle();
 	MsgEnable(false);
 	MapEnable(false);
+	SendDlgItemMessage(hMainWnd,IDC_IOC_WEIGHT_SPIN,UDM_SETRANGE,0,100);
+	SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,0,false);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_ASC,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_NUM,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_SAVE_CIPHER,MF_BYCOMMAND | MF_GRAYED);

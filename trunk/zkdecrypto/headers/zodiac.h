@@ -91,6 +91,7 @@ int iUseGraphs=USE_BI+USE_TRI+USE_TETRA+USE_PENTA;
 int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
 float fLangIoC;
+int iIoCWeight;
 
 //Win32 object handles
 HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hLetter=NULL, hHomo=NULL, hScroll;

@@ -682,8 +682,9 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve);
-	//ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE),iShowSolve);
-	//ShowWindow(GetDlgItem(hMainWnd,IDC_RESET),iShowSolve);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_TITLE),iShowSolve);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_EDIT),iShowSolve);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_SPIN),iShowSolve);
 
 	//analysis
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TABLE_TITLE),iShowAnalysis);

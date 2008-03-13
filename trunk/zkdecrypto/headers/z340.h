@@ -64,5 +64,6 @@ int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&,const char
 
 void 			GetUnigraphs(double*);
 void			SetIoC(float);
+void			SetIoCWeight(int);
 int 			ReadNGraphs(const char*,int);
 int 			WordPlug(Message&,const char *, int);
