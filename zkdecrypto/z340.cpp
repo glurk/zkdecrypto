@@ -176,7 +176,7 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 	score=pentascore+tetrascore+triscore+biscore;
-	score-=int(500000*ABS(IoC(solv)-lang_ioc));  //this doesn't scale. where does 500000 come from?
+	score-=int(ioc_weight*10000*ABS(IoC(solv)-lang_ioc));  //this doesn't scale. where does 500000 come from?
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
@@ -316,10 +316,11 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                          Set the IoC for use in the hillclimber                              //
+//                          Set the IoC & multipler for use in the hillclimber                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void SetIoC(float ioc) {lang_ioc=ioc;}
+void SetIoCWeight(int weight) {ioc_weight=weight;}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //             Read the specified ngram file, of size n, into the proper array                  //

@@ -92,6 +92,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\map.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\message.cpp
 # End Source File
 # Begin Source File
@@ -133,6 +137,14 @@ SOURCE=.\headers\dlgprocs.h
 # Begin Source File
 
 SOURCE=.\headers\files.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\headers\macros.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\headers\map.h
 # End Source File
 # Begin Source File
 

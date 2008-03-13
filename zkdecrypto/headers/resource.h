@@ -153,6 +153,9 @@
 #define IDC_HOMO_LEN_EDIT               1124
 #define IDC_HOMO_LEN_SPIN               1125
 #define IDC_HOMO_SETS                   1126
+#define IDC_IOC_WEIGHT_EDIT			1127
+#define IDC_IOC_WEIGHT_SPIN			1128
+#define IDC_IOC_WEIGHT_TITLE			1129
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
 #define IDM_FILE_EXIT                   40003
