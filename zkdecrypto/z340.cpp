@@ -1,15 +1,12 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Written by Brax Sisco (Developed starting 9/14/2006)                                                                                                     //
-// This program attempts to solve the November 8th, 1969 unsolved Zodiac 340 character cipher                                                               //
+// This program attempts to solve homophonic ciphers                                                                                                        //
 //                                                                                                                                                          //
 // Big thanks to Chris McCarthy for many good ideas and saving me a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                      //
 // Also thanks to Glen from the ZK message board (http://www.zodiackiller.com/mba/zc/121.html) for an ASCII encoding of the solved 408 cipher.              //
 //                                                                                                                                                          //
-// This variant of my zodiac program uses a "genetic algorithm" of my own design to solve homophonic substitution ciphers.  It works, eventually.           //
-// Program has been adapted to use the "Mersenne Twister" PRNG because of its speed and long period.                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2007 Brax Sisco
+//  Copyright (C) 2008 Brax Sisco, Wesley Hopper, Michael Eaton
 //
 //    This program is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -99,7 +96,6 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 				if(p2<cuniq && strchr(exclude+(27*p2),key[p1])) continue;
 			}
 			
-
 			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
 				bestscore = score;
 				if (print) printcipher(clength,cipher,solved,bestscore,key);
@@ -151,7 +147,7 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 
 	for(int c=0; c<length_of_cipher; c++) {
 
-		//allow to score incomple decoding (one with --- in it)
+		//allow to score incomplete decoding (one with --- in it)
 		if(IS_LETTER(t1) && IS_LETTER(t2)) {
 			if(c<length_of_cipher-1 && (use_graphs & USE_BI)) 
 				{ biscore += bigraphs[t1*26+t2]; }
@@ -180,7 +176,7 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 	score=pentascore+tetrascore+triscore+biscore;
-	score-=int(500000*ABS(IoC(solv)-lang_ioc));
+	score-=int(500000*ABS(IoC(solv)-lang_ioc));  //this doesn't scale. where does 500000 come from?
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
@@ -313,18 +309,21 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//           Return the value of a unigraph for use in other ares of the program                //
+//           Return the value of a unigraph for use in other areas of the program                //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//             Read the specified ngram file, of size n, into the proper array                  //
+//                          Set the IoC for use in the hillclimber                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void SetIoC(float ioc) {lang_ioc=ioc;}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//             Read the specified ngram file, of size n, into the proper array                  //
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ReadNGraphs(const char *filename, int n) 
 {
@@ -444,4 +443,3 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	
 	return best_score;
 }
-
