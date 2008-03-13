@@ -2,8 +2,11 @@
 #define _STR_ARRAY_H_
 
 #include <string.h>
+#include <math.h>
 
 #define MAX_STRINGS 1024
+
+#define NUM_ROWS(C,R) (C%R? (C/R)+1:(C/R))
 
 class StringArray
 {
@@ -25,6 +28,14 @@ class StringArray
 		char *strings[MAX_STRINGS];
 		int num_strings;
 };
+
+int GetUniques(const char*, char*, int*);
+float IoC(const char*);
+float Entropy(const char*);
+float ChiSquare(const char*);
+void Transform(char*,unsigned long*,int);
+void FlipHorz(unsigned long*,int&,int,int);
+void FlipVert(unsigned long*,int&,int,int);
 
 #endif
 

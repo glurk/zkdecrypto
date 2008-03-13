@@ -1,7 +1,7 @@
 [Project]
 FileName=zodiac.dev
 Name=zodiac
-UnitCount=19
+UnitCount=22
 Type=0
 Ver=1
 ObjFiles=
@@ -237,20 +237,30 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit20]
-FileName=headers\dlgprocs.h
+[Unit21]
+FileName=headers\map.h
 CompileCpp=1
-Folder=zodiac
+Folder=
 Compile=1
 Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit21]
-FileName=headers\command.h
+[Unit20]
+FileName=map.cpp
 CompileCpp=1
-Folder=zodiac
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit22]
+FileName=headers\macros.h
+CompileCpp=1
+Folder=
 Compile=1
 Link=1
 Priority=1000

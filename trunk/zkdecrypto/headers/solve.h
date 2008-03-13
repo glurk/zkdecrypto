@@ -343,11 +343,13 @@ void SetLanguage()
 
 	switch(iLang)
 	{
-		case 0: strcpy(szLanguage,"English"); strcpy(szLang,LANG_ENG); SetIoC(IOC_ENG); break;
-		case 1: strcpy(szLanguage,"Spanish"); strcpy(szLang,LANG_SPA); SetIoC(IOC_SPA); break;
-		case 2: strcpy(szLanguage,"German"); strcpy(szLang,LANG_GER); SetIoC(IOC_GER); break;
-		case 3: strcpy(szLanguage,"Italian"); strcpy(szLang,LANG_ITA); SetIoC(IOC_ITA); break;
+		case 0: strcpy(szLanguage,"English"); strcpy(szLang,LANG_ENG); fLangIoC=IOC_ENG; break;
+		case 1: strcpy(szLanguage,"Spanish"); strcpy(szLang,LANG_SPA); fLangIoC=IOC_SPA; break;
+		case 2: strcpy(szLanguage,"German"); strcpy(szLang,LANG_GER); fLangIoC=IOC_GER; break;
+		case 3: strcpy(szLanguage,"Italian"); strcpy(szLang,LANG_ITA); fLangIoC=IOC_ITA; break;
 	}
+	
+	SetIoC(fLangIoC);
 	
 	for(int n=1; n<=5; n++)
 	{

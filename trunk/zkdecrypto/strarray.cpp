@@ -136,3 +136,163 @@ void StringArray::Clear()
 	memset(strings,0,MAX_STRINGS*sizeof(char*));
 	num_strings=0;
 }
+
+
+//count frequencies of chars in a string
+int GetUniques(const char *string, char *unique_str, int *unique_freq)
+{
+	int length, index, ascii_index[256], unique=0;
+	
+	length=(int)strlen(string);
+	
+	memset(ascii_index,0,256*sizeof(int));
+	
+	for(index=0; index<length; index++)
+		ascii_index[string[index]]++;
+
+	for(index=0; index<256; index++)
+		if(ascii_index[index])
+		{
+			if(unique_str) unique_str[unique]=index;
+			if(unique_freq) unique_freq[unique]=ascii_index[index];
+			unique++;
+		}
+		
+	if(unique_str) unique_str[unique]='\0';
+
+	return unique;
+}
+
+//index of conincidence of a string
+float IoC(const char *string)
+{
+	int freqs[256], length, unique;
+	float ic=0;
+
+	if(!string) return 0;
+
+	length=(int)strlen(string);
+
+	if(length<2) return 0;	
+
+	unique=GetUniques(string,NULL,freqs);
+
+	//calculate index of conincidence
+	for(int sym_index=0; sym_index<unique; sym_index++)
+		if(freqs[sym_index]>1) 
+			ic+=(freqs[sym_index])*(freqs[sym_index]-1); 
+
+	ic/=(length)*(length-1);
+
+	return ic;
+}
+
+float Entropy(const char *string)
+{
+	int freqs[256], length, unique;
+	float entropy=0, prob_mass, log2;
+
+	if(!string) return 0;
+
+	length=(int)strlen(string);
+	
+	if(length<0) return 0;
+
+	unique=GetUniques(string,NULL,freqs);
+
+	//for log base conversion
+	log2=log((float)2);
+
+	//calculate entropy
+	for(int sym_index=0; sym_index<unique; sym_index++)
+	{
+		prob_mass=float(freqs[sym_index])/length;
+		entropy+=prob_mass*(log(prob_mass)/log2);
+	}
+
+	return (-1*entropy);
+}
+
+float ChiSquare(const char *string)
+{
+	int freqs[256], length, unique;
+	float chi2=0, prob_mass, cur_calc;
+
+	if(!string) return 0;
+
+	length=(int)strlen(string);
+	
+	if(length<0) return 0;
+
+	unique=GetUniques(string,NULL,freqs);
+
+	//calculate chi2
+	for(int sym_index=0; sym_index<unique; sym_index++)
+	{
+		//prob_mass=float(freqs[sym_index])/length;
+		prob_mass=length*(1.0/unique);
+		cur_calc=freqs[sym_index]-prob_mass;
+		cur_calc*=cur_calc;
+		cur_calc/=prob_mass;
+
+		chi2+=cur_calc;
+	}
+
+	return chi2;
+}
+
+void Transform(char *string, unsigned long *xfm, int num_xfm)
+{
+	unsigned short xfm_a, xfm_b;
+	char temp;
+	
+	for(int cur_xfm=0; cur_xfm<num_xfm; cur_xfm++)
+	{
+		xfm_a=xfm[cur_xfm]>>16;
+		xfm_b=xfm[cur_xfm]&0xFFFF;
+		
+		temp=string[xfm_a];
+		string[xfm_a]=string[xfm_b];
+		string[xfm_b]=temp;
+	}
+}
+
+void SwapRows(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int row_a, int row_b)
+{
+	int index1, index2;
+
+	for(int cur_col=0; cur_col<row_len; cur_col++)
+	{
+		index1=(row_a*row_len)+cur_col;
+		index2=(row_b*row_len)+cur_col;
+		if(index1>=str_len || index2>=str_len) continue;
+		xfm[num_xfm++]=index1<<16 | index2;
+	}
+}
+
+void SwapCols(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int col_a, int col_b)
+{
+	int index1, index2, num_rows=NUM_ROWS(str_len,row_len);
+
+	for(int cur_row=0; cur_row<num_rows; cur_row++)
+	{
+		index1=(cur_row*row_len)+col_a;
+		index2=(cur_row*row_len)+col_b;
+		if(index1>=str_len || index2>=str_len) continue;
+		xfm[num_xfm++]=index1<<16 | index2;
+	}
+}
+
+void FlipHorz(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
+{
+	for(int cur_col=0; cur_col<=(row_len>>1); cur_col++)
+		SwapCols(xfm,num_xfm,str_len,row_len,cur_col,row_len-cur_col-1);
+}
+
+void FlipVert(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
+{
+	int num_rows=NUM_ROWS(str_len,row_len);
+	
+	for(int cur_row=0; cur_row<=(num_rows>>1); cur_row++)
+		SwapRows(xfm,num_xfm,str_len,row_len,cur_row,num_rows-cur_row-1);
+}
