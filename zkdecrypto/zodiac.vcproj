@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\map.cpp"
+				>
+			</File>
+			<File
 				RelativePath="message.cpp"
 				>
 			</File>
@@ -237,6 +241,14 @@
 			</File>
 			<File
 				RelativePath="headers\files.h"
+				>
+			</File>
+			<File
+				RelativePath=".\headers\macros.h"
+				>
+			</File>
+			<File
+				RelativePath=".\headers\map.h"
 				>
 			</File>
 			<File
