@@ -100,7 +100,7 @@ inline int CommandEdit(int cmd_id)
 inline int CommandCipher(int cmd_id)
 {
 	long time1,time2;
-	char simp1,simp2;
+//	char simp1,simp2; UNUSED??
 	int new_pat;
 
 	switch(cmd_id)
