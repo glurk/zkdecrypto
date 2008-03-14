@@ -243,13 +243,13 @@ int Message::Simplify(char *dest)
 			if(increase<3) continue;
 
 			//rule out if symbols exist next to each other in cipher
-			adj_sym1[0]=symbol1.cipher;
+			/*adj_sym1[0]=symbol1.cipher;
 			adj_sym1[1]=symbol2.cipher;
 			adj_sym2[0]=symbol2.cipher;
 			adj_sym2[1]=symbol1.cipher;
 			adj_sym1[2]=adj_sym2[2]='\0';
 
-			if(strstr(cipher,adj_sym1) || strstr(cipher,adj_sym2)) continue;
+			if(strstr(cipher,adj_sym1) || strstr(cipher,adj_sym2)) continue;*/
 			
 			//best list
 			//best_merge[num_best]=symbol1.cipher<<24 | symbol2.cipher<<16 | test_msg.good_pat-old_patterns;

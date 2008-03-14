@@ -60,7 +60,7 @@ inline void		shufflekey(char *,const int,const int,const char *,const char*);
 
 void			printcipher(int,const char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
-int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&,const char*,int);
+int				hillclimb(const char *,int,char *,int,const char *,SOLVEINFO&,int&,const char*,int);
 
 void 			GetUnigraphs(double*);
 void			SetIoC(float);

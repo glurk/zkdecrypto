@@ -27,7 +27,7 @@
 #include "headers/z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
-int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs, const char *exclude, int print)
+int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const char locked[],SOLVEINFO &info, int &use_graphs, const char *exclude, int print)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 
@@ -59,6 +59,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
 	int score = 0, bestscore = 0, iterations = 0;
+	int last_score=0;
 	
 	long start_time=0, end_time=0;
 	int improve=0;
@@ -68,6 +69,14 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	memcpy(info.best_key,key,256);
 	init_genrand((unsigned long)time(NULL));										//SEED RANDOM GENERATOR
 	
+	/*initial score & feedback*/
+	last_score=calcscore(clength,solved,use_graphs);
+	info.best_score=last_score;
+	improve=1;
+	info.cur_fail=0;
+	memcpy(info.best_key,key,256);
+	if(info.disp_all) info.disp_all();
+
 	/*go until max number of iterations or stop is pressed*/
 	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
 		
@@ -87,7 +96,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 				
 			/*stop*/
 			if(!info.running) return bestscore;
-			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical
+			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical 
 			
 			/*exclusions*/
 			if(exclude)
@@ -95,23 +104,34 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 				if(p1<cuniq && strchr(exclude+(27*p1),key[p2])) continue; 
 				if(p2<cuniq && strchr(exclude+(27*p2),key[p1])) continue;
 			}
-			
-			if((score=(calcscore(clength,solved,use_graphs)))>bestscore) {
-				bestscore = score;
-				if (print) printcipher(clength,cipher,solved,bestscore,key);
-				
-				/*feedback info*/
-				info.best_score=bestscore;
-				improve=1;
-				info.cur_fail=0;
-				memcpy(info.best_key,key,256);
-				if(info.disp_all) info.disp_all();	
-				}
-	
+
+			//don't bother if both symbols are in the extra letters area
+			//it won't make a different in the score, and wastes time
+			if(p1>=num_symbols && p2>=num_symbols) continue;
+
+			//swap and score
 			DO_SWAP; for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
+			score=calcscore(clength,solvedtemp,use_graphs); 
 
-			if((calcscore(clength,solvedtemp,use_graphs))<score) DO_SWAP else memcpy(solved,solvedtemp,clength);
+			//undo if change made it worse than last score
+			if(score<last_score) {DO_SWAP;}
+			else //change is better or same as last score
+			{
+				memcpy(solved,solvedtemp,clength);
+				last_score=score;
 
+				if(score>info.best_score) //this i the new best, save & display
+				{
+					if (print) printcipher(clength,cipher,solved,bestscore,key);
+					
+					//feedback info
+					info.best_score=score;
+					improve=1;
+					info.cur_fail=0;
+					memcpy(info.best_key,key,256);
+					if(info.disp_all) info.disp_all();	
+				}
+			}
 			}
 		}
 
@@ -119,6 +139,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	last_score=calcscore(clength,solved,use_graphs); 
 	
 	if(!improve) info.cur_fail++;
 	
@@ -376,7 +397,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 {
  	const char *cipher, *plain;
 	int word_len, msg_len, cur_score=0, best_score=0;
-	int act_freq[26], exp_freq[26], above, fail;
+	int act_freq[26], exp_freq[26], above, fail, old_ioc_weight;
 	SYMBOL symbol;
 	Map org_map, best_map;
 
@@ -390,6 +411,10 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	best_map=msg.cur_map;
 
 	memset(&symbol,0,sizeof(SYMBOL));
+
+	//backup lang_ioc, and set to 0
+	old_ioc_weight=ioc_weight;
+	ioc_weight=0;
 
 	for(int position=0; position<=msg_len-word_len; position++)
 	{		
@@ -441,6 +466,9 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	}
 
 	msg.cur_map=best_map;
+
+	//restore old ioc weight
+	ioc_weight=old_ioc_weight;
 	
 	return best_score;
 }
