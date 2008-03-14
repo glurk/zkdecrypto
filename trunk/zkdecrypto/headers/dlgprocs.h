@@ -36,6 +36,7 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					message.cur_map.GetSymbol(cur_symbol,&symbol);
 					cipher2=symbol.cipher;
 					
+					SetUndo();
 					message.MergeSymbols(cipher1,cipher2,true);
 					
 					SetCipher();
