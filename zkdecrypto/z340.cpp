@@ -421,8 +421,8 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 		msg.GetActFreq(act_freq);	
 		above=0;
 	
-		for(int letter=0; letter<26; letter++)
-			if(act_freq[letter]>2*exp_freq[letter]) fail=true;
+		//for(int letter=0; letter<26; letter++)
+		//	if(act_freq[letter]>2*exp_freq[letter]) fail=true;
 			//if(act_freq[letter]>exp_freq[letter]) 
 				//above+=act_freq[letter]-exp_freq[letter];
 			

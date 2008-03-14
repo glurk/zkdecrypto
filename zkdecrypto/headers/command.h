@@ -106,7 +106,6 @@ inline int CommandCipher(int cmd_id)
 	switch(cmd_id)
 	{
 		case IDM_CIPHER_MERGE:
-			SetUndo();
 			DialogBox(hInst,MAKEINTRESOURCE(IDD_MERGE),hMainWnd,(DLGPROC)MergeProc);
 			return 0;
 					
