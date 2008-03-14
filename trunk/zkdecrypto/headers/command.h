@@ -255,6 +255,7 @@ inline int CommandSolve(int cmd_id)
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
 			{
 				SetUndo();
+
 				iBestScore=WordPlug(message,szString,iUseGraphs);
 				SetDlgInfo();
 			}
