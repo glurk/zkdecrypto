@@ -312,55 +312,54 @@ void LetterDist(int target, HWND hWnd)
 /*
 void LetterDist(int target, HWND hWnd)
 {
-	int letter, set_symbols=0, max_letter;
-	int n[26];
-	int x, y;
-	int index=0;
-	char alphasort[256];
-	float unitemp[27], maxtemp=0, skewvalue=0.095;
+	int letter, set_symbols=0, max_letter, x, y;
+	float n[26], unitemp[27], unitemp2[27], maxtemp=0, skewvalue=(float)0.095, unimax=0, temp;
 
-	memset(alphasort,0,256*sizeof(char));
-	memset(n,0,26*sizeof(int));
-	memset(unitemp,0,sizeof(float));
+	memset(n,0,26*sizeof(float));
 
-	//I really need to find the derivitive function here,  26/0.095 vs 340/12.4 for skewvalue
-	//anyone good at calculus??
+	//make a temp copy of the unigraphs for sorting
+	for(letter=0; letter<26; letter++) {
+		temp=unitemp2[letter]=unitemp[letter]=message.cur_map.GetUnigraph(letter);
+		if(temp>unimax) unimax=temp; 
+	}
+	
+	//calculate the skew based on number of uniques
+	//still have to derive the formula for this
+//	skewvalue=(unimax/94)-0.040127;
+//	unimax/=94;
+//	skevalue*=message.cur_map.GetNumSymbols();
 
-	for(letter=0; letter<26; letter++) unitemp[letter]=message.cur_map.GetUnigraph(letter);
-
-	//create frequency-sorted alphabet
+	//create a frequency-sorted alphabet
 	for(y=0; y<26; y++) {
 		letter=-1;
+		maxtemp=0;
 		for(x=0; x<26; x++) {
-			if(unitemp[x]-skewvalue>maxtemp) { maxtemp=unitemp[x]; letter=index=x; }
+			if(unitemp[x]-skewvalue>maxtemp) { maxtemp=unitemp[x]; letter=x; }
 		}
-		unitemp[index]=0; maxtemp=0;
-		if(letter != -1 && index<target) { alphasort[index]=letter+'A'; n[letter]++; index++; }
+		if(letter != -1 && set_symbols<target) { unitemp[letter]=0; n[letter]++; set_symbols++; }
 	}
 	
-	set_symbols=index;
-
-	if(set_symbols<target) {
-
-		//calculate real number of occurances for each letter
+	if(set_symbols<target) { 
+		//calculate real number of occurences for each letter
 		for(letter=0; letter<26; letter++)
 		{
-			n[letter]+=int((message.cur_map.GetUnigraph(letter)/100)*target);
-			set_symbols+=int(n[letter]);
+			temp=(message.cur_map.GetUnigraph(letter)/100)*(target);
+			if((int)temp>0) temp--;
+			n[letter]+=temp;
+			if(temp>0) set_symbols+=(int)temp;
 		}
 	}
-
+	
 	while(set_symbols<target)
 	{
-		//find the letter with the highest decimal
-		max_letter=0;
+		//find the letter with the highest freq.
+		x=0;
 
 		for(letter=0; letter<26; letter++)
-			if(DECIMAL(n[letter])>DECIMAL(n[max_letter])) 
-				max_letter=letter;
+			if(unitemp2[letter]>unitemp2[x]) { x=letter; unitemp2[x]--; }
 	
 		//set that letter to the next whole number
-		n[max_letter]=int(n[max_letter])+1;
+		n[x]++;
 		set_symbols++;
 	}
 
