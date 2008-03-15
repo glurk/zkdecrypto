@@ -31,7 +31,7 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 
-	int cuniq,keylength,i,j,x,y;
+	int keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
 	char solved[MAX_CIPH_LENGTH],solvedtemp[MAX_CIPH_LENGTH];
 	char uniqstr[ASCII_SIZE];
@@ -46,15 +46,14 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 		for(x=255;x>0;x--)
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
 
-	cuniq=(int)strlen(uniqstr);
 	keylength=(int)strlen(key);
 	
-	if(keylength < cuniq)      //THIS SHOULD NEVER HAPPEN
-		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); } 
+	if(keylength < num_symbols)      //THIS SHOULD NEVER HAPPEN
+		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); exit(-1); } 
 
-	if (print) printfrequency(clength,uniqarr,uniqstr,cuniq);
+	if (print) printfrequency(clength,uniqarr,uniqstr,num_symbols);
 
-	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	for(x=0;x<num_symbols;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
@@ -100,8 +99,8 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 			//exclusions
 			if(exclude)
 			{
-				if(p1<cuniq && strchr(exclude+(27*p1),key[p2])) continue; 
-				if(p2<cuniq && strchr(exclude+(27*p2),key[p1])) continue;
+				if(p1<num_symbols && strchr(exclude+(27*p1),key[p2])) continue; 
+				if(p2<num_symbols && strchr(exclude+(27*p2),key[p1])) continue;
 			}
 
 			//don't bother if both symbols are in the extra letters area
@@ -109,7 +108,7 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 			if(p1>=num_symbols && p2>=num_symbols) continue;
 
 			//swap and score
-			DO_SWAP; for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
+			DO_SWAP; for(x=0;x<num_symbols;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
 			score=calcscore(clength,solvedtemp,use_graphs); 
 
 			//undo if change made it worse than last score
@@ -135,10 +134,10 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 		}
 
 	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
-	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,locked,exclude);
+	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,num_symbols,locked,exclude);
 	
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
-	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	for(x=0;x<num_symbols;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	last_score=calcscore(clength,solved,use_graphs); 
 	
 	if(!improve) info.cur_fail++;
