@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This program attempts to solve homophonic ciphers                                                                                                        //
 //                                                                                                                                                          //
-// Big thanks to Chris McCarthy for many good ideas and saving me a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                      //
+// Big thanks to Chris McCarthy for many good ideas and saving a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                         //
 // Also thanks to Glen from the ZK message board (http://www.zodiackiller.com/mba/zc/121.html) for an ASCII encoding of the solved 408 cipher.              //
 //                                                                                                                                                          //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,18 +58,17 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
-	int score = 0, bestscore = 0, iterations = 0;
-	int last_score=0;
+	int score = 0, iterations = 0, last_score=0;
 	
 	long start_time=0, end_time=0;
 	int improve=0;
 	info.cur_try=0;
 	info.cur_fail=0;
 	
-	memcpy(info.best_key,key,256);
-	init_genrand((unsigned long)time(NULL));										//SEED RANDOM GENERATOR
-	
-	/*initial score & feedback*/
+	//seed random generator
+	init_genrand((unsigned long)time(NULL));
+
+	//initial score & feedback
 	last_score=calcscore(clength,solved,use_graphs);
 	info.best_score=last_score;
 	improve=1;
@@ -77,10 +76,10 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 	memcpy(info.best_key,key,256);
 	if(info.disp_all) info.disp_all();
 
-	/*go until max number of iterations or stop is pressed*/
+	//go until max number of iterations or stop is pressed
 	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
 		
-		/*feedback info*/
+		//feedback info
 		info.cur_try=iterations;
 		info.last_time=float(end_time-start_time)/1000;
 		if(info.time_func) start_time=info.time_func();
@@ -95,10 +94,10 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 			for(int p2=0;p2<keylength;p2++) {
 				
 			/*stop*/
-			if(!info.running) return bestscore;
+			if(!info.running) return 0;
 			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical 
 			
-			/*exclusions*/
+			//exclusions
 			if(exclude)
 			{
 				if(p1<cuniq && strchr(exclude+(27*p1),key[p2])) continue; 
@@ -106,7 +105,7 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 			}
 
 			//don't bother if both symbols are in the extra letters area
-			//it won't make a different in the score, and wastes time
+			//it won't make a difference in the score, and wastes time
 			if(p1>=num_symbols && p2>=num_symbols) continue;
 
 			//swap and score
@@ -120,9 +119,9 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 				memcpy(solved,solvedtemp,clength);
 				last_score=score;
 
-				if(score>info.best_score) //this i the new best, save & display
+				if(score>info.best_score) //this is the new best, save & display
 				{
-					if (print) printcipher(clength,cipher,solved,bestscore,key);
+					if (print) printcipher(clength,cipher,solved,score,key);
 					
 					//feedback info
 					info.best_score=score;
@@ -135,7 +134,8 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 			}
 		}
 
-	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,locked,exclude);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,locked,exclude);
 	
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
@@ -147,7 +147,7 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 
 	}
 
-	return bestscore;
+	return 0;
 }
 
 /******************************* END_MAIN_HILLCLIMBER_ALGORITHM ***********************************/
@@ -192,12 +192,10 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
 	}
 
-	
-
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 	score=pentascore+tetrascore+triscore+biscore;
-	score-=int(ioc_weight*10000*ABS(IoC(solv)-lang_ioc));  //this doesn't scale. where does 500000 come from?
+	score-=int(ioc_weight*10000*ABS(IoC(solv)-lang_ioc));
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
