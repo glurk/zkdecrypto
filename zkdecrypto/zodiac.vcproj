@@ -217,10 +217,6 @@
 				RelativePath="zodiac.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\zodiacmd.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
