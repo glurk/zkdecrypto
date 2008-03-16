@@ -61,7 +61,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	//this makes decoding much faster, since only one loop and no compare is required
 	for(x=0; x<cuniq; x++) decoder[uniqstr[x]]=&key[x];
 
-	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	DECODE;
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
@@ -109,7 +109,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			}
 
 			//swap & decode
-			DO_SWAP; for(y=0;y<clength;y++) solved[y]=*decoder[cipher[y]];
+			DO_SWAP; DECODE;
 			
 			//don't bother scoring if both symbols are in the 
 			//extra letters area, as it won't make a difference 
