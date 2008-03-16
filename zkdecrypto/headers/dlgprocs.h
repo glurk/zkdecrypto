@@ -211,6 +211,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
+				case IDC_EXTRA_ALPHABET:
+					SetDlgItemText(hWnd,IDC_EXTRA_LTR,"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+					return 0;
+					
 				case IDOK: //get new values
 					//hillclimber parameters
 					siSolveInfo.max_fail=GetDlgItemInt(hWnd,IDC_MAXFAIL,0,0);

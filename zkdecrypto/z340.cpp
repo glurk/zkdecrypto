@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This program attempts to solve homophonic ciphers                                                                                                        //
 //                                                                                                                                                          //
-// Big thanks to Chris McCarthy for many good ideas and saving a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                         //
+// Big thanks to Chris McCarthy for many good ideas and saving a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                      //
 // Also thanks to Glen from the ZK message board (http://www.zodiackiller.com/mba/zc/121.html) for an ASCII encoding of the solved 408 cipher.              //
 //                                                                                                                                                          //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,16 +27,18 @@
 #include "headers/z340Globals.h"
 #include "mt19937ar-cok.cpp"
 
-int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const char locked[],SOLVEINFO &info, int &use_graphs, const char *exclude, int print)
+int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs, const char *exclude, int print)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
+	#define DECODE {for(y=0;y<clength;y++) solved[y]=*decoder[cipher[y]];}
 
-	int keylength,i,j,x,y;
+	int cuniq,keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
-	char solved[MAX_CIPH_LENGTH],solvedtemp[MAX_CIPH_LENGTH];
+	char solved[MAX_CIPH_LENGTH];
 	char uniqstr[ASCII_SIZE];
+	char *decoder[ASCII_SIZE];
 
-	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=solvedtemp[i]=0;						//INITIALIZE (ZERO) ARRAYS
+	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]==0;						//INITIALIZE (ZERO) ARRAYS
 	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	for(i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
@@ -46,39 +48,42 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 		for(x=255;x>0;x--)
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
 
+	cuniq=(int)strlen(uniqstr);
 	keylength=(int)strlen(key);
 	
-	if(keylength < num_symbols)      //THIS SHOULD NEVER HAPPEN
-		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); exit(-1); } 
+	if(keylength < cuniq)      //THIS SHOULD NEVER HAPPEN
+		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); } 
 
-	if (print) printfrequency(clength,uniqarr,uniqstr,num_symbols);
+	if (print) printfrequency(clength,uniqarr,uniqstr,cuniq);
+	
+	//make decoder, array of char* that point to the key plain text values
+	//indexed by the ascii value of the cipher symbols
+	//this makes decoding much faster, since only one loop and no compare is required
+	for(int x=0; x<cuniq; x++) decoder[uniqstr[x]]=&key[x];
 
-	for(x=0;x<num_symbols;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
-	int score = 0, iterations = 0, last_score=0;
+	int score = 0, last_score=0, bestscore = 0, iterations = 0;
 	
 	long start_time=0, end_time=0;
 	int improve=0;
 	info.cur_try=0;
 	info.cur_fail=0;
 	
-	//seed random generator
-	init_genrand((unsigned long)time(NULL));
-
+	init_genrand((unsigned long)time(NULL));										//SEED RANDOM GENERATOR
+	
 	//initial score & feedback
 	last_score=calcscore(clength,solved,use_graphs);
 	info.best_score=last_score;
-	improve=1;
-	info.cur_fail=0;
 	memcpy(info.best_key,key,256);
 	if(info.disp_all) info.disp_all();
 
 	//go until max number of iterations or stop is pressed
 	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
 		
-		//feedback info
+		/*feedback info*/
 		info.cur_try=iterations;
 		info.last_time=float(end_time-start_time)/1000;
 		if(info.time_func) start_time=info.time_func();
@@ -92,35 +97,36 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 
 			for(int p2=0;p2<keylength;p2++) {
 				
-			/*stop*/
-			if(!info.running) return 0;
+			//stop
+			if(!info.running) return bestscore;
 			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical 
 			
-			//exclusions
+			/*exclusions*/
 			if(exclude)
 			{
-				if(p1<num_symbols && strchr(exclude+(27*p1),key[p2])) continue; 
-				if(p2<num_symbols && strchr(exclude+(27*p2),key[p1])) continue;
+				if(p1<cuniq && strchr(exclude+(27*p1),key[p2])) continue; 
+				if(p2<cuniq && strchr(exclude+(27*p2),key[p1])) continue;
 			}
 
-			//don't bother if both symbols are in the extra letters area
-			//it won't make a difference in the score, and wastes time
-			if(p1>=num_symbols && p2>=num_symbols) continue;
-
-			//swap and score
-			DO_SWAP; for(x=0;x<num_symbols;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solvedtemp[y]=key[x]; }
-			score=calcscore(clength,solvedtemp,use_graphs); 
+			//swap & decode
+			DO_SWAP; for(y=0;y<clength;y++) solved[y]=*decoder[cipher[y]];
+			
+			//don't bother scoring if both symbols are in the 
+			//extra letters area, as it won't make a difference 
+			if(p1>=cuniq && p2>=cuniq) continue;
+			
+			//score
+			score=calcscore(clength,solved,use_graphs); 
 
 			//undo if change made it worse than last score
 			if(score<last_score) {DO_SWAP;}
 			else //change is better or same as last score
 			{
-				memcpy(solved,solvedtemp,clength);
 				last_score=score;
 
 				if(score>info.best_score) //this is the new best, save & display
 				{
-					if (print) printcipher(clength,cipher,solved,score,key);
+					if (print) printcipher(clength,cipher,solved,bestscore,key);
 					
 					//feedback info
 					info.best_score=score;
@@ -133,11 +139,10 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 			}
 		}
 
-	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
-	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,num_symbols,locked,exclude);
+	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,locked,exclude);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
-	for(x=0;x<num_symbols;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	last_score=calcscore(clength,solved,use_graphs); 
 	
 	if(!improve) info.cur_fail++;
@@ -146,7 +151,7 @@ int hillclimb(const char cipher[],int clength,char key[],int num_symbols,const c
 
 	}
 
-	return 0;
+	return bestscore;
 }
 
 /******************************* END_MAIN_HILLCLIMBER_ALGORITHM ***********************************/
@@ -191,10 +196,12 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
 	}
 
+	
+
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 	score=pentascore+tetrascore+triscore+biscore;
-	score-=int(ioc_weight*10000*ABS(IoC(solv)-lang_ioc));
+	score-=int(ioc_weight*ABS(IoC(solv)-lang_ioc));  
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
@@ -337,8 +344,10 @@ void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 //                          Set the IoC & multipler for use in the hillclimber                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define IOC_WEIGHT_MULT 4000
+
 void SetIoC(float ioc) {lang_ioc=ioc;}
-void SetIoCWeight(int weight) {ioc_weight=weight;}
+void SetIoCWeight(int weight) {ioc_weight=weight*IOC_WEIGHT_MULT;}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //             Read the specified ngram file, of size n, into the proper array                  //
@@ -441,14 +450,9 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 		
 		//if any letter appears too often
 		msg.GetActFreq(act_freq);	
-		above=0;
 	
-		//for(int letter=0; letter<26; letter++)
-		//	if(act_freq[letter]>2*exp_freq[letter]) fail=true;
-			//if(act_freq[letter]>exp_freq[letter]) 
-				//above+=act_freq[letter]-exp_freq[letter];
-			
-		//if(above>.1*msg_len) continue;
+		for(int letter=0; letter<26; letter++)
+				if(act_freq[letter]>2*(exp_freq[letter]+1)) fail=true;
 		
 		if(fail) continue;
 		

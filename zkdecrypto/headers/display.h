@@ -477,6 +477,12 @@ void SetFreq()
 
 	sprintf(szText,"%.2f%%",exp_vowel);
 	SetDlgItemText(hMainWnd,IDC_VOWEL_EXP,szText);
+	
+	sprintf(szText,"%.4f",IoC(szPlain));
+	SetDlgItemText(hMainWnd,IDC_IOC_ACT,szText);
+	
+	sprintf(szText,"%.4f",fLangIoC);
+	SetDlgItemText(hMainWnd,IDC_IOC_EXP,szText);
 }
 
 //refresh solver info
@@ -492,7 +498,7 @@ void SetSolve()
 	
 	//best score
 	if(siSolveInfo.running) iBestScore=siSolveInfo.best_score;
-	SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,0);
+	SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,true);
 }
 
 //call when key is changed to decode and display plain text
@@ -697,6 +703,9 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_VOWEL_ACT_TITLE),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_VOWEL_ACT),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_VOWEL_EXP),iShowAnalysis);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_ACT_TITLE),iShowAnalysis);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_ACT),iShowAnalysis);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_EXP),iShowAnalysis);
 	
 	//Word List
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_TITLE),iShowWord);
