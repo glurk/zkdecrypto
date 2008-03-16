@@ -232,7 +232,7 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		strcpy(exclude+(27*cur_symbol),symbol.exclude);
 	}
 
-	hillclimb(szCipher,message.GetLength(),key,num_symbols,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs,exclude,false);
+	hillclimb(szCipher,message.GetLength(),key,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs,exclude,false);
 
 	//reset window state
 	StopSolve();

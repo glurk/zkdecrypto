@@ -31,7 +31,7 @@
 #define CHAR_HEIGHT 12
 #define TEXT_POS	0 //HWND_TOPMOST
 
-#define MAX_EXTRA	52
+#define MAX_EXTRA	104
 
 //macros
 #define IN_RECT(X,Y,R) (IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
