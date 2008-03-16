@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This program attempts to solve homophonic ciphers                                                                                                        //
 //                                                                                                                                                          //
-// Big thanks to Chris McCarthy for many good ideas and saving a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                      //
+// Big thanks to Chris McCarthy for many good ideas and saving a lot of work in converting the RayN and Zodiac 340 ciphers to ASCII                         //
 // Also thanks to Glen from the ZK message board (http://www.zodiackiller.com/mba/zc/121.html) for an ASCII encoding of the solved 408 cipher.              //
 //                                                                                                                                                          //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	char uniqstr[ASCII_SIZE];
 	char *decoder[ASCII_SIZE];
 
-	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]==0;						//INITIALIZE (ZERO) ARRAYS
+	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=0;										//INITIALIZE (ZERO) ARRAYS
 	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	for(i=0;i<clength;i++) ++uniq[(int)cipher[i]];									//COUNT # OF UNIQUE CHARS IN CIPHER
@@ -59,7 +59,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	//make decoder, array of char* that point to the key plain text values
 	//indexed by the ascii value of the cipher symbols
 	//this makes decoding much faster, since only one loop and no compare is required
-	for(int x=0; x<cuniq; x++) decoder[uniqstr[x]]=&key[x];
+	for(x=0; x<cuniq; x++) decoder[uniqstr[x]]=&key[x];
 
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 
@@ -335,13 +335,13 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//           Return the value of a unigraph for use in other areas of the program                //
+//           Return the value of a unigraph for use in other areas of the program               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                          Set the IoC & multipler for use in the hillclimber                              //
+//                    Set the IoC & multipler for use in the hillclimber                        //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define IOC_WEIGHT_MULT 4000
@@ -403,7 +403,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 {
  	const char *cipher, *plain;
 	int word_len, msg_len, cur_score=0, best_score=0;
-	int act_freq[26], exp_freq[26], above, fail, old_ioc_weight;
+	int act_freq[26], exp_freq[26], fail, old_ioc_weight;
 	SYMBOL symbol;
 	Map org_map, best_map;
 
