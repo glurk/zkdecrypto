@@ -31,6 +31,8 @@ void SetTitle()
 	SetWindowText(hMainWnd,szTitle);
 }
 
+/*Text Display*/
+
 //reset text scrollbar
 void SetScrollBar()
 {	
@@ -136,6 +138,9 @@ void DrawOutlines()
 			iStart=word_ptr-szPlain;
 			if(iStart>iDispEnd) break;
 			iEnd=iStart+word_len;
+			
+			//outside of display range
+			if(!IS_BETWEEN(iStart,iDispStart,iDispEnd)) continue;
 			
 			OutlineChars(hCipherDC,hOrangePen,iStart,iEnd);
 			OutlineChars(hPlainDC,hOrangePen,iStart,iEnd);
@@ -329,6 +334,14 @@ void SetCharSize()
 	SetText();
 }
 
+//call when key is changed to decode and display plain text
+void SetPlain()
+{
+	szPlain=message.GetPlain();
+}
+
+/*Solve Tab Display*/
+
 void AddPattern(NGRAM *pattern)
 {
 	if(iSortBy) sprintf(szText,"%5i %-15s",pattern->freq,pattern->string);
@@ -361,39 +374,15 @@ void SetSort(int iNewSort)
 	SetPatterns();
 }
 
-//refresh symbol table
-void SetTable()
-{
-	message.cur_map.SymbolTable(szText);
-	SetDlgItemText(hMainWnd,IDC_TABLE,szText);
-}
-
-//update symbol in list
-void UpdateSymbol(int index)
-{
-	SYMBOL symbol;
-	char plain;
-
-	//get symbol info
-	message.cur_map.GetSymbol(index,&symbol);
-	if(symbol.plain) plain=symbol.plain;
-	else plain=BLANK;
-	
-	if(message.cur_map.GetLock(index))
-			sprintf(szText,"%c [%c] %5i",symbol.cipher,plain,symbol.freq);
-		
-	else sprintf(szText,"%c  %c  %5i",symbol.cipher,plain,symbol.freq);
-
-	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_DELETESTRING,index,0);
-	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_INSERTSTRING,index,(LPARAM)szText);
-	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,index,0);
-}
-
 //refresh key list
 inline void SetKey()
 {
 	int cur_sel, num_symbols;
 	SYMBOL symbol;
+	
+	SetText();
+	
+	if(iCurTab!=0) return;
 	
 	num_symbols=message.cur_map.GetNumSymbols();
 
@@ -423,9 +412,55 @@ inline void SetKey()
 	
 	//reset selected symbol
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,cur_sel,0);
+}
+
+//update symbol in list
+void UpdateSymbol(int index)
+{
+	SYMBOL symbol;
+	char plain;
+
+	//get symbol info
+	message.cur_map.GetSymbol(index,&symbol);
+	if(symbol.plain) plain=symbol.plain;
+	else plain=BLANK;
 	
-	SetTable();
-	SetText();
+	if(message.cur_map.GetLock(index))
+			sprintf(szText,"%c [%c] %5i",symbol.cipher,plain,symbol.freq);
+		
+	else sprintf(szText,"%c  %c  %5i",symbol.cipher,plain,symbol.freq);
+
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_DELETESTRING,index,0);
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_INSERTSTRING,index,(LPARAM)szText);
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,index,0);
+}
+
+//refresh solver info
+inline void SetSolve()
+{
+	if(iCurTab!=0) return;
+	
+	//iteration & time
+	sprintf(szText,"%i (%.2fs)",siSolveInfo.cur_try,siSolveInfo.last_time);
+	SetDlgItemText(hMainWnd,IDC_TRY,szText);
+	
+	//failures
+	sprintf(szText,"%i of %i",siSolveInfo.cur_fail,siSolveInfo.max_fail);
+	SetDlgItemText(hMainWnd,IDC_FAIL,szText);
+	
+	//best score
+	if(siSolveInfo.running) iBestScore=siSolveInfo.best_score;
+	SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,true);
+}
+
+/*Analysis Tab Display*/
+
+//refresh symbol table
+inline void SetTable()
+{
+	if(iCurTab!=1) return;
+	message.cur_map.SymbolTable(szText);
+	SetDlgItemText(hMainWnd,IDC_TABLE,szText);
 }
 
 //refresh letter frequency list
@@ -436,6 +471,8 @@ void SetFreq()
 	int iActFreq, iExpFreq;
 	float act_vowel, exp_vowel;
 	char msg[1024]="";
+	
+	if(iCurTab!=1) return;
 
 	//actual and expected frequencies
 	message.GetActFreq(lprgiActFreq);
@@ -485,29 +522,7 @@ void SetFreq()
 	SetDlgItemText(hMainWnd,IDC_IOC_EXP,szText);
 }
 
-//refresh solver info
-void SetSolve()
-{
-	//iteration & time
-	sprintf(szText,"%i (%.2fs)",siSolveInfo.cur_try,siSolveInfo.last_time);
-	SetDlgItemText(hMainWnd,IDC_TRY,szText);
-	
-	//failures
-	sprintf(szText,"%i of %i",siSolveInfo.cur_fail,siSolveInfo.max_fail);
-	SetDlgItemText(hMainWnd,IDC_FAIL,szText);
-	
-	//best score
-	if(siSolveInfo.running) iBestScore=siSolveInfo.best_score;
-	SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,true);
-}
-
-//call when key is changed to decode and display plain text
-void SetPlain()
-{
-	szPlain=message.GetPlain();
-	
-	//SetText();
-}
+/*Word List Display*/
 
 void SetWordList()
 {
@@ -515,6 +530,8 @@ void SetWordList()
 	char plain_word[64];
 	std::string word_str;
 	int cur_id, words_found[1024], num_words=0, duplicate;
+	
+	if(iCurTab!=2) return;
 
 	msg_len=message.GetLength();
 	
@@ -555,15 +572,12 @@ void SetWordList()
 			}
 		}
 		
-	//reset selected symbol
-	//SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_SETCURSEL,cur_sel,0);
-	
 	//title
 	sprintf(szText,"Word List (%i words)",num_words);
 	SetDlgItemText(hMainWnd,IDC_WORD_TITLE,szText);
 }
 
-void SetGraph()
+inline void SetGraph()
 {
 	if(!hLetter) return;
 
@@ -571,7 +585,24 @@ void SetGraph()
 	SendMessage(hLetter,WM_INITDIALOG,0,0);
 }
 
-void SetDlgInfo()
+inline void SetSolveTabInfo()
+{
+	SetKey();
+	SetSolve();
+}
+
+inline void SetAnalysisTabInfo()
+{
+	SetTable();
+	SetFreq();
+}
+
+inline void SetWordListTabInfo()
+{
+	SetWordList();
+}
+
+inline void SetDlgInfo()
 {
 	if(!bMsgLoaded) return;
 	
@@ -580,10 +611,12 @@ void SetDlgInfo()
 		message.cur_map.FromKey(siSolveInfo.best_key);
 		
 	SetPlain();
-	SetKey();
-	SetFreq();
-	SetSolve();
-	SetWordList();
+	
+	//info on tabs
+	SetSolveTabInfo();
+	SetAnalysisTabInfo();
+	SetWordListTabInfo();
+	
 	SetGraph();
 }
 
@@ -667,9 +700,9 @@ void ShowTab(int iTab)
 
 	switch(iTab)
 	{
-		case 0: iShowSolve=SW_SHOW; break;
-		case 1: iShowAnalysis=SW_SHOW; break;
-		case 2: iShowWord=SW_SHOW; break;
+		case 0: iShowSolve=SW_SHOW; SetSolveTabInfo(); break;
+		case 1: iShowAnalysis=SW_SHOW; SetAnalysisTabInfo(); break;
+		case 2: iShowWord=SW_SHOW; SetWordListTabInfo(); break;
 	}
 
 	//solve

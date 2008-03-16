@@ -339,7 +339,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	MsgEnable(false);
 	MapEnable(false);
 	SendDlgItemMessage(hMainWnd,IDC_IOC_WEIGHT_SPIN,UDM_SETRANGE,0,100);
-	SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,25,false);
+	SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,20,false);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_ASC,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_NUM,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_SAVE_CIPHER,MF_BYCOMMAND | MF_GRAYED);
