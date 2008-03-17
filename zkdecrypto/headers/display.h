@@ -473,6 +473,7 @@ void SetFreq()
 	char msg[1024]="";
 	
 	if(iCurTab!=1) return;
+	if(!bMsgLoaded) return;
 
 	//actual and expected frequencies
 	message.GetActFreq(lprgiActFreq);
