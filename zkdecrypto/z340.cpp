@@ -201,7 +201,10 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 	score=pentascore+tetrascore+triscore+biscore;
-	score-=int(ioc_weight*ABS(IoC(solv)-lang_ioc));  
+	//score-=int(ioc_weight*ABS(IoC(solv)-lang_ioc));  
+	
+	float score_mult=1.0-(ioc_weight*ABS(IoC(solv)-lang_ioc));
+	score=int(score*score_mult);
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
@@ -344,10 +347,8 @@ void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 //                    Set the IoC & multipler for use in the hillclimber                        //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define IOC_WEIGHT_MULT 4000
-
 void SetIoC(float ioc) {lang_ioc=ioc;}
-void SetIoCWeight(int weight) {ioc_weight=weight*IOC_WEIGHT_MULT;}
+void SetIoCWeight(int weight) {ioc_weight=weight;}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //             Read the specified ngram file, of size n, into the proper array                  //
