@@ -54,7 +54,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	if(keylength < cuniq)      //THIS SHOULD NEVER HAPPEN
 		{ printf("\nKEYLENGTH ERROR!! -- Key is TOO SHORT\n\n"); return(-1); } 
 
-	if (print) printfrequency(clength,uniqarr,uniqstr,cuniq);
+	//if (print) printfrequency(clength,uniqarr,uniqstr,cuniq);
 	
 	//make decoder, array of char* that point to the key plain text values
 	//indexed by the ascii value of the cipher symbols
@@ -65,14 +65,13 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
-	int score = 0, last_score=0, bestscore = 0, iterations = 0;
-	
+	int score = 0, last_score=0, iterations = 0, improve = 0;
 	long start_time=0, end_time=0;
-	int improve=0;
 	info.cur_try=0;
 	info.cur_fail=0;
 	
-	init_genrand((unsigned long)time(NULL));										//SEED RANDOM GENERATOR
+	//seed random generator
+	init_genrand((unsigned long)time(NULL));
 	
 	//initial score & feedback
 	last_score=calcscore(clength,solved,use_graphs);
@@ -98,7 +97,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			for(int p2=0;p2<keylength;p2++) {
 				
 			//stop
-			if(!info.running) return bestscore;
+			if(!info.running) return 0;
 			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical 
 			
 			/*exclusions*/
@@ -126,7 +125,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 
 				if(score>info.best_score) //this is the new best, save & display
 				{
-					if (print) printcipher(clength,cipher,solved,bestscore,key);
+					//if (print) printcipher(clength,cipher,solved,score,key);
 					
 					//feedback info
 					info.best_score=score;
@@ -151,7 +150,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 
 	}
 
-	return bestscore;
+	return 0;
 }
 
 /******************************* END_MAIN_HILLCLIMBER_ALGORITHM ***********************************/
@@ -196,14 +195,12 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
 	}
 
-	
-
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
 
 	score=pentascore+tetrascore+triscore+biscore;
 	//score-=int(ioc_weight*ABS(IoC(solv)-lang_ioc));  
 	
-	float score_mult=1.0-(ioc_weight*ABS(IoC(solv)-lang_ioc));
+	float score_mult=(float)1.0-(ioc_weight*ABS(IoC(solv)-lang_ioc));
 	score=int(score*score_mult);
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
@@ -229,7 +226,7 @@ inline int calclsoc(const int length_of_cipher,const char *solv) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//              Mutate the char array "key[]" by swapping two unlocked letters                  //
+//        Mutate the char array "key[]" by swapping two unlocked, unexcluded letters            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline void shufflekey(char *key,const int keylength,const int cuniq,const char locked[],const char *exclude) {
@@ -262,7 +259,7 @@ inline void shufflekey(char *key,const int keylength,const int cuniq,const char 
 //  ALSO:             Calculate and print the percentage of vowels in the solution              //
 //                   NOTE: Normal English text normally contains approx. 40% vowels             //
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
 void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,char *key) {
 
 	int c=0;
@@ -307,11 +304,11 @@ void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,
 	printf("\nKey: '%s'\n\n",key); 
 
 }
-
+*/
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //            Print the character frequency table of the cipher and a few statistics            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
 void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,int cipher_uniques) {
 
 	int i, f=0;
@@ -336,7 +333,7 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 	printf("DeltIC = %f\n\n",f/((.0385) * length_of_cipher * (length_of_cipher - 1)));
 
 }
-
+*/
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //           Return the value of a unigraph for use in other areas of the program               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
