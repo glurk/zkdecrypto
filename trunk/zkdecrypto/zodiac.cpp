@@ -123,7 +123,11 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					SetUndo();
 					if(!bMsgLoaded) return 0;
 
-					if(siSolveInfo.running) StopSolve();
+					if(siSolveInfo.running) 
+					{
+						iBruteSymbols=0; //cancel brute force
+						StopSolve();
+					}
 					else StartSolve();
 					return 0;
 

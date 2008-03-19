@@ -309,8 +309,9 @@ void LetterDist(int target, HWND hWnd)
 		set_symbols++;
 	}
 
-	for(letter=0; letter<26; letter++)
-		SetDlgItemInt(hWnd,lprgiInitID[letter],int(n[letter]),false);
+	if(hWnd)
+		for(letter=0; letter<26; letter++)
+			SetDlgItemInt(hWnd,lprgiInitID[letter],int(n[letter]),false);
 }
 
 /*
