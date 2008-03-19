@@ -202,6 +202,76 @@ DWORD WINAPI Timer(LPVOID lpVoid)
 	return 0;
 }
 
+void BruteStart()
+{
+	SYMBOL symbol;
+	int letter_dist[26];
+	
+	if(!iBruteSymbols) return;
+	
+	for(int iCurSymbol=0; iCurSymbol<iBruteSymbols; iCurSymbol++)
+	{
+		message.cur_map.SetLock(iCurSymbol,false);
+		message.cur_map.GetSymbol(iCurSymbol,&symbol);
+		symbol.plain='A';
+		message.cur_map.AddSymbol(symbol,false);
+		message.cur_map.SetLock(iCurSymbol,true);
+	}
+	
+	SendMessage(hMainWnd,WM_COMMAND,IDC_SOLVE,0);
+}
+
+void BruteNext(int iSymbol)
+{
+	SYMBOL symbol;
+	
+	if(iSymbol<0) //done
+	{
+		iBruteSymbols=0;
+		
+		//set to best key
+		MessageBox(hMainWnd,"Brute Force Done","Alert",MB_OK);
+		message.cur_map.FromKey(lprgcBatchBestKey);
+		SetDlgInfo();
+		SetDlgItemInt(hMainWnd,IDC_SCORE,iBatchBestScore,false);
+		return;
+	}
+		
+	//increment symbol
+	message.cur_map.GetSymbol(iSymbol,&symbol);
+	symbol.plain++;
+	
+	message.cur_map.SetLock(iSymbol,false); //unlock symbol
+	
+	if(symbol.plain>'Z') //turn back to 'A' and carry to previous symbol
+	{
+		symbol.plain='A';
+		message.cur_map.AddSymbol(symbol,false);
+		BruteNext(iSymbol-1);
+	}
+	
+	else message.cur_map.AddSymbol(symbol,false);
+	
+	message.cur_map.SetLock(iSymbol,true); //relock symbol
+	
+	if(!iBruteSymbols) return;
+	
+	//start solving if this is the last brute symbol
+	if(iSymbol==iBruteSymbols-1) SendMessage(hMainWnd,WM_COMMAND,IDC_SOLVE,0);
+}
+
+void StopNotify()
+{
+	//save best key
+	if(siSolveInfo.best_score>iBatchBestScore)
+	{
+		iBatchBestScore=siSolveInfo.best_score;
+		strcpy(lprgcBatchBestKey,siSolveInfo.best_key);
+	}
+	
+	if(iBruteSymbols) BruteNext(iBruteSymbols-1);
+}
+
 //solve thread proc
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
@@ -237,9 +307,12 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 	//reset window state
 	StopSolve();
 	SetDlgInfo();
-
+	
 	hSolveThread=NULL;
 	delete[] exclude;
+	
+	StopNotify();
+	
 	ExitThread(0);
 	return 0;
 }

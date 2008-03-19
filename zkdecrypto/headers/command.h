@@ -265,6 +265,19 @@ inline int CommandSolve(int cmd_id)
 			//blank best key, so that additional chars are renewed
 			siSolveInfo.best_key[0]='\0';
 			return 0;
+			
+		case IDM_SOLVE_BRUTE:
+			if(iBruteSymbols) return 0;
+			
+			strcpy(szNumberTitle,"# of Symbols");
+			iNumber=1;
+			
+			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
+			{
+				iBruteSymbols=iNumber;
+				BruteStart();
+			}
+			return 0;
 
 		case IDM_SOLVE_OPTIONS:
 			DialogBox(hInst,MAKEINTRESOURCE(IDD_OPTIONS),hMainWnd,(DLGPROC)OptionsProc);

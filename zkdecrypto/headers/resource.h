@@ -217,6 +217,7 @@
 #define IDM_EDIT_REDO                   40055
 #define IDM_CIPHER_SEQHOMO				40056
 #define IDM_FILE_SAVE_CIPHER            40057
+#define IDM_SOLVE_BRUTE					40058
 #define UDM_DISPALL                     40100
 #define UDM_DISPINFO                    40101
 #define UDM_INIT_TOTAL                  40102
