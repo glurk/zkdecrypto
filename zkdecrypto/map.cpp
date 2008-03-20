@@ -137,12 +137,12 @@ int Map::AddSymbol(SYMBOL &symbol, int inc_freq)
 	
 	if(index>-1) //existing symbol
 	{
+		strcpy(symbols[index].exclude,symbol.exclude);
+		
 		if(locked[index]) return num_symbols;
 		//if(IS_ASCII(symbol.plain)) 
 		symbols[index].plain=symbol.plain;
-		locked[index]=false;
 		if(inc_freq) symbols[index].freq++;
-		strcpy(symbols[index].exclude,symbol.exclude);
 		return num_symbols;
 	}
 
