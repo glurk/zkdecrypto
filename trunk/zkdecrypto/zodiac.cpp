@@ -125,7 +125,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 					if(siSolveInfo.running) 
 					{
-						iBruteSymbols=0; //cancel brute force
+						if(iBruteSymbols>0) iBruteSymbols=-1; //cancel brute force
 						StopSolve();
 					}
 					else StartSolve();

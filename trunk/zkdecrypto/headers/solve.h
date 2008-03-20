@@ -202,6 +202,16 @@ DWORD WINAPI Timer(LPVOID lpVoid)
 	return 0;
 }
 
+char FirstAvailable(char *exclude)
+{
+	for(int letter=0; letter<26; letter++)
+		if(!strchr(exclude,letter+'A'))
+			return letter+'A';
+	
+	return 'Z'+1;
+}
+
+//begin brute force
 void BruteStart()
 {
 	SYMBOL symbol;
@@ -213,7 +223,10 @@ void BruteStart()
 	{
 		message.cur_map.SetLock(iCurSymbol,false);
 		message.cur_map.GetSymbol(iCurSymbol,&symbol);
-		symbol.plain='A';
+		
+		symbol.plain=FirstAvailable(symbol.exclude);
+		if(symbol.plain>'Z') continue;		
+		
 		message.cur_map.AddSymbol(symbol,false);
 		message.cur_map.SetLock(iCurSymbol,true);
 	}
@@ -221,19 +234,14 @@ void BruteStart()
 	SendMessage(hMainWnd,WM_COMMAND,IDC_SOLVE,0);
 }
 
+//increment symbols in brute force recursivly
 void BruteNext(int iSymbol)
 {
 	SYMBOL symbol;
 	
 	if(iSymbol<0) //done
 	{
-		iBruteSymbols=0;
-		
-		//set to best key
-		MessageBox(hMainWnd,"Brute Force Done","Alert",MB_OK);
-		message.cur_map.FromKey(lprgcBatchBestKey);
-		SetDlgInfo();
-		SetDlgItemInt(hMainWnd,IDC_SCORE,iBatchBestScore,false);
+		iBruteSymbols=-1;
 		return;
 	}
 		
@@ -241,6 +249,10 @@ void BruteNext(int iSymbol)
 	message.cur_map.GetSymbol(iSymbol,&symbol);
 	symbol.plain++;
 	
+	//go past excludes
+	while(strchr(symbol.exclude,symbol.plain) && symbol.plain<='Z')
+		symbol.plain++;
+			
 	message.cur_map.SetLock(iSymbol,false); //unlock symbol
 	
 	if(symbol.plain>'Z') //turn back to 'A' and carry to previous symbol
@@ -254,12 +266,13 @@ void BruteNext(int iSymbol)
 	
 	message.cur_map.SetLock(iSymbol,true); //relock symbol
 	
-	if(!iBruteSymbols) return;
+	if(iBruteSymbols<1) return;
 	
 	//start solving if this is the last brute symbol
 	if(iSymbol==iBruteSymbols-1) SendMessage(hMainWnd,WM_COMMAND,IDC_SOLVE,0);
 }
 
+//on press stop, or failure of hillclimber
 void StopNotify()
 {
 	//save best key
@@ -269,7 +282,15 @@ void StopNotify()
 		strcpy(lprgcBatchBestKey,siSolveInfo.best_key);
 	}
 	
-	if(iBruteSymbols) BruteNext(iBruteSymbols-1);
+	if(iBruteSymbols>0) BruteNext(iBruteSymbols-1); //in brute
+	if(iBruteSymbols<0) //brute finished, display best
+	{
+		MessageBox(hMainWnd,"Brute Force Done","Alert",MB_OK);
+		message.cur_map.FromKey(lprgcBatchBestKey);
+		SetDlgInfo();
+		SetDlgItemInt(hMainWnd,IDC_SCORE,iBatchBestScore,false);
+		iBruteSymbols=0;
+	}
 }
 
 //solve thread proc
