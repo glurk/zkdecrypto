@@ -155,7 +155,7 @@ IDD_MAIN DIALOGEX 0, 0, 279, 278
 STYLE DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_ACCEPTFILES
 MENU IDR_MAIN_MENU
-FONT 9, "Lucida Console"
+FONT 9, "Lucida Console", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Patterns",IDC_PAT_TITLE,9,24,114,245,BS_CENTER
     LISTBOX         IDC_PATTERNS,15,36,102,232,LBS_SORT | WS_VSCROLL | 
@@ -194,11 +194,10 @@ BEGIN
     CTEXT           "Vowel\r\nPercentage",IDC_VOWEL_ACT_TITLE,211,92,45,18
     CTEXT           "",IDC_VOWEL_ACT,211,114,45,11,SS_CENTERIMAGE
     CTEXT           "",IDC_VOWEL_EXP,211,126,45,11,SS_CENTERIMAGE
-    
-    CTEXT           "Index of\r\nCoincidence",IDC_IOC_ACT_TITLE,211,143,45,18
+    CTEXT           "Index of\r\nCoincidence",IDC_IOC_ACT_TITLE,211,143,45,
+                    18
     CTEXT           "",IDC_IOC_ACT,211,165,45,11,SS_CENTERIMAGE
     CTEXT           "",IDC_IOC_EXP,211,177,45,11,SS_CENTERIMAGE
-    
     CONTROL         "",IDC_MAIN_TAB,"SysTabControl32",TCS_FIXEDWIDTH,7,7,256,
                     13
     GROUPBOX        "Word List",IDC_WORD_TITLE,9,24,114,245,BS_CENTER
@@ -563,7 +562,7 @@ IDI_ZODIAC              ICON    DISCARDABLE     "zodiac.ico"
 IDR_ACCEL ACCELERATORS DISCARDABLE 
 BEGIN
     "A",            IDM_FILE_OPEN_ASC,      VIRTKEY, CONTROL, NOINVERT
-    "B",            IDM_SOLVE_BRUTE,      VIRTKEY, CONTROL, NOINVERT
+    "B",            IDM_SOLVE_BRUTE,        VIRTKEY, CONTROL, NOINVERT
     "C",            IDM_FILE_COPY_PLAIN,    VIRTKEY, CONTROL, NOINVERT
     "D",            IDM_VIEW_DESELECT,      VIRTKEY, CONTROL, NOINVERT
     "E",            IDM_KEY_CLEAR,          VIRTKEY, CONTROL, NOINVERT
@@ -580,14 +579,15 @@ BEGIN
     "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK_ALL,     VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
+    VK_F3,          IDM_FILE_SAVE_MAP,      VIRTKEY, NOINVERT
+    VK_F5,          IDM_KEY_SCRAMBLE,       VIRTKEY, NOINVERT
+    VK_INSERT,      IDM_SOLVE_INSERT,       VIRTKEY, NOINVERT
     "W",            IDM_SOLVE_WORD,         VIRTKEY, CONTROL, NOINVERT
     "X",            IDM_KEY_EXCLUDE,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "Y",            IDM_EDIT_REDO,          VIRTKEY, CONTROL, NOINVERT
     "Z",            IDM_EDIT_UNDO,          VIRTKEY, CONTROL, NOINVERT
-    VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
-    VK_F3,          IDM_FILE_SAVE_MAP,      VIRTKEY, NOINVERT
-    VK_F5,          IDM_KEY_SCRAMBLE,       VIRTKEY, NOINVERT
 END
 
 #endif    // English (U.S.) resources

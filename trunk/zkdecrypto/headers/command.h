@@ -260,6 +260,9 @@ inline int CommandSolve(int cmd_id)
 				SetDlgInfo();
 			}
 			return 0;
+
+		case IDM_SOLVE_INSERT:
+			return 0;
 			
 		case IDM_SOLVE_RESET:
 			//blank best key, so that additional chars are renewed

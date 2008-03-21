@@ -200,7 +200,9 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 	score=pentascore+tetrascore+triscore+biscore;
 	//score-=int(ioc_weight*ABS(IoC(solv)-lang_ioc));  
 	
-	float score_mult=(float)1.0-(ioc_weight*ABS(IoC(solv)-lang_ioc));
+	float cur_ioc=IoC(solv);
+	float score_mult=(float)1.0-(ioc_weight*ABS(cur_ioc-lang_ioc));
+	//if(cur_ioc<lang_ioc) score_mult=1.0;
 	score=int(score*score_mult);
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
