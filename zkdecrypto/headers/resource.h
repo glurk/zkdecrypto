@@ -160,6 +160,7 @@
 #define IDC_IOC_ACT_TITLE               1131
 #define IDC_IOC_ACT                     1132
 #define IDC_IOC_EXP                     1133
+#define IDC_ENT_ACT                     1134
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
 #define IDM_FILE_EXIT                   40003

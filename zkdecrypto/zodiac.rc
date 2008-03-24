@@ -202,6 +202,8 @@ BEGIN
                     18
     CTEXT           "",IDC_IOC_ACT,211,165,45,11,SS_CENTERIMAGE
     CTEXT           "",IDC_IOC_EXP,211,177,45,11,SS_CENTERIMAGE
+    
+    CTEXT           "",IDC_ENT_ACT,211,190,45,11,SS_CENTERIMAGE
     CONTROL         "",IDC_MAIN_TAB,"SysTabControl32",TCS_FIXEDWIDTH,7,7,256,
                     13
     GROUPBOX        "Word List",IDC_WORD_TITLE,9,24,114,245,BS_CENTER

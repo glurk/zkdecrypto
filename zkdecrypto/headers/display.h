@@ -521,6 +521,9 @@ void SetFreq()
 	
 	sprintf(szText,"%.4f",fLangIoC);
 	SetDlgItemText(hMainWnd,IDC_IOC_EXP,szText);
+
+	sprintf(szText,"%.4f",ChiSquare(szPlain));
+	SetDlgItemText(hMainWnd,IDC_ENT_ACT,szText);
 }
 
 /*Word List Display*/
@@ -740,6 +743,7 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_ACT_TITLE),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_ACT),iShowAnalysis);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_EXP),iShowAnalysis);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_ENT_ACT),iShowAnalysis);
 	
 	//Word List
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_TITLE),iShowWord);
