@@ -204,6 +204,10 @@ inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs
 	float score_mult=(float)1.0-(ioc_weight*ABS(cur_ioc-lang_ioc));
 	//if(cur_ioc<lang_ioc) score_mult=1.0;
 	score=int(score*score_mult);
+	
+	float cur_ent=Entropy(solv);
+	score_mult=(float)1.0-(.0001*ABS(cur_ent-4.0));
+	score=int(score*score_mult);
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	

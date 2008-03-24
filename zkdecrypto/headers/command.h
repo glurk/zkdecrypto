@@ -223,6 +223,12 @@ inline int CommandKey(int cmd_id)
 		case IDM_KEY_UNLOCK: message.cur_map.SetLock(iCurSymbol,false); SetKey(); return 0;
 		case IDM_KEY_LOCK_ALL: message.cur_map.SetAllLock(true); SetKey(); return 0;
 		case IDM_KEY_UNLOCK_ALL: message.cur_map.SetAllLock(false); SetKey(); return 0;
+		case IDM_KEY_INVERT_LOCK: 
+			num_symbols=message.cur_map.GetNumSymbols();
+			for(int cur_sym=0; cur_sym<num_symbols; cur_sym++)
+				message.cur_map.SetLock(cur_sym,!message.cur_map.GetLock(cur_sym));
+			SetDlgInfo();
+			return 0;
 
 		case IDM_KEY_EXCLUDE:
 			if(iCurSymbol<0) return 0;
@@ -250,7 +256,7 @@ inline int CommandSolve(int cmd_id)
 	switch(cmd_id)
 	{
 		case IDM_SOLVE_WORD:
-			strcpy(szStringTitle,"Word to Insert");
+			strcpy(szStringTitle,"Text to Plug");
 			szString[0]='\0';
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
 			{
@@ -262,6 +268,17 @@ inline int CommandSolve(int cmd_id)
 			return 0;
 
 		case IDM_SOLVE_INSERT:
+			if(iCurSymbol<0) return 0;
+			
+			strcpy(szStringTitle,"Text to Insert");
+			szString[0]='\0';
+			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
+			{
+				SetUndo();
+
+				message.Insert(iTextSel,szString);
+				SetDlgInfo();
+			}
 			return 0;
 			
 		case IDM_SOLVE_RESET:

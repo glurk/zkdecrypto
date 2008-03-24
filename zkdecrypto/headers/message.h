@@ -37,6 +37,7 @@ public:
 	int Read(const char*);
 	int Write(const char*);
 	void SetCipher(const char*);
+	void Insert(int,const char*);
 	
 	const char * GetCipher() {return cipher;}
 	const char * GetPlain() {Decode(); return plain;}

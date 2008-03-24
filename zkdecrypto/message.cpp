@@ -64,6 +64,24 @@ void Message::SetCipher(const char *new_cipher)
 	SetInfo();
 }
 
+void Message::Insert(int position, const char *string)
+{
+	int length, sym_index;
+	SYMBOL symbol;
+	
+	length=strlen(string);
+	
+	for(int cur_char=0; cur_char<length; cur_char++)
+	{
+		sym_index=cur_map.FindByCipher(cipher[position+cur_char]);
+		cur_map.GetSymbol(sym_index,&symbol);
+		symbol.plain=string[cur_char];
+		cur_map.SetLock(sym_index,false);
+		cur_map.AddSymbol(symbol,false);
+		cur_map.SetLock(sym_index,true);
+	}
+}
+
 void Message::SetExpFreq()
 {
 	//set expected frequencies
