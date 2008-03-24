@@ -161,53 +161,85 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 
 #define IS_LETTER(L) ((L<0 || L>25)? 0:1)
 
+inline float FastIoC(const char *string, int length)
+{
+	int index, freqs[256];
+	float ic=0;
+	
+	memset(freqs,0,256*sizeof(int));
+	
+	for(index=0; index<length; index++)
+		freqs[string[index]]++;
+
+	for(index=0; index<256; index++)
+		if(freqs[index]>1) 
+			ic+=(freqs[index])*(freqs[index]-1); 
+
+	ic/=(length)*(length-1);
+
+	return ic;
+}
+
 inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs) {
 
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
-	int score;
+	int score, remaining;
+	int use_bi, use_tri, use_tetra, use_penta;
+	
+	//use ngrams in score
+	use_bi=use_graphs & USE_BI;
+	use_tri=use_graphs & USE_TRI;
+	use_tetra=use_graphs & USE_TETRA;
+	use_penta=use_graphs & USE_PENTA;
 
+	//get inital characters in for ngrams
 	t1=solv[0]-'A'; t2=solv[1]-'A'; t3=solv[2]-'A'; t4=solv[3]-'A'; t5=solv[4]-'A';
 
-	for(int c=0; c<length_of_cipher; c++) {
+	//letters in text left for ngrams
+	remaining=length_of_cipher;
 
-		//allow to score incomplete decoding (one with --- in it)
+	for(int c=0; c<length_of_cipher-1; c++) 
+	{
+		//only score an ngram is all letters,
+		//enough characters remain in the text (i.e. not close to the end)
+		//and using these ngrams is enabled in options
+
 		if(IS_LETTER(t1) && IS_LETTER(t2)) {
-			if(c<length_of_cipher-1 && (use_graphs & USE_BI)) 
-				{ biscore += bigraphs[t1*26+t2]; }
+			if(use_bi) biscore+=bigraphs[t1][t2];
 
-			if(IS_LETTER(t3)) {
-				if(c<length_of_cipher-2 && (use_graphs & USE_TRI))
-					{ triscore += trigraphs[t1*676+t2*26+t3]; }
-		
-				if(IS_LETTER(t4)) {
-					if(c<length_of_cipher-3 && (use_graphs & USE_TETRA))
-						{ tetrascore += tetragraphs[t1*17576+t2*676+t3*26+t4]; }
-		
-					if(IS_LETTER(t5)) {
-						if(c<length_of_cipher-4 && (use_graphs & USE_PENTA)) 
-							{ pentascore += pentagraphs[t1*456976+t2*17576+t3*676+t4*26+t5]; }
-					}
+			if(IS_LETTER(t3) && remaining>2) {
+				if(use_tri) triscore+=trigraphs[t1][t2][t3];
+			
+				if(IS_LETTER(t4) && remaining>3) {
+					if(use_tetra) tetrascore+=tetragraphs[t1][t2][t3][t4];
+				
+					if(IS_LETTER(t5) && remaining>4) 
+						if(use_penta) pentascore+=pentagraphs[t1][t2][t3][t4][t5];
 				}
 			}
 		}
 		
-		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A';
+		t1=t2; t2=t3; t3=t4; t4=t5; t5=solv[c+5]-'A'; //shift letters & get next
+		remaining--; 
 	}
 
-	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; //	pentascore=pentascore>>0;
+	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1;
 
 	score=pentascore+tetrascore+triscore+biscore;
-	//score-=int(ioc_weight*ABS(IoC(solv)-lang_ioc));  
 	
-	float cur_ioc=IoC(solv);
-	float score_mult=(float)1.0-(ioc_weight*ABS(cur_ioc-lang_ioc));
-	//if(cur_ioc<lang_ioc) score_mult=1.0;
+	float cur_ioc=FastIoC(solv,length_of_cipher);
+	float score_mult=(float)1.05-(ioc_weight*ABS(cur_ioc-lang_ioc));
 	score=int(score*score_mult);
 	
-	float cur_ent=Entropy(solv);
-	score_mult=(float)1.0-(.0001*ABS(cur_ent-4.0));
+	float cur_ent=ChiSquare(solv);
+	score_mult=(float)1.05-(.05*ABS(cur_ent-.5));
 	score=int(score*score_mult);
+		
+	/*int lsoc=calclsoc(length_of_cipher,solv)-6;
+	if(lsoc<0) lsoc=0;
+	score_mult=(float)1.0-(.001*lsoc);
+	score=int(score*score_mult);*/
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
@@ -360,7 +392,7 @@ void SetIoCWeight(int weight) {ioc_weight=weight;}
 int ReadNGraphs(const char *filename, int n) 
 {
 	FILE *tgfile;
-	char ngraph[8];
+	char ngraph[8], t1, t2, t3, t4, t5;
 	int *ngraphs;
 	int nsize, freq, index;
 	float percent;
@@ -368,13 +400,17 @@ int ReadNGraphs(const char *filename, int n)
 	if(!(tgfile=fopen(filename,"r"))) return 0;
 
 	if(n==1) {/*ngraphs=unigraphs;*/ nsize=UNI_SIZE;}
-	if(n==2) {ngraphs=bigraphs; nsize=BI_SIZE;}
-	if(n==3) {ngraphs=trigraphs; nsize=TRI_SIZE;}
-	if(n==4) {ngraphs=tetragraphs; nsize=TETRA_SIZE;}
-	if(n==5) {ngraphs=pentagraphs; nsize=PENTA_SIZE;}
+	if(n==2) {ngraphs=&bigraphs[0][0]; nsize=BI_SIZE;}
+	if(n==3) {ngraphs=&trigraphs[0][0][0]; nsize=TRI_SIZE;}
+	if(n==4) {ngraphs=&tetragraphs[0][0][0][0]; nsize=TETRA_SIZE;}
+	if(n==5) {ngraphs=&pentagraphs[0][0][0][0][0]; nsize=PENTA_SIZE;}
 
 	//init to zero
 	if(n>1) memset(ngraphs,0,nsize*sizeof(long));
+	/*memset(bigraphs,0,BI_SIZE*sizeof(int));
+	memset(trigraphs,0,TRI_SIZE*sizeof(int));
+	memset(tetragraphs,0,TETRA_SIZE*sizeof(int));
+	memset(pentagraphs,0,PENTA_SIZE*sizeof(int));*/
 
 	//read file
 	while(fscanf(tgfile,"%s : %i %f",ngraph,&freq,&percent)!=EOF) 
@@ -384,7 +420,7 @@ int ReadNGraphs(const char *filename, int n)
 		if(n>1) index+=(ngraph[n-2]-'A')*UNI_SIZE;
 		if(n>2) index+=(ngraph[n-3]-'A')*BI_SIZE;
 		if(n>3) index+=(ngraph[n-4]-'A')*TRI_SIZE;
-		if(n>4) index+=(ngraph[n-5]-'A')*TETRA_SIZE; 
+		if(n>4) index+=(ngraph[n-5]-'A')*TETRA_SIZE;
 		
 		if(index<0 || index>nsize) continue;
 		
@@ -392,6 +428,22 @@ int ReadNGraphs(const char *filename, int n)
 		if(n==1) unigraphs[index]=percent;
 		//else ngraphs[index]=int(10*log((double)freq));
 		else ngraphs[index]=freq;
+
+		/*t1=ngraph[n-5];
+		t2=ngraph[n-4];
+		t3=ngraph[n-3];
+		t4=ngraph[n-2];
+		t5=ngraph[n-1];
+
+
+		switch(n)
+		{
+			case 1: unigraphs[t1]=percent; break;
+			case 2: bigraphs[t1][t2]=freq; break;
+			case 3: trigraphs[t1][t2][t3]=freq; break;
+			case 4: tetragraphs[t1][t2][t3][t4]=freq; break;
+			case 5: pentagraphs[t1][t2][t3][t4][t5]=freq; break;
+		}*/
 	}
 
 	fclose(tgfile); 

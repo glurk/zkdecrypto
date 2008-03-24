@@ -189,7 +189,7 @@ inline int CommandCipher(int cmd_id)
 
 inline int CommandKey(int cmd_id)
 {
-	int swap, num_symbols;
+	int swap, num_symbols, cur_sym;
 	SYMBOL symbol;
 
 	switch(cmd_id)
@@ -225,7 +225,7 @@ inline int CommandKey(int cmd_id)
 		case IDM_KEY_UNLOCK_ALL: message.cur_map.SetAllLock(false); SetKey(); return 0;
 		case IDM_KEY_INVERT_LOCK: 
 			num_symbols=message.cur_map.GetNumSymbols();
-			for(int cur_sym=0; cur_sym<num_symbols; cur_sym++)
+			for(cur_sym=0; cur_sym<num_symbols; cur_sym++)
 				message.cur_map.SetLock(cur_sym,!message.cur_map.GetLock(cur_sym));
 			SetDlgInfo();
 			return 0;
