@@ -47,6 +47,8 @@ BEGIN
         MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO
         MENUITEM "&Redo\tCtrl+Y",               IDM_EDIT_REDO
         MENUITEM SEPARATOR
+        MENUITEM "&Insert Text\tInsert",        IDM_SOLVE_INSERT
+        MENUITEM SEPARATOR
         MENUITEM "Edit &Cipher",                IDM_EDIT_MSG
         MENUITEM "Edit &Key",                   IDM_EDIT_MAP
     END
@@ -76,6 +78,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "L&ock All\tShift+Ctrl+L",     IDM_KEY_LOCK_ALL
         MENUITEM "U&nlock All\tShift+Ctrl+U",   IDM_KEY_UNLOCK_ALL
+        MENUITEM "In&vert Lock\tShift+Ctrl+V",  IDM_KEY_INVERT_LOCK
         MENUITEM SEPARATOR
         MENUITEM "E&xclude Letters\tShift+Ctrl+X", IDM_KEY_EXCLUDE
         MENUITEM "&Clear Exclude\tShift+Ctrl+Y", IDM_KEY_CLEAR_EXCLUDE
@@ -83,6 +86,7 @@ BEGIN
     POPUP "&Solve"
     BEGIN
         MENUITEM "&Word Plug\tCtrl+W",          IDM_SOLVE_WORD
+        MENUITEM "&Brute Force\tCtrl+B",        IDM_SOLVE_BRUTE
         MENUITEM "&Reset Extra Letters\tCtrl+R", IDM_SOLVE_RESET
         MENUITEM SEPARATOR
         MENUITEM "Lock Wo&rd",                  IDM_VIEW_LOCK_WORD
@@ -579,6 +583,8 @@ BEGIN
     "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK_ALL,     VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    "V",            IDM_KEY_INVERT_LOCK,     VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT                                               
     VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
     VK_F3,          IDM_FILE_SAVE_MAP,      VIRTKEY, NOINVERT
     VK_F5,          IDM_KEY_SCRAMBLE,       VIRTKEY, NOINVERT
