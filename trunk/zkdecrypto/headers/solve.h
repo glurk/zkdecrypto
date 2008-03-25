@@ -299,7 +299,7 @@ void StopNotify()
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
 	int num_symbols;
-	char key[256];
+	char key[KEY_SIZE];
 	char *exclude;
 	SYMBOL symbol;
 	

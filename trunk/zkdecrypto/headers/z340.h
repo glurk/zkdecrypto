@@ -10,36 +10,10 @@
 #include		"message.h"
 
 
-//parameters for solve function
-struct SOLVEINFO
-{
-	//parameters
-	long max_fail;
-	int swaps;
-	int revert;
-	int use_graphs;
-	char *locked;
-	char *exclude;
-	
-	//feedback
-	char best_key[256];
-	int cur_try;
-	int cur_fail;
-	float last_time;
-	int best_score;
-
-	//control
-	int running;
-	
-	//callback functions
-	void (*disp_all)(void);
-	void (*disp_info)(void);
-	unsigned long (*time_func)(void);
-};
-
 //////////////////////////////////////////////////////////////////////// DEFINES //////////////////////////////////////////////////////////////////
 
 #define		ASCII_SIZE 					256
+#define		KEY_SIZE					512
 #define		MAX_CIPH_LENGTH 			20480
 
 //having multiply operations in definitions could slow down algorithms
@@ -54,6 +28,33 @@ struct SOLVEINFO
 #define USE_TETRA	0x04
 #define USE_PENTA	0x08
 #define USE_ALL		0x0F
+
+//parameters for solve function
+struct SOLVEINFO
+{
+	//parameters
+	long max_fail;
+	int swaps;
+	int revert;
+	int use_graphs;
+	char *locked;
+	char *exclude;
+	
+	//feedback
+	char best_key[KEY_SIZE];
+	int cur_try;
+	int cur_fail;
+	float last_time;
+	int best_score;
+
+	//control
+	int running;
+	
+	//callback functions
+	void (*disp_all)(void);
+	void (*disp_info)(void);
+	unsigned long (*time_func)(void);
+};
 
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
 
