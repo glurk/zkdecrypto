@@ -312,7 +312,7 @@ long Map::SymbolGraph(wchar *dest)
 	ustrcat(dest,"\r\n      ");
 
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
-		ustrcat(dest,symbols[cur_symbol].cipher);
+		ustrcat(dest,unsigned char(symbols[cur_symbol].cipher));
 
 	//rows in the high word, cols in the low
 	return (rows+2)<<16 | (num_symbols+8);
