@@ -217,7 +217,7 @@ char FirstAvailable(char *exclude)
 void BruteStart()
 {
 	SYMBOL symbol;
-	int letter_dist[26];
+//	int letter_dist[26]; // UNUSED??
 	
 	if(!iBruteSymbols) return;
 	

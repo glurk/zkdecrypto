@@ -69,7 +69,7 @@ void Message::Insert(int position, const char *string)
 	int length, sym_index;
 	SYMBOL symbol;
 	
-	length=strlen(string);
+	length=(int)strlen(string);
 	
 	for(int cur_char=0; cur_char<length; cur_char++)
 	{
@@ -228,7 +228,8 @@ void Message::MergeSymbols(char symbol1, char symbol2, int do_near)
 int Message::Simplify(char *dest)
 {
 	int old_patterns, num_symbols;
-	char adj_sym1[3], adj_sym2[3], temp[32];
+//	char adj_sym1[3], adj_sym2[3]; // UNUSED??
+	char temp[32];
 	//long *best_merge;
 	int num_best=0, increase;
 	Message test_msg;
