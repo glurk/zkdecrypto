@@ -234,7 +234,7 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
 	score=int(score*score_mult);
 	
 	float cur_ent=ChiSquare(solv);
-	score_mult=(float)1.05-(.05*ABS(cur_ent-.5));
+	score_mult=(float)1.05-((float).05*ABS(cur_ent-(float).5));
 	score=int(score*score_mult);
 		
 	/*int lsoc=calclsoc(length_of_cipher,solv)-6;
@@ -393,7 +393,8 @@ void SetIoCWeight(int weight) {ioc_weight=weight;}
 int ReadNGraphs(const char *filename, int n) 
 {
 	FILE *tgfile;
-	char ngraph[8], t1, t2, t3, t4, t5;
+	char ngraph[8];
+//	char t1, t2, t3, t4, t5;
 	int *ngraphs;
 	int nsize, freq, index;
 	float percent;
