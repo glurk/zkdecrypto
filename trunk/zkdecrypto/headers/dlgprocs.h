@@ -183,10 +183,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemInt(hWnd,IDC_REVERT,siSolveInfo.revert,0);
 
 			//score parameters
-			SendMessage(GetDlgItem(hWnd,IDC_USEBI),BM_SETCHECK,iUseGraphs & USE_BI,0);
-			SendMessage(GetDlgItem(hWnd,IDC_USETRI),BM_SETCHECK,iUseGraphs & USE_TRI,0);
-			SendMessage(GetDlgItem(hWnd,IDC_USETETRA),BM_SETCHECK,iUseGraphs & USE_TETRA,0);
-			SendMessage(GetDlgItem(hWnd,IDC_USEPENTA),BM_SETCHECK,iUseGraphs & USE_PENTA,0);
+			SendMessage(GetDlgItem(hWnd,IDC_USEBI),BM_SETCHECK,siSolveInfo.use_graphs & USE_BI,0);
+			SendMessage(GetDlgItem(hWnd,IDC_USETRI),BM_SETCHECK,siSolveInfo.use_graphs & USE_TRI,0);
+			SendMessage(GetDlgItem(hWnd,IDC_USETETRA),BM_SETCHECK,siSolveInfo.use_graphs & USE_TETRA,0);
+			SendMessage(GetDlgItem(hWnd,IDC_USEPENTA),BM_SETCHECK,siSolveInfo.use_graphs & USE_PENTA,0);
 
 			//display options
 			SetDlgItemInt(hWnd,IDC_LINECHARS,iLineChars,0);
@@ -222,19 +222,19 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					siSolveInfo.revert=GetDlgItemInt(hWnd,IDC_REVERT,0,0);
 
 					//score parameters
-					iUseGraphs=0;
+					siSolveInfo.use_graphs=0;
 					
 					if(SendMessage(GetDlgItem(hWnd,IDC_USEBI),BM_GETCHECK,0,0))
-						iUseGraphs+=USE_BI;
+						siSolveInfo.use_graphs+=USE_BI;
 						
 					if(SendMessage(GetDlgItem(hWnd,IDC_USETRI),BM_GETCHECK,0,0))
-						iUseGraphs+=USE_TRI;
+						siSolveInfo.use_graphs+=USE_TRI;
 						
 					if(SendMessage(GetDlgItem(hWnd,IDC_USETETRA),BM_GETCHECK,0,0))
-						iUseGraphs+=USE_TETRA;
+						siSolveInfo.use_graphs+=USE_TETRA;
 						
 					if(SendMessage(GetDlgItem(hWnd,IDC_USEPENTA),BM_GETCHECK,0,0))
-						iUseGraphs+=USE_PENTA;
+						siSolveInfo.use_graphs+=USE_PENTA;
 
 					//display options
 					iLineChars=GetDlgItemInt(hWnd,IDC_LINECHARS,0,0);
@@ -259,7 +259,7 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					}
 					
 					//no ngrams are checked
-					if(!iUseGraphs)
+					if(!siSolveInfo.use_graphs)
 					{
 						MessageBox(hWnd,"At least one set of ngrams must be selected","Notice",MB_ICONEXCLAMATION);
 						return 0;
