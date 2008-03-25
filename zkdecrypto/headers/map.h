@@ -93,7 +93,7 @@ public:
 	
 private:	
 	SYMBOL symbols[MAX_SYM];
-	char locked[MAX_SYM], merge_log[256];
+	char locked[MAX_SYM], merge_log[512];
 	int num_symbols;
 	float unigraphs[26];
 };

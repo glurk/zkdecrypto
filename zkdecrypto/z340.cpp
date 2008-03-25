@@ -78,7 +78,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	//initial score & feedback
 	last_score=calcscore(clength,solved,info);
 	info.best_score=last_score;
-	memcpy(info.best_key,key,256);
+	memcpy(info.best_key,key,KEY_SIZE);
 	if(info.disp_all) info.disp_all();
 
 	//go until max number of iterations or stop is pressed
@@ -133,7 +133,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 					info.best_score=score;
 					improve=1;
 					info.cur_fail=0;
-					memcpy(info.best_key,key,256);
+					memcpy(info.best_key,key,KEY_SIZE);
 					if(info.disp_all) info.disp_all();	
 				}
 			}
@@ -142,7 +142,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 
 	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,info);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
-	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
+	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,KEY_SIZE); iterations=0; }
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	last_score=calcscore(clength,solved,info); 
 	
