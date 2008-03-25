@@ -274,7 +274,7 @@ int Num2Asc(char *in_name, char *out_name)
     {
 		ascii=atoi(number);
 		
-		if(ascii>0 && ascii<128) 
+		if(ascii>0 && ascii<224) 
 			putc(char(ascii+0x20),out_file);
 	}
 	
