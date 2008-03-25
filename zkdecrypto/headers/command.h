@@ -262,7 +262,7 @@ inline int CommandSolve(int cmd_id)
 			{
 				SetUndo();
 
-				iBestScore=WordPlug(message,szString,iUseGraphs);
+				iBestScore=WordPlug(message,szString,siSolveInfo);
 				SetDlgInfo();
 			}
 			return 0;

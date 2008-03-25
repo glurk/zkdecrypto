@@ -17,6 +17,9 @@ struct SOLVEINFO
 	long max_fail;
 	int swaps;
 	int revert;
+	int use_graphs;
+	char *locked;
+	char *exclude;
 	
 	//feedback
 	char best_key[256];
@@ -54,16 +57,16 @@ struct SOLVEINFO
 
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
 
-inline int		calcscore(const int,const char *,int&);
+inline int		calcscore(const int,const char *,SOLVEINFO&);
 inline int		calclsoc(const int,const char *);
-inline void		shufflekey(char *,const int,const int,const char *,const char*);
+inline void		shufflekey(char *,const int,const int,SOLVEINFO&);
 
 void			printcipher(int,const char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
-int				hillclimb(const char *,int,char *,const char *,SOLVEINFO&,int&,const char*,int);
+int				hillclimb(const char *,int,char *,SOLVEINFO&,int);
 
 void 			GetUnigraphs(double*);
 void			SetIoC(float);
 void			SetIoCWeight(int);
 int 			ReadNGraphs(const char*,int);
-int 			WordPlug(Message&,const char *, int);
+int 			WordPlug(Message&,const char*,SOLVEINFO&);

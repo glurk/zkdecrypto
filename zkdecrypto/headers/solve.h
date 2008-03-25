@@ -324,8 +324,11 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		message.cur_map.GetSymbol(cur_symbol,&symbol);
 		strcpy(exclude+(27*cur_symbol),symbol.exclude);
 	}
-
-	hillclimb(szCipher,message.GetLength(),key,message.cur_map.GetLocked(),siSolveInfo,iUseGraphs,exclude,false);
+	
+	siSolveInfo.locked=(char*)message.cur_map.GetLocked();
+	siSolveInfo.exclude=exclude;
+	
+	hillclimb(szCipher,message.GetLength(),key,siSolveInfo,false);
 
 	//reset window state
 	StopSolve();

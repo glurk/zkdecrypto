@@ -25,9 +25,10 @@
 
 #include "headers/z340.h"
 #include "headers/z340Globals.h"
+#include "headers/strarray.h"
 #include "mt19937ar-cok.cpp"
 
-int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOLVEINFO &info, int &use_graphs, const char *exclude, int print)
+int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 	#define DECODE {for(y=0;y<clength;y++) solved[y]=*decoder[cipher[y]];}
@@ -74,7 +75,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 	init_genrand((unsigned long)time(NULL));
 	
 	//initial score & feedback
-	last_score=calcscore(clength,solved,use_graphs);
+	last_score=calcscore(clength,solved,info);
 	info.best_score=last_score;
 	memcpy(info.best_key,key,256);
 	if(info.disp_all) info.disp_all();
@@ -92,19 +93,19 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 		
 		for(int p1=0;p1<keylength;p1++) {
 
-			if(locked[p1]) continue; //skip if symbol is locked
+			if(info.locked[p1]) continue; //skip if symbol is locked
 
 			for(int p2=0;p2<keylength;p2++) {
 				
 			//stop
 			if(!info.running) return 0;
-			if(locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical 
+			if(info.locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical 
 			
 			/*exclusions*/
-			if(exclude)
+			if(info.exclude)
 			{
-				if(p1<cuniq && strchr(exclude+(27*p1),key[p2])) continue; 
-				if(p2<cuniq && strchr(exclude+(27*p2),key[p1])) continue;
+				if(p1<cuniq && strchr(info.exclude+(27*p1),key[p2])) continue; 
+				if(p2<cuniq && strchr(info.exclude+(27*p2),key[p1])) continue;
 			}
 
 			//swap & decode
@@ -115,7 +116,7 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			if(p1>=cuniq && p2>=cuniq) continue;
 			
 			//score
-			score=calcscore(clength,solved,use_graphs); 
+			score=calcscore(clength,solved,info); 
 
 			//undo if change made it worse than last score
 			if(score<last_score) {DO_SWAP;}
@@ -138,11 +139,11 @@ int hillclimb(const char cipher[],int clength,char key[],const char locked[],SOL
 			}
 		}
 
-	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,locked,exclude);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
+	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,info);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
 	
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,256); iterations=0; }
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
-	last_score=calcscore(clength,solved,use_graphs); 
+	last_score=calcscore(clength,solved,info); 
 	
 	if(!improve) info.cur_fail++;
 	
@@ -180,18 +181,18 @@ inline float FastIoC(const char *string, int length)
 	return ic;
 }
 
-inline int calcscore(const int length_of_cipher,const char *solv,int &use_graphs) {
+inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &info) {
 
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
 	int score, remaining;
 	int use_bi, use_tri, use_tetra, use_penta;
-	
+		
 	//use ngrams in score
-	use_bi=use_graphs & USE_BI;
-	use_tri=use_graphs & USE_TRI;
-	use_tetra=use_graphs & USE_TETRA;
-	use_penta=use_graphs & USE_PENTA;
+	use_bi=info.use_graphs & USE_BI;
+	use_tri=info.use_graphs & USE_TRI;
+	use_tetra=info.use_graphs & USE_TETRA;
+	use_penta=info.use_graphs & USE_PENTA;
 
 	//get inital characters in for ngrams
 	t1=solv[0]-'A'; t2=solv[1]-'A'; t3=solv[2]-'A'; t4=solv[3]-'A'; t5=solv[4]-'A';
@@ -267,23 +268,23 @@ inline int calclsoc(const int length_of_cipher,const char *solv) {
 //        Mutate the char array "key[]" by swapping two unlocked, unexcluded letters            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline void shufflekey(char *key,const int keylength,const int cuniq,const char locked[],const char *exclude) {
+inline void shufflekey(char *key,const int keylength,const int cuniq,SOLVEINFO &info) {
 
 	int x,y,z,canswap=0;
 
 	//check if all characters are locked to avoid infinite loop
-	for(int symbol=0; symbol<keylength; symbol++) if(!locked[symbol]) { canswap=1; break; }
+	for(int symbol=0; symbol<keylength; symbol++) if(!info.locked[symbol]) { canswap=1; break; }
 
 	if(canswap)
 	{
-		do {x=genrand_int32()%keylength;} while(locked[x]);
-		do {y=genrand_int32()%keylength;} while(locked[y]);
+		do {x=genrand_int32()%keylength;} while(info.locked[x]);
+		do {y=genrand_int32()%keylength;} while(info.locked[y]);
 
 		/*exclusions*/
-		if(exclude)
+		if(info.exclude)
 		{
-			if(x<cuniq && strchr(exclude+(27*x),key[y])) return; 
-			if(y<cuniq && strchr(exclude+(27*y),key[x])) return;
+			if(x<cuniq && strchr(info.exclude+(27*x),key[y])) return; 
+			if(y<cuniq && strchr(info.exclude+(27*y),key[x])) return;
 		}
 		
 		z=key[x]; key[x]=key[y]; key[y]=z;
@@ -455,7 +456,7 @@ int ReadNGraphs(const char *filename, int n)
 //  Find position where the word string inserted into the plain text produces the highest score //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-int WordPlug(Message &msg, const char *word, int use_graphs)
+int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 {
  	const char *cipher, *plain;
 	int word_len, msg_len, cur_score=0, best_score=0;
@@ -477,6 +478,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 	//backup lang_ioc, and set to 0
 	old_ioc_weight=ioc_weight;
 	ioc_weight=0;
+	info.exclude=NULL;
 
 	for(int position=0; position<=msg_len-word_len; position++)
 	{		
@@ -513,7 +515,7 @@ int WordPlug(Message &msg, const char *word, int use_graphs)
 		if(fail) continue;
 		
 		//compare score
-		cur_score=calcscore(msg_len,plain,use_graphs);
+		cur_score=calcscore(msg_len,plain,info);
 		
 		if(cur_score>best_score)
 		{

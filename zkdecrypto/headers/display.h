@@ -528,53 +528,53 @@ void SetFreq()
 
 /*Word List Display*/
 
-void SetWordList()
+int GetWordList(const char *text, StringArray &word_list)
 {
-	int cur_sel, msg_len, rows=0, col=0;
-	char plain_word[64];
+	int msg_len=message.GetLength();
+	char word[64];
 	std::string word_str;
-	int cur_id, words_found[1024], num_words=0, duplicate;
+	DICTMAP::iterator iter;
 	
-	if(iCurTab!=2) return;
-
-	msg_len=message.GetLength();
-	
-	//clear list
-	cur_sel=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
-	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
-
 	for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
 		{
 			if((msg_len-index)<word_len) break;
 
 			//get string of word
-			memcpy(plain_word,szPlain+index,word_len);
-			plain_word[word_len]='\0';
-			word_str=plain_word;
+			memcpy(word,text+index,word_len);
+			word[word_len]='\0';
+			word_str=word;
 
-			
-			//find word id
-			DICTMAP::iterator iter = dictionary.find(word_str);
-			//cur_id=dictionary.find(word_str)->second;
-
-			if(iter != dictionary.end()) //is in dictionary
-			{
-				cur_id = iter->second;
-				duplicate=false;
-
-				for(int cur_word=0; cur_word<num_words; cur_word++)
-					if(words_found[cur_word]==cur_id) 
-						{duplicate=true; break;}
-
-				if(!duplicate) //not already listed
-				{
-					SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_ADDSTRING,0,(LPARAM)plain_word);
-					words_found[num_words]=cur_id;
-					num_words++;
-				}
-			}
+			//find word
+			if(dictionary.find(word_str)!=dictionary.end()) //is in dictionary
+				word_list.AddString(word);
 		}
+		
+	word_list.RemoveDups();
+	return word_list.GetNumStrings();	
+}
+
+void SetWordList()
+{
+	int cur_sel, rows=0, col=0;
+	int num_words;
+	char word[64];
+	StringArray word_list;
+	
+	if(iCurTab!=2) return;
+	
+	//clear list
+	cur_sel=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
+	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
+
+	//set list
+	num_words=GetWordList(szPlain,word_list);
+	
+	for(int cur_word=0; cur_word<num_words; cur_word++)
+	{
+		word_list.GetString(cur_word,word);
+		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_ADDSTRING,0,(LPARAM)word);
+	}
 		
 	//title
 	sprintf(szText,"Word List (%i words)",num_words);
