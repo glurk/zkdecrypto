@@ -86,8 +86,10 @@ BEGIN
     POPUP "&Solve"
     BEGIN
         MENUITEM "&Word Plug\tCtrl+W",          IDM_SOLVE_WORD
+        MENUITEM "&Reset Extra Letters\tCtrl+R",IDM_SOLVE_RESET
+        MENUITEM SEPARATOR
         MENUITEM "&Brute Force\tCtrl+B",        IDM_SOLVE_BRUTE
-        MENUITEM "&Reset Extra Letters\tCtrl+R", IDM_SOLVE_RESET
+        MENUITEM "&Copy Best Solution",         IDM_SOLVE_COPY_BEST
         MENUITEM SEPARATOR
         MENUITEM "Lock Wo&rd",                  IDM_VIEW_LOCK_WORD
         MENUITEM "Unoc&k Word",                 IDM_VIEW_UNLOCK_WORD

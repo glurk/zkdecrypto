@@ -213,13 +213,32 @@ char FirstAvailable(char *exclude)
 	return 'Z'+1;
 }
 
+void BatchBest()
+{
+	char *szPlainText;
+	
+	Message best_msg;
+	
+	szPlainText=new char[message.GetLength()+((iLines+1)*3)+1];
+	BreakText(szPlainText,message.GetPlain());
+	
+	best_msg=message;
+	best_msg.cur_map.FromKey(lprgcBatchBestKey);
+	BreakText(szPlainText,best_msg.GetPlain());
+	SetClipboardText(szPlainText);
+	
+	delete[] szPlainText;
+}
+
 //begin brute force
 void BruteStart()
 {
 	SYMBOL symbol;
-//	int letter_dist[26]; // UNUSED??
 	
 	if(!iBruteSymbols) return;
+	
+	iBatchBestScore=0;
+	message.cur_map.ToKey(lprgcBatchBestKey,"");		
 	
 	for(int iCurSymbol=0; iCurSymbol<iBruteSymbols; iCurSymbol++)
 	{
@@ -408,7 +427,6 @@ void SetPriority(int iNewPriority)
 
 int LoadDictionary(char *filename)
 {
-	dictionary.clear();
 	FILE *dictionary_file;
 	char word[64];
 	std::string word_str;
@@ -417,8 +435,8 @@ int LoadDictionary(char *filename)
 
 	if(!dictionary_file)
 	{	
-		sprintf(szText,"Cannot open %s",(const char*)filename);
-		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
+		//sprintf(szText,"Cannot open \"%s\"",(const char*)filename);
+		//MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
 		return 0;
 	}
 	int i = 1;
@@ -469,7 +487,9 @@ void SetLanguage()
 	}
 
 	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"dictionary.txt");
+	dictionary.clear();
 	LoadDictionary(szGraphName);
+	LoadDictionary("userdict.txt");
 	
 	GetUnigraphs(unigraphs);
 	message.cur_map.SetUnigraphs(unigraphs);

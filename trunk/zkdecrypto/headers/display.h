@@ -17,6 +17,25 @@ void BreakText(char *dest, const char *src)
 	dest[dest_index]='\0';
 }
 
+//set given text to clipboard
+void SetClipboardText(const char *szClipText)
+{
+	HGLOBAL hgClipboard;
+	char *szClipboard;
+	
+	//allocate clipboard data
+	hgClipboard=GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,strlen(szClipText)+1);
+	szClipboard=(char*)GlobalLock(hgClipboard);
+	strcpy(szClipboard,szClipText);
+	GlobalUnlock(hgClipboard);
+
+	//set clipboard
+	OpenClipboard(hMainWnd);
+	EmptyClipboard();
+	SetClipboardData(CF_TEXT,(void*)hgClipboard);
+	CloseClipboard();
+}
+
 //set window title
 void SetTitle()
 {

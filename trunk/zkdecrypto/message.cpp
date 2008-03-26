@@ -170,13 +170,13 @@ void Message::Decode()
 	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
 		cur_map.GetSymbol(cur_symbol,&symbol);
-		if(symbol.plain) decoder[unsigned char(symbol.cipher)]=symbol.plain;
-		else decoder[unsigned char(symbol.cipher)]=BLANK;
+		if(symbol.plain) decoder[(unsigned char)symbol.cipher]=symbol.plain;
+		else decoder[(unsigned char)symbol.cipher]=BLANK;
 	}
 
 	//decode string
 	for(cur_symbol=0; cur_symbol<msg_len; cur_symbol++)
-		plain[cur_symbol]=decoder[unsigned char(cipher[cur_symbol])];
+		plain[cur_symbol]=decoder[(unsigned char)cipher[cur_symbol]];
 
 	plain[msg_len]='\0';
 }
