@@ -440,10 +440,11 @@ int LoadDictionary(char *filename, int show_error)
 				 MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
 				 return 0;
 	}
-	int i = 1;
+	int x, i = 1;
 	while(!feof(dictionary_file)) 
 	{
 		fscanf(dictionary_file,"%s",word);
+		for(x=0; x<(int)strlen(word); x++) word[x]=toupper(word[x]);
 		word_str=word;
 		dictionary[word_str] = i;
 		i++;
