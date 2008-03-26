@@ -425,7 +425,7 @@ void SetPriority(int iNewPriority)
 			MessageBox(hMainWnd,"Could not set Priority","Error",MB_ICONEXCLAMATION);
 }
 
-int LoadDictionary(char *filename)
+int LoadDictionary(char *filename, int show_error)
 {
 	FILE *dictionary_file;
 	char word[64];
@@ -435,9 +435,10 @@ int LoadDictionary(char *filename)
 
 	if(!dictionary_file)
 	{	
-		//sprintf(szText,"Cannot open \"%s\"",(const char*)filename);
-		//MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
-		return 0;
+		if(show_error==false) return 0;
+			else sprintf(szText,"Cannot open \"%s\"",(const char*)filename);
+				 MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
+				 return 0;
 	}
 	int i = 1;
 	while(!feof(dictionary_file)) 
@@ -486,10 +487,11 @@ void SetLanguage()
 		}
 	}
 
-	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"dictionary.txt");
 	dictionary.clear();
-	LoadDictionary(szGraphName);
-	LoadDictionary("userdict.txt");
+	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"dictionary.txt");
+	LoadDictionary(szGraphName,true);
+	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"userdict.txt");
+	LoadDictionary(szGraphName,false);
 	
 	GetUnigraphs(unigraphs);
 	message.cur_map.SetUnigraphs(unigraphs);
