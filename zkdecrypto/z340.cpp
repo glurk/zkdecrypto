@@ -31,7 +31,7 @@
 int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
 {
 	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
-	#define DECODE {for(y=0;y<clength;y++) solved[y]=*decoder[unsigned char(cipher[y])];}
+	#define DECODE {for(y=0;y<clength;y++) solved[y]=*decoder[(unsigned char)cipher[y]];}
 
 	int cuniq,keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
@@ -42,7 +42,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=0;										//INITIALIZE (ZERO) ARRAYS
 	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
-	for(i=0;i<clength;i++) ++uniq[unsigned char(cipher[i])];						//COUNT # OF UNIQUE CHARS IN CIPHER
+	for(i=0;i<clength;i++) ++uniq[(unsigned char)cipher[i]];						//COUNT # OF UNIQUE CHARS IN CIPHER
 
 	i=255; j=0;																		//CALCULATE AND SORT THE CIPHER UNIQUES
 	for(y=0;y<255;y++) { 
@@ -60,9 +60,9 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	//make decoder, array of char* that point to the key plain text values
 	//indexed by the ascii value of the cipher symbols
 	//this makes decoding much faster, since only one loop and no compare is required
-	for(x=0; x<cuniq; x++) decoder[unsigned char(uniqstr[x])]=&key[x];
+	for(x=0; x<cuniq; x++) decoder[(unsigned char)uniqstr[x]]=&key[x];
 
-	for(y=0;y<clength;y++) solved[y]=*decoder[unsigned char(cipher[y])];
+	for(y=0;y<clength;y++) solved[y]=*decoder[(unsigned char)cipher[y]];
 	DECODE;
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/

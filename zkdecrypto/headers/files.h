@@ -85,6 +85,7 @@ int LoadMessage(char *filename)
 	EnableMenuItem(hMainMenu,IDM_FILE_COPY_PLAIN,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_GRAYED);
 	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_GRAYED);
+	EnableMenuItem(hMainMenu,IDM_SOLVE_COPY_BEST,MF_BYCOMMAND | MF_ENABLED);
 	Button_Enable(GetDlgItem(hMainWnd,IDC_SOLVE),true);
 	
 	iCurSymbol=-1;
@@ -131,25 +132,6 @@ int LoadMap(char *filename)
 	SetDlgInfo();
 
 	return 1;
-}
-
-//set given text to clipboard
-void SetClipboardText(const char *szClipText)
-{
-	HGLOBAL hgClipboard;
-	char *szClipboard;
-	
-	//allocate clipboard data
-	hgClipboard=GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,strlen(szClipText)+1);
-	szClipboard=(char*)GlobalLock(hgClipboard);
-	strcpy(szClipboard,szClipText);
-	GlobalUnlock(hgClipboard);
-
-	//set clipboard
-	OpenClipboard(hMainWnd);
-	EmptyClipboard();
-	SetClipboardData(CF_TEXT,(void*)hgClipboard);
-	CloseClipboard();
 }
 
 //save plaintext to file/clipboard

@@ -298,6 +298,8 @@ inline int CommandSolve(int cmd_id)
 				BruteStart();
 			}
 			return 0;
+			
+		case IDM_SOLVE_COPY_BEST: BatchBest(); return 0;
 
 		case IDM_SOLVE_OPTIONS:
 			DialogBox(hInst,MAKEINTRESOURCE(IDD_OPTIONS),hMainWnd,(DLGPROC)OptionsProc);

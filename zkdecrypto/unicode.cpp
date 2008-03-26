@@ -8,7 +8,7 @@ int ustrcpy(wchar *unicode, char *ascii)
 	length=(int)strlen(ascii);
 
 	for(index=0; index<length; index++)
-		unicode[index]=unsigned char(ascii[index]);
+		unicode[index]=(unsigned char)ascii[index];
 
 	unicode[index]=0;
 	
