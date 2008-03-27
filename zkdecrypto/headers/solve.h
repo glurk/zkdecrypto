@@ -436,9 +436,9 @@ int LoadDictionary(char *filename, int show_error)
 	if(!dictionary_file)
 	{	
 		if(show_error==false) return 0;
-			else sprintf(szText,"Cannot open \"%s\"",(const char*)filename);
+			else { sprintf(szText,"Cannot open \"%s\"",(const char*)filename);
 				 MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
-				 return 0;
+				 return 0; }
 	}
 	int x, i = 1;
 	while(!feof(dictionary_file)) 
