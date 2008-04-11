@@ -92,7 +92,7 @@ BEGIN
         MENUITEM "&Copy Best Solution",         IDM_SOLVE_COPY_BEST
         MENUITEM SEPARATOR
         MENUITEM "Lock Wo&rd",                  IDM_VIEW_LOCK_WORD
-        MENUITEM "Unoc&k Word",                 IDM_VIEW_UNLOCK_WORD
+        MENUITEM "Unloc&k Word",                 IDM_VIEW_UNLOCK_WORD
         MENUITEM SEPARATOR
         POPUP "&Thread Priority"
         BEGIN
