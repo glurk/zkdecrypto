@@ -5,8 +5,7 @@
 The current cipher decryption engine works well on character substitution ciphers,
 but does NOT work on transposition ciphers.  So, rearranging the cipher, saving it
 to another text file and running it through the decryption engine should solve the
-cipher if the transposition was done correctly.  Please describe your 'routing' of
-the transposition similar to what is shown below.
+cipher if the transposition was done correctly. 
 
 = Details =
 
@@ -18,4 +17,6 @@ Please download the rearranged file from the download section.
 
 Filename: 340.ascii.mod01.txt
 
+******************************************************************************************
 Please leave a comment below stating the date/time and your initials when you check out the file.
+******************************************************************************************
