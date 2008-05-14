@@ -9,7 +9,6 @@ cipher if the transposition was done correctly.
 
 = Details =
 
-Routing - This attempt involved moving the 9th column to the 1st column. 
-
 Here's the link to Cipher Test #1:
 http://code.google.com/p/zkdecrypto/wiki/CipherTest1
+Routing - This attempt involved moving the 9th column to the 1st column. 
