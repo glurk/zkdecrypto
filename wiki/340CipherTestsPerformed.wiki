@@ -9,18 +9,5 @@ cipher if the transposition was done correctly.
 
 = Details =
 
+Here's the link to Cipher Test #1:
 http://code.google.com/p/zkdecrypto/wiki/CipherTest1
-
-Test #1
-
-Routing - This attempt involved moving the 9th column to the 1st column.
-
-Please download the rearranged file from the download section.
-
-Filename: 340.ascii.mod01.txt
-
-==========================================================================================
-
-Please leave a comment below stating the date/time and your initials when you check out the file.
-
-==========================================================================================
