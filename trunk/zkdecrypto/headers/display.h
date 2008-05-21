@@ -343,7 +343,7 @@ void SetCharSize()
 
 	//load font into windows
 	if(hTextFont) CloseHandle(hTextFont);
-	hTextFont=CreateFont(iCharHeight,iCharWidth,0,0,FW_NORMAL,0,0,0,0,0,0,0,0,"Lucida Console");
+	hTextFont=CreateFont(iCharHeight,iCharWidth,0,0,FW_NORMAL,0,0,0,0,0,0,0,0,"ZKDfont");
 	if(hCipher) SelectObject(hCipherDC,hTextFont);
 	if(hPlain) SelectObject(hPlainDC,hTextFont);
 
