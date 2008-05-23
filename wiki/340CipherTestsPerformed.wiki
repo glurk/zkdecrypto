@@ -14,3 +14,13 @@ http://code.google.com/p/zkdecrypto/wiki/CipherTest1
 
 
 Routing - This attempt involved moving the 9th column to the 1st column. 
+
+
+=========================================================================================
+
+
+Here's the link to Cipher Test #2:
+http://code.google.com/p/zkdecrypto/wiki/CipherTest2
+
+
+Routing - This attempt involved moving column 9 to column 1 and has been divided into quadrants, reordered with quandrants in 1-3-2-4 order, then reconcatenated. 
