@@ -1,13 +1,16 @@
 #summary This version has been reordered from the Bottom Left of Column #1 to the Top of the column, then from the Top of the Column #2 to the bottom, alternating throughout the rest of the cipher, then reconcatenated.
 
-= Introduction =
-
-Add your content here.
+Test #2 
 
 
-= Details =
+Please download the rearranged file from the Downloads section. 
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Filename: 340.ascii.mod03.txt 
+
+
+========================================================================================== 
+
+Please leave a comment below stating the date/time and your initials when you check out the file. 
+
+
+========================================================================================== 
