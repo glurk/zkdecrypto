@@ -1,0 +1,13 @@
+#summary This version has been reordered from the Bottom Left of Column #1 to the Top of the column, then from the Top of the Column #2 to the bottom, alternating throughout the rest of the cipher, then reconcatenated.
+
+= Introduction =
+
+Add your content here.
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
