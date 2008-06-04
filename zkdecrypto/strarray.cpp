@@ -148,7 +148,7 @@ int GetUniques(const char *string, char *unique_str, int *unique_freq)
 	memset(ascii_index,0,256*sizeof(int));
 	
 	for(index=0; index<length; index++)
-		ascii_index[string[index]]++;
+		ascii_index[(unsigned char)string[index]]++;
 
 	for(index=0; index<256; index++)
 		if(ascii_index[index])
