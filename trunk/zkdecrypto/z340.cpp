@@ -171,7 +171,7 @@ inline float FastIoC(const char *string, int length)
 	memset(freqs,0,256*sizeof(int));
 	
 	for(index=0; index<length; index++)
-		freqs[string[index]]++;
+		freqs[(unsigned char)string[index]]++;
 
 	for(index=0; index<256; index++)
 		if(freqs[index]>1) 
