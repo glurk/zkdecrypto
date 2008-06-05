@@ -30,7 +30,7 @@
 
 int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
 {
-	#define	DO_SWAP	{ int temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
+	#define	DO_SWAP	{ unsigned char temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 	#define DECODE {for(y=0;y<clength;y++) solved[y]=*decoder[(unsigned char)cipher[y]];}
 
 	int cuniq,keylength,i,j,x,y;
@@ -128,6 +128,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 				if(score>info.best_score) //this is the new best, save & display
 				{
 					//if (print) printcipher(clength,cipher,solved,score,key);
+					printcipher(clength,cipher,solved,score,key);
 					
 					//feedback info
 					info.best_score=score;
@@ -299,7 +300,7 @@ inline void shufflekey(char *key,const int keylength,const int cuniq,SOLVEINFO &
 //  ALSO:             Calculate and print the percentage of vowels in the solution              //
 //                   NOTE: Normal English text normally contains approx. 40% vowels             //
 //////////////////////////////////////////////////////////////////////////////////////////////////
-/*
+
 void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,char *key) {
 
 	int c=0;
@@ -344,7 +345,7 @@ void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,
 	printf("\nKey: '%s'\n\n",key); 
 
 }
-*/
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //            Print the character frequency table of the cipher and a few statistics            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
