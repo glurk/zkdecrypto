@@ -211,7 +211,7 @@ void Map::SortByFreq()
 {
 	SYMBOL temp_sym;
 	int freq1, freq2;
-	char cipher1, cipher2, temp_lock;
+	unsigned char cipher1, cipher2, temp_lock;
 	int next, swap;
 
 	do //buble sort
