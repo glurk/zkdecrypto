@@ -328,7 +328,7 @@ void ClearTextAreas()
 void SetCharSize()
 {
 	if(iCharSize<1) iCharSize=1;
-	if(iCharSize>2) iCharSize=2;
+	if(iCharSize>3) iCharSize=3;
 	
 	//calculate new char dimensions
 	iCharWidth=ROUNDTOINT(iCharSize*CHAR_WIDTH);
