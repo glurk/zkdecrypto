@@ -266,6 +266,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	
 	srand(time(0));
 
+	/*setup directories*/
+	//executable's directory
+	GetModuleFileName(hInst,szExeDir,1024);
+	char *szEndDir;
+	szEndDir=strrchr(szExeDir,'\\');
+	if(szEndDir) *(szEndDir+1)='\0';
+	
+	//set open/save dir as executable dir
+	strcpy(szCipherName,szExeDir);
+	strcpy(szKeyName,szExeDir);
+	strcpy(szPlainName,szExeDir);
+
+	LoadFONT();
+
 	/*Initialize common controls*/
     /*INITCOMMONCONTROLSEX icInitCC;
     icInitCC.dwSize=sizeof(INITCOMMONCONTROLSEX);
@@ -366,18 +380,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;
 	Reset();
-
-	/*setup directories*/
-	//executable's directory
-	GetModuleFileName(hInst,szExeDir,1024);
-	char *szEndDir;
-	szEndDir=strrchr(szExeDir,'\\');
-	if(szEndDir) *(szEndDir+1)='\0';
-	
-	//set open/save dir as executable dir
-	strcpy(szCipherName,szExeDir);
-	strcpy(szKeyName,szExeDir);
-	strcpy(szPlainName,szExeDir);
 
 	//show the windows
 	GetWindowRect(hMainWnd,&rMainRect);
