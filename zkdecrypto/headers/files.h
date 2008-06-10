@@ -168,8 +168,19 @@ int LoadFONT()
 {
 	char filename[1024];
 
-	sprintf(filename,"%s\\zkdfont.ttf",szExeDir);
+	sprintf(filename,"%s\\help\\images\\zkdfont.ttf",szExeDir);
 	if(!AddFontResource(filename)) return 0;
+
+	return 1;
+}
+
+//remove zodiac font zkdfont.ttf
+int RemoveFONT()
+{
+	char filename[1024];
+
+	sprintf(filename,"%s\\help\\images\\zkdfont.ttf",szExeDir);
+	if(!RemoveFontResource(filename)) return 0;
 
 	return 1;
 }
