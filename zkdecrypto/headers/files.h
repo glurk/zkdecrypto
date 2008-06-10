@@ -163,6 +163,17 @@ int SavePlain(char *filename)
 	return 1;
 }
 
+//load zodiac font zkdfont.ttf
+int LoadFONT()
+{
+	char filename[1024];
+
+	sprintf(filename,"%s\\zkdfont.ttf",szExeDir);
+	if(!AddFontResource(filename)) return 0;
+
+	return 1;
+}
+
 //read configuration file
 int LoadINI()
 {
