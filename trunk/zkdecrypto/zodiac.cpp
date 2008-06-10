@@ -278,7 +278,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	strcpy(szKeyName,szExeDir);
 	strcpy(szPlainName,szExeDir);
 
-	LoadFONT();
+	LoadFONT(); //NEEDS ERROR-CHECKING!
 
 	/*Initialize common controls*/
     /*INITCOMMONCONTROLSEX icInitCC;
@@ -411,6 +411,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			}
 
 	SaveINI();
+	RemoveFONT(); //NEEDS ERROR-CHECKING!
 
 	return(Msg.wParam);
 }
