@@ -8,7 +8,7 @@
 
 //program
 #define PROG_NAME	"Zodiac Decrypto"
-#define PROG_VER	"v1.0 Beta 3"
+#define PROG_VER	"v1.0 Beta 4"
 
 //language
 #define LANG_DIR	"language"
