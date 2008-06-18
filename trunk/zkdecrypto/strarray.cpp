@@ -212,35 +212,7 @@ float Entropy(const char *string)
 
 	return (-1*entropy);
 }
-/*
-float ChiSquare(const char *string)
-{
-	int freqs[256], length, unique;
-	float chi2=0, prob_mass, cur_calc;
 
-	if(!string) return 0;
-
-	length=(int)strlen(string);
-	
-	if(length<0) return 0;
-
-	unique=GetUniques(string,NULL,freqs);
-
-	//calculate chi2
-	for(int sym_index=0; sym_index<unique; sym_index++)
-	{
-		//prob_mass=float(freqs[sym_index])/length;
-		prob_mass=length*(1.0/unique);
-		cur_calc=freqs[sym_index]-prob_mass;
-		cur_calc*=cur_calc;
-		cur_calc/=prob_mass;
-
-		chi2+=cur_calc;
-	}
-
-	return chi2;
-}
-*/
 float ChiSquare(const char *string)
 {
 	int freqs[256], length, unique;
