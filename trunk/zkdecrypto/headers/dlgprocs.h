@@ -5,18 +5,30 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int num_symbols, cur_symbol;
 	char cipher1, cipher2;
+	long lfHeight;
 	SYMBOL symbol;
-	
+    HFONT hf;
+    HDC hdc;
+
+	hdc = GetDC(NULL);
+    lfHeight = -MulDiv(14, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+    ReleaseDC(NULL, hdc);
+
+    hf = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
+		
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
 			num_symbols=message.cur_map.GetNumSymbols();
+			SendDlgItemMessage(hWnd,IDC_MERSYM1, WM_SETFONT, (WPARAM)hf, TRUE);
+			SendDlgItemMessage(hWnd,IDC_MERSYM2, WM_SETFONT, (WPARAM)hf, TRUE);
 			for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 			{
 				message.cur_map.GetSymbol(cur_symbol,&symbol);
 				sprintf(szText,"%c",symbol.cipher);
 				SendDlgItemMessage(hWnd,IDC_MERSYM1,CB_ADDSTRING,0,(LPARAM)szText);
 				SendDlgItemMessage(hWnd,IDC_MERSYM2,CB_ADDSTRING,0,(LPARAM)szText);
+
 			}
 
 			SetFocus(GetDlgItem(hWnd,IDC_MERSYM1));
@@ -41,10 +53,12 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					
 					SetCipher();
 					
+					DeleteObject(hf);
 					EndDialog(hWnd,0);
 					return 1;
 
 				case IDCANCEL:
+					DeleteObject(hf);
 					EndDialog(hWnd,0);
 					return 0;
 			}
