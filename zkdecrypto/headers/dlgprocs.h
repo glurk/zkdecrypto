@@ -63,7 +63,7 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 			}
 	}
-
+	DeleteObject(hf);
 	return 0;
 }
 
@@ -502,10 +502,20 @@ LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int tolerance=100, max_len=10;
-	
+	long lfHeight;
+    HFONT hf;
+    HDC hdc;
+
+	hdc = GetDC(NULL);
+    lfHeight = -MulDiv(14, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+    ReleaseDC(NULL, hdc);
+
+    hf = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
+
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
+			SendDlgItemMessage(hWnd,IDC_HOMO_SETS, WM_SETFONT, (WPARAM)hf, TRUE);
 			//set up/down control ranges
 			SendDlgItemMessage(hWnd,IDC_HOMO_TOL_SPIN,UDM_SETRANGE,0,100);
 			SendDlgItemMessage(hWnd,IDC_HOMO_LEN_SPIN,UDM_SETRANGE,0,message.cur_map.GetNumSymbols());
@@ -531,7 +541,7 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			return 0;
 	}
-
+	DeleteObject(hf);
 	return 0;
 }
 
