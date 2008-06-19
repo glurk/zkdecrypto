@@ -232,13 +232,6 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}					
 
 			return 0;
-		
-		//drag & drop loading of files
-        case WM_DROPFILES:
-			DragQueryFile((HDROP)wParam,0,szText,sizeof(szText));
-			LoadMessage(szText);
-			DragFinish((HDROP)wParam);
-			return 0;
 			
 		case WM_CLOSE:
 			EndDialog(hMainWnd,0);
