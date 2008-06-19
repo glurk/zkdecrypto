@@ -26,7 +26,6 @@
 #include "headers/z340.h"
 #include "headers/z340Globals.h"
 #include "headers/strarray.h"
-#include "mt19937ar-cok.cpp"
 
 int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
 {
@@ -71,9 +70,6 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	long start_time=0, end_time=0;
 	info.cur_try=0;
 	info.cur_fail=0;
-	
-	//seed random generator
-	init_genrand((unsigned long)time(NULL));
 	
 	//initial score & feedback
 	last_score=calcscore(clength,solved,info);
@@ -139,9 +135,9 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 			}
 			}
 		}
-
+printf("%s\n",key);
 	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,info);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
-	
+printf("%s\n",key);
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,KEY_SIZE); iterations=0; }
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	last_score=calcscore(clength,solved,info); 
@@ -278,8 +274,8 @@ inline void shufflekey(char *key,const int keylength,const int cuniq,SOLVEINFO &
 
 	if(canswap)
 	{
-		do {x=genrand_int32()%keylength;} while(info.locked[x]);
-		do {y=genrand_int32()%keylength;} while(info.locked[y]);
+		do {x=rand()%keylength;} while(info.locked[x]);
+		do {y=rand()%keylength;} while(info.locked[y]);
 
 		/*exclusions*/
 		if(info.exclude)
