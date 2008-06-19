@@ -86,7 +86,6 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	
 	POINT ptClick;
-	RECT rListRect;
 	HWND hList;
 
 	switch(iMsg)
