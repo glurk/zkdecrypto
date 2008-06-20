@@ -350,7 +350,8 @@ inline int CommandView(int cmd_id)
 		case IDM_VIEW_MERGE_LOG:
 			lRowCol=message.cur_map.GetMergeLog(szGraph);
 			strcpy(szGraphTitle,"Merge Log");
-			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			if(lRowCol)	DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			else MessageBox(hMainWnd,"No symbols have yet been merged.","Merge Log Status",MB_ICONEXCLAMATION);
 			return 0;
 			
 		case IDM_VIEW_EXCLUSIONS:
