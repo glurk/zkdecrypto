@@ -332,8 +332,9 @@ long Map::GetMergeLog(wchar *dest)
 		sprintf(temp,"%2i. %c %c\n",cur_merge+1,merge_log[cur_merge<<1],merge_log[(cur_merge<<1)+1]);
 		ustrcat(dest,temp);
 	}
-
-	return (length+2)<<16 | 15;
+	
+	if(dest[0]=='\0') return 0;
+	else return (length+2)<<16 | 15;
 }
 
 long Map::GetExclusions(wchar *dest, int num_cols)
