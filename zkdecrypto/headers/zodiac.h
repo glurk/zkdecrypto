@@ -100,7 +100,7 @@ HACCEL		hAccel;
 HPEN 		hRedPen, hGreenPen, hBluePen, hOrangePen, hWhitePen;
 HBRUSH		hWhiteBrush;
 HDC 		hCipherDC=NULL, hPlainDC=NULL;
-HFONT		hTextFont=NULL;
+HFONT		hTextFont=NULL, hTempFont=NULL;
 HMENU		hMainMenu, hTextMenu;
 HINSTANCE	hInst;
 HANDLE		hSolveThread=NULL, hTimerThread=NULL;

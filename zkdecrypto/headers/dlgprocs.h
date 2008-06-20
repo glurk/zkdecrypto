@@ -7,21 +7,20 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	char cipher1, cipher2;
 	long lfHeight;
 	SYMBOL symbol;
-    HFONT hf;
     HDC hdc;
 
 	hdc = GetDC(NULL);
     lfHeight = -MulDiv(14, GetDeviceCaps(hdc, LOGPIXELSY), 72);
     ReleaseDC(NULL, hdc);
 
-    hf = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
+    hTempFont = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
 		
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
 			num_symbols=message.cur_map.GetNumSymbols();
-			SendDlgItemMessage(hWnd,IDC_MERSYM1, WM_SETFONT, (WPARAM)hf, TRUE);
-			SendDlgItemMessage(hWnd,IDC_MERSYM2, WM_SETFONT, (WPARAM)hf, TRUE);
+			SendDlgItemMessage(hWnd,IDC_MERSYM1, WM_SETFONT, (WPARAM)hTempFont, TRUE);
+			SendDlgItemMessage(hWnd,IDC_MERSYM2, WM_SETFONT, (WPARAM)hTempFont, TRUE);
 			for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 			{
 				message.cur_map.GetSymbol(cur_symbol,&symbol);
@@ -53,17 +52,15 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					
 					SetCipher();
 					
-					DeleteObject(hf);
 					EndDialog(hWnd,0);
 					return 1;
 
 				case IDCANCEL:
-					DeleteObject(hf);
+					DeleteObject(hTempFont);
 					EndDialog(hWnd,0);
 					return 0;
 			}
 	}
-	DeleteObject(hf);
 	return 0;
 }
 
@@ -503,19 +500,18 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int tolerance=100, max_len=10;
 	long lfHeight;
-    HFONT hf;
     HDC hdc;
 
 	hdc = GetDC(NULL);
     lfHeight = -MulDiv(14, GetDeviceCaps(hdc, LOGPIXELSY), 72);
     ReleaseDC(NULL, hdc);
 
-    hf = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
+    hTempFont = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
 
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
-			SendDlgItemMessage(hWnd,IDC_HOMO_SETS, WM_SETFONT, (WPARAM)hf, TRUE);
+			SendDlgItemMessage(hWnd,IDC_HOMO_SETS, WM_SETFONT, (WPARAM)hTempFont, TRUE);
 			//set up/down control ranges
 			SendDlgItemMessage(hWnd,IDC_HOMO_TOL_SPIN,UDM_SETRANGE,0,100);
 			SendDlgItemMessage(hWnd,IDC_HOMO_LEN_SPIN,UDM_SETRANGE,0,message.cur_map.GetNumSymbols());
@@ -538,10 +534,12 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							
 				case IDCANCEL: EndDialog(hWnd,0); hHomo=NULL; return 0;
 			}				
+			return 0;
 
+		case WM_DESTROY:
+			DeleteObject(hTempFont);
 			return 0;
 	}
-	DeleteObject(hf);
 	return 0;
 }
 
