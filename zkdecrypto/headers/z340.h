@@ -16,7 +16,6 @@
 #define		KEY_SIZE					512
 #define		MAX_CIPH_LENGTH 			20480
 
-//having multiply operations in definitions could slow down algorithms
 #define UNI_SIZE	26			//26
 #define BI_SIZE		676			//26*26
 #define TRI_SIZE	17576		//26*26*26

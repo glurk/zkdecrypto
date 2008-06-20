@@ -7,11 +7,6 @@ int ioc_weight;
 
 float unigraphs[UNI_SIZE];
 
-/*int bigraphs[BI_SIZE];
-int	trigraphs[TRI_SIZE];
-int	tetragraphs[TETRA_SIZE];
-int	pentagraphs[PENTA_SIZE];*/
-
 int bigraphs[26][26];
 int	trigraphs[26][26][26];
 int	tetragraphs[26][26][26][26];

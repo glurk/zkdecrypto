@@ -210,8 +210,8 @@ void OutputText(int bSection)
 			if(iIndex>=iLength) break;
 				
 			if(message.cur_map.GetLock(message.cur_map.FindByCipher(szCipher[iIndex])))
-				SetBkColor(hDC,crYellow);//SetTextColor(hDC,crGreen);
-			else SetBkColor(hDC,crBG);//SetTextColor(hDC,crBlack);	
+				SetBkColor(hDC,crYellow);
+			else SetBkColor(hDC,crBG);	
 			
 			iXPos=(col*iCharWidth)+iTextBorder;
 			iYPos=(row*iCharHeight)+iTextBorder;
@@ -332,13 +332,6 @@ void SetCharSize()
 	
 	//calculate new char dimensions
 	iCharWidth=ROUNDTOINT(iCharSize*CHAR_WIDTH);
-	
-	/*if(iCharWidth*iLineChars>iTextWidth)
-	{
-		iCharSize=(iTextWidth/float(iLineChars))/CHAR_WIDTH;
-		iCharWidth=ROUNDTOINT(iCharSize*CHAR_WIDTH);
-	}*/
-
 	iCharHeight=ROUNDTOINT(iCharSize*CHAR_HEIGHT);
 
 	//load font into windows

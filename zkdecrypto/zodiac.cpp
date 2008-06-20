@@ -272,15 +272,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	LoadFONT(); //NEEDS ERROR-CHECKING!
 
-	/*Initialize common controls*/
-    /*INITCOMMONCONTROLSEX icInitCC;
-    icInitCC.dwSize=sizeof(INITCOMMONCONTROLSEX);
-    icInitCC.dwICC=ICC_LISTVIEW_CLASSES;
-    InitCommonControlsEx(&icInitCC);
-
-	if(!LoadLibrary(TEXT("riched32.dll")))
-		MessageBox(NULL,"Could not load riched32.dll","Error",MB_ICONEXCLAMATION);*/
-
 	/*create main window*/
 	hMainWnd=CreateDialog(hInst,MAKEINTRESOURCE(IDD_MAIN),NULL,(DLGPROC)MainWndProc);
 	SendMessage(hMainWnd,WM_SETICON,ICON_BIG,(WPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_ZODIAC)));

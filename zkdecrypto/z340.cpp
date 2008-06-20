@@ -135,9 +135,10 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 			}
 			}
 		}
-printf("%s\n",key);
-	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,info);	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK REALLY WELL
-printf("%s\n",key);
+
+	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
+	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,info);	
+
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,KEY_SIZE); iterations=0; }
 	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
 	last_score=calcscore(clength,solved,info); 
@@ -391,7 +392,6 @@ int ReadNGraphs(const char *filename, int n)
 {
 	FILE *tgfile;
 	char ngraph[8];
-//	char t1, t2, t3, t4, t5;
 	int *ngraphs;
 	int nsize, freq, index;
 	float percent;
@@ -406,10 +406,6 @@ int ReadNGraphs(const char *filename, int n)
 
 	//init to zero
 	if(n>1) memset(ngraphs,0,nsize*sizeof(long));
-	/*memset(bigraphs,0,BI_SIZE*sizeof(int));
-	memset(trigraphs,0,TRI_SIZE*sizeof(int));
-	memset(tetragraphs,0,TETRA_SIZE*sizeof(int));
-	memset(pentagraphs,0,PENTA_SIZE*sizeof(int));*/
 
 	//read file
 	while(fscanf(tgfile,"%s : %i %f",ngraph,&freq,&percent)!=EOF) 
@@ -427,22 +423,6 @@ int ReadNGraphs(const char *filename, int n)
 		if(n==1) unigraphs[index]=percent;
 		//else ngraphs[index]=int(10*log((double)freq));
 		else ngraphs[index]=freq;
-
-		/*t1=ngraph[n-5];
-		t2=ngraph[n-4];
-		t3=ngraph[n-3];
-		t4=ngraph[n-2];
-		t5=ngraph[n-1];
-
-
-		switch(n)
-		{
-			case 1: unigraphs[t1]=percent; break;
-			case 2: bigraphs[t1][t2]=freq; break;
-			case 3: trigraphs[t1][t2][t3]=freq; break;
-			case 4: tetragraphs[t1][t2][t3][t4]=freq; break;
-			case 5: pentagraphs[t1][t2][t3][t4][t5]=freq; break;
-		}*/
 	}
 
 	fclose(tgfile); 

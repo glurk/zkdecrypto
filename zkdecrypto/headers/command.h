@@ -100,7 +100,6 @@ inline int CommandEdit(int cmd_id)
 inline int CommandCipher(int cmd_id)
 {
 	long time1,time2;
-//	char simp1,simp2; UNUSED??
 	int new_pat;
 
 	switch(cmd_id)
@@ -119,7 +118,7 @@ inline int CommandCipher(int cmd_id)
 			SetCursor(LoadCursor(0,IDC_ARROW));
 
 			//no good substitution found
-			if(!new_pat) strcpy(szText,"No substitions found");
+			if(!new_pat) strcpy(szText,"No substitutions found");
 			MessageBox(hMainWnd,szText,"Pattern Analysis",MB_OK);
 			return 0;
 
@@ -234,7 +233,7 @@ inline int CommandKey(int cmd_id)
 			if(iCurSymbol<0) return 0;
 
 			message.cur_map.GetSymbol(iCurSymbol,&symbol);
-			sprintf(szStringTitle,"Exclude Letters for '%c'",symbol.cipher);
+			sprintf(szStringTitle,"Exclude Letters");
 			strcpy(szString,symbol.exclude);
 			
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
@@ -358,7 +357,6 @@ inline int CommandView(int cmd_id)
 			lRowCol=message.cur_map.GetExclusions(szGraph,4);
 			strcpy(szGraphTitle,"Letter Exclusions");
 			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
-			//MessageBox(hMainWnd,szText,"Exclusions",MB_OK);
 			return 0;
 
 		case IDM_VIEW_BYSTRING: SetSort(0); return 0;
