@@ -163,7 +163,7 @@ int GetUniques(const char *string, char *unique_str, int *unique_freq)
 	return unique;
 }
 
-//index of conincidence of a string
+//index of coincidence of a string
 float IoC(const char *string)
 {
 	int freqs[256], length, unique;
@@ -177,7 +177,7 @@ float IoC(const char *string)
 
 	unique=GetUniques(string,NULL,freqs);
 
-	//calculate index of conincidence
+	//calculate index of coincidence
 	for(int sym_index=0; sym_index<unique; sym_index++)
 		if(freqs[sym_index]>1) 
 			ic+=(freqs[sym_index])*(freqs[sym_index]-1); 

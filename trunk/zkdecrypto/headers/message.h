@@ -13,7 +13,7 @@
 #define MAX_SYM		256
 #define MAX_PAT_LEN	15
 
-#pragma warning( disable : 4996)  //STOP STUPID MSVS2005 "strcpy" WARNINGS
+#pragma warning( disable : 4996)  //STOP MSVS2005 WARNINGS
 
 struct NGRAM
 {

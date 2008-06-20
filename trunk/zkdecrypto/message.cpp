@@ -228,7 +228,6 @@ void Message::MergeSymbols(char symbol1, char symbol2, int do_near)
 int Message::Simplify(char *dest)
 {
 	int old_patterns, num_symbols;
-//	char adj_sym1[3], adj_sym2[3]; // UNUSED??
 	char temp[32];
 	//long *best_merge;
 	int num_best=0, increase;
@@ -240,7 +239,6 @@ int Message::Simplify(char *dest)
 	FindPatterns(false);
 	old_patterns=good_pat;
 	num_symbols=cur_map.GetNumSymbols();
-	//best_merge=new long[num_symbols*num_symbols];
 	
 	//find the best of all possible sustitutions 
 	for(int cur_sym1=0; cur_sym1<num_symbols-1; cur_sym1++)
@@ -260,19 +258,6 @@ int Message::Simplify(char *dest)
 			//test for possibility
 			increase=test_msg.good_pat-old_patterns;
 			if(increase<3) continue;
-
-			//rule out if symbols exist next to each other in cipher
-			/*adj_sym1[0]=symbol1.cipher;
-			adj_sym1[1]=symbol2.cipher;
-			adj_sym2[0]=symbol2.cipher;
-			adj_sym2[1]=symbol1.cipher;
-			adj_sym1[2]=adj_sym2[2]='\0';
-
-			if(strstr(cipher,adj_sym1) || strstr(cipher,adj_sym2)) continue;*/
-			
-			//best list
-			//best_merge[num_best]=symbol1.cipher<<24 | symbol2.cipher<<16 | test_msg.good_pat-old_patterns;
-			//num_best++;
 			
 			sprintf(temp,"%02i\t%c %c",test_msg.good_pat-old_patterns,symbol1.cipher,symbol2.cipher);
 			best_list.AddString(temp);
@@ -280,15 +265,6 @@ int Message::Simplify(char *dest)
 	}
 
 	dest[0]='\0';
-
-	/*for(int cur_best=0; cur_best<num_best; cur_best++)
-	{
-		sprintf(dest,"%c\t%c\t%i\r\n",best_merge[cur_best]>>24,(best_merge[cur_best]>>16)&0xFF,best_merge[cur_best]&0xFFFF);
-		dest+=strlen(dest);
-	}*/
-
-	//delete[] best_merge;
-	
 	best_list.SortStrings(1);
 	
 	for(int cur_best=0; cur_best<best_list.GetNumStrings(); cur_best++)
@@ -349,7 +325,6 @@ int Message::AddPattern(NGRAM &new_pat, int inc_freq)
 	NGRAM *found=NULL;
 	int exists;
 
-	//exists=FindPattern(new_pat.string,found,patterns);
 	exists=FindPattern(new_pat.string,found);
 
 	//doesn't exist, allocate a new node
@@ -381,7 +356,6 @@ int Message::AddPattern(NGRAM &new_pat, int inc_freq)
 		found->pos_size=new_pat.freq;
 		found->positions=new int[found->pos_size];
 		memcpy(found->positions,new_pat.positions,new_pat.freq*sizeof(int));
-		//found->positions[0]=new_pat.positions[0];
 		found->left=found->right=NULL;
 		num_patterns++;
 	}
