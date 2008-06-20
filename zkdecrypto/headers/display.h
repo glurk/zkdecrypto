@@ -774,17 +774,30 @@ void CreateTextMenu()
 	GetCursorPos(&pntClickPoint);
 			
 	hTextMenu=CreatePopupMenu();
-									
-	AppendMenu(hTextMenu,0,IDM_KEY_LOCK,"&Lock Symbol");
-	AppendMenu(hTextMenu,0,IDM_KEY_UNLOCK,"&Unlock Symbol");
-	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
-	AppendMenu(hTextMenu,0,IDM_KEY_EXCLUDE,"E&xclude Letters");
-	AppendMenu(hTextMenu,0,IDM_KEY_CLEAR_EXCLUDE,"&Clear Exclude");
-	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
-	AppendMenu(hTextMenu,0,IDM_VIEW_LOCK_WORD,"Lock Wo&rd");
-	AppendMenu(hTextMenu,0,IDM_VIEW_UNLOCK_WORD,"Unloc&k Word");
-	AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
-	AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
+
+	if(iCurTab==0 && IN_RECT(pntClickPoint.x,pntClickPoint.y,rPatRect))
+	{
+		AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
+	}
+
+	else if(iCurTab==2 && IN_RECT(pntClickPoint.x,pntClickPoint.y,rWordRect))
+	{
+		AppendMenu(hTextMenu,0,IDM_VIEW_LOCK_WORD,"Lock Wo&rd");
+		AppendMenu(hTextMenu,0,IDM_VIEW_UNLOCK_WORD,"Unloc&k Word");
+		AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
+		AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
+	}
+
+	else 
+	{
+		AppendMenu(hTextMenu,0,IDM_KEY_LOCK,"&Lock Symbol");
+		AppendMenu(hTextMenu,0,IDM_KEY_UNLOCK,"&Unlock Symbol");
+		AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
+		AppendMenu(hTextMenu,0,IDM_KEY_EXCLUDE,"E&xclude Letters");
+		AppendMenu(hTextMenu,0,IDM_KEY_CLEAR_EXCLUDE,"&Clear Exclude");
+		AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
+		AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
+	}
 											
 	TrackPopupMenu(hTextMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,
 							 pntClickPoint.x,pntClickPoint.y,0,hMainWnd,0);

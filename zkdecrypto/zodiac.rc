@@ -90,9 +90,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Brute Force\tCtrl+B",        IDM_SOLVE_BRUTE
         MENUITEM "&Copy Best Solution",         IDM_SOLVE_COPY_BEST
-        MENUITEM SEPARATOR
-        MENUITEM "Lock Wo&rd",                  IDM_VIEW_LOCK_WORD
-        MENUITEM "Unloc&k Word",                 IDM_VIEW_UNLOCK_WORD
+//        MENUITEM SEPARATOR
+//        MENUITEM "Lock Wo&rd",                  IDM_VIEW_LOCK_WORD
+//        MENUITEM "Unloc&k Word",                 IDM_VIEW_UNLOCK_WORD
         MENUITEM SEPARATOR
         POPUP "&Thread Priority"
         BEGIN
