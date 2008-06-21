@@ -242,7 +242,7 @@ float ChiSquare(const char *string)
 void Transform(char *string, unsigned long *xfm, int num_xfm)
 {
 	unsigned short xfm_a, xfm_b;
-	char temp;
+	unsigned char temp;
 	
 	for(int cur_xfm=0; cur_xfm<num_xfm; cur_xfm++)
 	{
