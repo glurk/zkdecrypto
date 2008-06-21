@@ -208,7 +208,6 @@
 #define IDM_CIPHER_REV                  40045
 #define IDM_KEY_EXCLUDE                 40046
 #define IDM_VIEW_EXCLUSIONS             40047
-#define IDM_CIPHER_BESTSEC              40048
 #define IDM_VIEW_MERGE_LOG              40049
 #define IDM_VIEW_WORDS                  40050
 #define IDM_KEY_CLEAR_EXCLUDE           40051

@@ -122,10 +122,6 @@ inline int CommandCipher(int cmd_id)
 			MessageBox(hMainWnd,szText,"Pattern Analysis",MB_OK);
 			return 0;
 
-		case IDM_CIPHER_BESTSEC:
-			BestSection();
-			return 0;
-
 		case IDM_CIPHER_POLYIC:
 			strcpy(szNumberTitle,"Max Key Length");
 			iNumber=25;
