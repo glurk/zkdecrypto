@@ -64,6 +64,33 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+//graphs_r dialog
+LRESULT CALLBACK Graphs_rProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int notused;
+
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:
+			SetDlgItemTextW(hWnd,IDC_GRAPHS_R_SETS,(WCHAR*)szGraph);
+			SetWindowText(hWnd,szGraphTitle);
+			return 0;
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+				case IDCANCEL:
+					EndDialog(hWnd,0);
+					if(hLetter) hLetter=NULL;
+					return 0;
+			}
+	}
+
+	return 0;
+}
+
+
 //graphs dialog
 LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {

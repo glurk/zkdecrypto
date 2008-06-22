@@ -346,19 +346,14 @@ long Map::GetExclusions(wchar *dest, int num_cols)
 	
 	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 	{
-		if(col==num_cols) 
-		{
-			ustrcat(dest,"\n\n");
-			col=0;
-			rows++;
-		}
 		
-		sprintf(temp,"%c  %-26s  ",symbols[cur_symbol].cipher,symbols[cur_symbol].exclude);
+		sprintf(temp,"%c  %-26s  \r\n",symbols[cur_symbol].cipher,symbols[cur_symbol].exclude);
 		ustrcat(dest,temp);
 		col++;
 	}
 	
-	return ((rows<<1)+2)<<16 | (num_cols*32);
+//	return ((rows<<1)+2)<<16 | (num_cols*32);
+	return 0;
 }
 
 //hillclimb key <-> Map class conversion
