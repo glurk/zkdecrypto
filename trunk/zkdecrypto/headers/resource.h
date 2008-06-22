@@ -21,7 +21,8 @@
 #define IDD_STRING                      119
 #define IDD_INITKEY                     120
 #define IDD_SEQHOMO						121
-#define IDR_ACCEL                       122
+#define IDD_GRAPHS_R					122
+#define IDR_ACCEL                       123
 #define IDC_PLAIN                       1000
 #define IDC_CIPHER                      1001
 #define IDC_SOLVE                       1002
@@ -161,6 +162,7 @@
 #define IDC_IOC_ACT                     1132
 #define IDC_IOC_EXP                     1133
 #define IDC_ENT_ACT                     1134
+#define IDC_GRAPHS_R_SETS				1135
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
 #define IDM_FILE_EXIT                   40003
