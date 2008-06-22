@@ -351,9 +351,9 @@ inline int CommandView(int cmd_id)
 			return 0;
 			
 		case IDM_VIEW_EXCLUSIONS:
-			lRowCol=message.cur_map.GetExclusions(szGraph,4);
+			lRowCol=message.cur_map.GetExclusions(szGraph,1);
 			strcpy(szGraphTitle,"Letter Exclusions");
-			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS_R),hMainWnd,(DLGPROC)Graphs_rProc);
 			return 0;
 
 		case IDM_VIEW_BYSTRING: SetSort(0); return 0;
