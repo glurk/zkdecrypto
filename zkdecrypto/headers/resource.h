@@ -189,7 +189,6 @@
 #define IDM_CIPHER_POLYIC               40024
 #define IDM_CIPHER_RC_IOC               40025
 #define IDM_FILE_SAVE_PLAIN             40026
-#define IDM_CIPHER_ANAGRAM              40027
 #define IDM_VIEW_DESELECT               40029
 #define IDM_KEY_UNLOCK                  40030
 #define IDM_KEY_UNLOCK_ALL              40031
@@ -197,7 +196,6 @@
 #define IDM_VIEW_LTRGRAPH               40033
 #define IDM_VIEW_BYSTRING               40034
 #define IDM_VIEW_BYFREQ                 40035
-#define IDM_CIPHER_NGRAPHS              40036
 #define IDM_FILE_COPY_PLAIN             40037
 #define IDM_HELP_CONT                   40038
 #define IDM_VIEW_LOCK_WORD              40039

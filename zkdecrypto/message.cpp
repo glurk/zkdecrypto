@@ -427,33 +427,6 @@ long Message::PrintPatterns(void (*print_func)(NGRAM*))
 	return ForAllPatterns(patterns,(msg_len>>10)+2,print_func);
 }
 
-long Message::WritePatterns(NGRAM *cur_pat, int length)
-{
-	int done=0;
-
-	if(!cur_pat) return 0;
-
-	done+=WritePatterns(cur_pat->left,length);
-	done+=WritePatterns(cur_pat->right,length);
-
-	if(cur_pat->length==length)
-	{
-		fprintf(ngram_file,"%s : %i %f\n",cur_pat->string,cur_pat->freq,float(cur_pat->freq)/msg_len);
-		done++;
-	}
-
-	return done;
-}
-
-void Message::PatternsToFile(const char *filename, int length)
-{
-	ngram_file=fopen(filename,"w");
-
-	WritePatterns(patterns,length);
-
-	fclose(ngram_file);
-}
-
 void Message::ClearPatterns(NGRAM *cur_pat)
 {
 	if(!cur_pat) return;

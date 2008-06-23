@@ -64,8 +64,6 @@ public:
 	long PolyKeySize(wchar*,int,float);
 	long RowColIoC(wchar*,int);
 	
-	void PatternsToFile(const char*,int);
-	
 	void operator += (Message &src_msg)
 	{
 		//src message is longer, must reallocate
@@ -104,14 +102,12 @@ private:
 	int AddPattern(NGRAM&,int);
 	long ForAllPatterns(NGRAM *,int,void (*do_func)(NGRAM*));
 	void ClearPatterns(NGRAM*);
-	long WritePatterns(NGRAM*,int);
 	
 	char *cipher, *plain;
 	int msg_len, min_pat_len;
 	int exp_freq[26];
 	NGRAM *patterns;
 	int num_patterns, good_pat;
-	FILE *ngram_file;
 };
 
 #endif
