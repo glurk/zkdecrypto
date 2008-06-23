@@ -65,15 +65,14 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 }
 
 //graphs_r dialog
-LRESULT CALLBACK Graphs_rProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Graphs_R_Proc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	int notused;
-
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
 			SetDlgItemTextW(hWnd,IDC_GRAPHS_R_SETS,(WCHAR*)szGraph);
 			SetWindowText(hWnd,szGraphTitle);
+			//if(strlen(szGraphTitle)==16) MoveWindow(hWnd,0,0,100,100,TRUE);
 			return 0;
 
 		case WM_COMMAND:
