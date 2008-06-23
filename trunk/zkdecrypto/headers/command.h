@@ -117,7 +117,7 @@ inline int CommandCipher(int cmd_id)
 			SetCursor(LoadCursor(0,IDC_ARROW));
 
 			//no good substitution found
-			if(!new_pat) MessageBox(hMainWnd,"No substitutions found","Pattern Analysis",MB_OK);
+			if(!new_pat) MessageBox(hMainWnd,"No substitutions found","Pattern Analysis Status",MB_ICONINFORMATION);
 			else
 			{
 				strcpy(szGraphTitle,"Pattern Analysis");
@@ -141,17 +141,6 @@ inline int CommandCipher(int cmd_id)
 			lRowCol=message.RowColIoC(szGraph,iLineChars);
 			strcpy(szGraphTitle,"Row & Column IoC Count");
 			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
-			return 0;
-			
-		case IDM_CIPHER_NGRAPHS:
-			sprintf(szText,"%s%s",szExeDir,"bigraphs.txt");
-			message.PatternsToFile(szText,2);
-			sprintf(szText,"%s%s",szExeDir,"trigraphs.txt");
-			message.PatternsToFile(szText,3);
-			sprintf(szText,"%s%s",szExeDir,"tetragraphs.txt");
-			message.PatternsToFile(szText,4);
-			sprintf(szText,"%s%s",szExeDir,"pentagraphs.txt");
-			message.PatternsToFile(szText,5);
 			return 0;
 
 		case IDM_CIPHER_RANDOM: RandCipher(340,63); return 0;
