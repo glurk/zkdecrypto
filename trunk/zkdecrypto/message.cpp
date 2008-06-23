@@ -259,7 +259,7 @@ int Message::Simplify(char *dest)
 			increase=test_msg.good_pat-old_patterns;
 			if(increase<3) continue;
 			
-			sprintf(temp,"%02i\t%c %c",test_msg.good_pat-old_patterns,symbol1.cipher,symbol2.cipher);
+			sprintf(temp,"%02i - %c %c",test_msg.good_pat-old_patterns,symbol1.cipher,symbol2.cipher);
 			best_list.AddString(temp);
 		}
 	}

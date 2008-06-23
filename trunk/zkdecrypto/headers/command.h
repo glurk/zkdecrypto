@@ -99,7 +99,6 @@ inline int CommandEdit(int cmd_id)
 
 inline int CommandCipher(int cmd_id)
 {
-	long time1,time2;
 	int new_pat;
 
 	switch(cmd_id)
@@ -111,15 +110,20 @@ inline int CommandCipher(int cmd_id)
 		case IDM_CIPHER_SIMPLIFY:
 			//run simplify
 			SetCursor(LoadCursor(0,IDC_WAIT));
-			time1=GetTickCount();
+			UpdateWindow(hMainWnd);
 			new_pat=message.Simplify(szText);
 			SetClipboardText(szText);
-			time2=GetTickCount();
+			UpdateWindow(hMainWnd);
 			SetCursor(LoadCursor(0,IDC_ARROW));
 
 			//no good substitution found
-			if(!new_pat) strcpy(szText,"No substitutions found");
-			MessageBox(hMainWnd,szText,"Pattern Analysis",MB_OK);
+			if(!new_pat) MessageBox(hMainWnd,"No substitutions found","Pattern Analysis",MB_OK);
+			else
+			{
+				strcpy(szGraphTitle,"Pattern Analysis");
+				ustrcpy(szGraph,szText);
+				DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS_R),hMainWnd,(DLGPROC)Graphs_R_Proc);
+			}
 			return 0;
 
 		case IDM_CIPHER_POLYIC:
@@ -353,7 +357,7 @@ inline int CommandView(int cmd_id)
 		case IDM_VIEW_EXCLUSIONS:
 			lRowCol=message.cur_map.GetExclusions(szGraph,1);
 			strcpy(szGraphTitle,"Letter Exclusions");
-			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS_R),hMainWnd,(DLGPROC)Graphs_rProc);
+			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS_R),hMainWnd,(DLGPROC)Graphs_R_Proc);
 			return 0;
 
 		case IDM_VIEW_BYSTRING: SetSort(0); return 0;
