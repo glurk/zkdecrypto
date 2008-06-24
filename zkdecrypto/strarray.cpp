@@ -239,6 +239,24 @@ float ChiSquare(const char *string)
 
 	return chi2/length;
 }
+
+void Reverse(char *string)
+{
+	unsigned char temp;
+	int i, j, size;
+	size = (int)strlen(string);
+	if(size <= 1) return;
+	else
+	{
+		for(i = 0, j = size-1; i < size/2; i++, j--)
+		{
+			temp = string[j];
+			string[j] = string[i];
+			string[i] = temp;
+		}
+	}
+}
+
 void Transform(char *string, unsigned long *xfm, int num_xfm)
 {
 	unsigned short xfm_a, xfm_b;

@@ -34,6 +34,7 @@ float IoC(const char*);
 float Entropy(const char*);
 float ChiSquare(const char*);
 void Transform(char*,unsigned long*,int);
+void Reverse(char*);
 void FlipHorz(unsigned long*,int&,int,int);
 void FlipVert(unsigned long*,int&,int,int);
 

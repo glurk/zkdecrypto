@@ -199,13 +199,27 @@ void Message::Flip(int flip_dir, int row_len)
 	unsigned long *xfm=new unsigned long[msg_len<<1];
 	int num_xfm=0;
 
-	if(flip_dir & 0x01) FlipHorz(xfm,num_xfm,msg_len,row_len);
-	if(flip_dir & 0x02) FlipVert(xfm,num_xfm,msg_len,row_len);
+	if(flip_dir == 3)
+	{
+		Reverse(cipher);
+		delete[] xfm;
+		FindPatterns(true);
+		return;
+	}
+
+	if(msg_len % row_len)
+	{
+	//	MessageBox(hMainWnd,"Cipher MUST be rectangular to perform flip!","Cipher Transform Status",MB_ICONINFORMATION);
+		delete[] xfm;
+		return;
+	} 
+
+	if(flip_dir == 1) FlipHorz(xfm,num_xfm,msg_len,row_len);
+	if(flip_dir == 2) FlipVert(xfm,num_xfm,msg_len,row_len);
 
 	Transform(cipher,xfm,num_xfm);
 
 	delete[] xfm;
-
 	FindPatterns(true);
 }
 
