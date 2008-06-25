@@ -140,9 +140,10 @@ inline int CommandCipher(int cmd_id)
 			return 0;
 
 		case IDM_CIPHER_RC_IOC:
+			if(iLineChars>message.GetLength()) return 0;
 			lRowCol=message.RowColIoC(szGraph,iLineChars);
 			strcpy(szGraphTitle,"Row & Column IoC Count");
-			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+			if(lRowCol) DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			return 0;
 
 		case IDM_CIPHER_RANDOM: RandCipher(340,63); return 0;
