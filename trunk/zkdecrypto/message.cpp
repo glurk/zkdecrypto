@@ -709,6 +709,7 @@ long Message::RowColIoC(wchar *dest, int cols)
 	char *rc_string;
 	char level[64];
 	
+	if(cols==0) return 0; //division by 0 is bad 
 	lines=msg_len/cols;
 	if(msg_len%cols) lines++;
 
