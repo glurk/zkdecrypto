@@ -333,6 +333,7 @@ inline int CommandView(int cmd_id)
 			return 0;
 			
 		case IDM_VIEW_LTRGRAPH:
+			if(message.GetLength() < 5) return 0;
 			lRowCol=message.LetterGraph(szGraph);
 			strcpy(szGraphTitle,"Letter Frequencies");
 			hLetter=CreateDialog(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
