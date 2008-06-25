@@ -129,11 +129,13 @@ inline int CommandCipher(int cmd_id)
 		case IDM_CIPHER_POLYIC:
 			strcpy(szNumberTitle,"Max Key Length");
 			iNumber=25;
+			if(iNumber>message.GetLength()) iNumber=message.GetLength()-1;
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
 			{
+				if(iNumber<2) iNumber=2;
 				lRowCol=message.PolyKeySize(szGraph,iNumber,fLangIoC);
 				strcpy(szGraphTitle,"Polyalphabetic IoC Count");
-				DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
+				if(lRowCol)	DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			}
 			return 0;
 
