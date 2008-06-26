@@ -350,7 +350,8 @@ inline int CommandView(int cmd_id)
 		case IDM_VIEW_EXCLUSIONS:
 			lRowCol=message.cur_map.GetExclusions(szGraph,1);
 			strcpy(szGraphTitle,"Letter Exclusions");
-			DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS_R),hMainWnd,(DLGPROC)Graphs_R_Proc);
+			if(lRowCol) DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS_R),hMainWnd,(DLGPROC)Graphs_R_Proc);
+			else MessageBox(hMainWnd,"No letters have yet been excluded.","Letter Exclusion Status",MB_ICONINFORMATION);
 			return 0;
 
 		case IDM_VIEW_BYSTRING: SetSort(0); return 0;
