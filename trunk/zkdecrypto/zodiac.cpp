@@ -270,7 +270,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	strcpy(szKeyName,szExeDir);
 	strcpy(szPlainName,szExeDir);
 
-	LoadFONT(); //NEEDS ERROR-CHECKING!
+	if(!LoadFONT())
+	{
+		MessageBox(hMainWnd, "Critical program font cannot be loaded!", "ZKDecrypto Loading Error", MB_ICONEXCLAMATION);
+		exit(1);
+	}
 
 	/*create main window*/
 	hMainWnd=CreateDialog(hInst,MAKEINTRESOURCE(IDD_MAIN),NULL,(DLGPROC)MainWndProc);
@@ -364,6 +368,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.time_func=GetTime;
 	Reset();
 
+	//language
+	iLang=0;
+	LoadINI();
+	SetLanguage();
+
 	//show the windows
 	GetWindowRect(hMainWnd,&rMainRect);
 	SetWindowPos(hTextWnd,TEXT_POS,rMainRect.right+10,rMainRect.left,400,rMainRect.bottom-rMainRect.top,0);
@@ -371,18 +380,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ShowWindow(hTextWnd,SW_SHOWNORMAL);
 	ShowWindow(hCipher,SW_SHOWNORMAL);
 	ShowWindow(hPlain,SW_SHOWNORMAL);
-	
-	//Open From Command Line
-	if(lpszCmdLine[0]!='\0') 
-	{
-		strcpy(szCipherName,lpszCmdLine); 
-		message.Read(szCipherName);
-	}
-
-	//language
-	iLang=0;
-	LoadINI();
-	SetLanguage();
 
 	//message loop
 	while(GetMessage(&Msg,NULL,0,0))
