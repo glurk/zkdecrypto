@@ -88,11 +88,11 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 		
 		improve=0;
 		
-		for(int p1=0;p1<keylength;p1++) {
+		for(int p1=keylength;p1--;) {
 
 			if(info.locked[p1]) continue; //skip if symbol is locked
 
-			for(int p2=0;p2<keylength;p2++) {
+			for(int p2=keylength;p2--;) {
 				
 			//stop
 			if(!info.running) return 0;
