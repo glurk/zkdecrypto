@@ -60,8 +60,6 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	//indexed by the ascii value of the cipher symbols
 	//this makes decoding much faster, since only one loop and no compare is required
 	for(x=0; x<cuniq; x++) decoder[(unsigned char)uniqstr[x]]=&key[x];
-
-	for(y=0;y<clength;y++) solved[y]=*decoder[(unsigned char)cipher[y]];
 	DECODE;
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
@@ -88,11 +86,11 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 		
 		improve=0;
 		
-		for(int p1=keylength;p1--;) {
+		for(int p1=0;p1<keylength;p1++) {
 
 			if(info.locked[p1]) continue; //skip if symbol is locked
 
-			for(int p2=keylength;p2--;) {
+			for(int p2=0;p2<keylength;p2++) {
 				
 			//stop
 			if(!info.running) return 0;
@@ -140,7 +138,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,info);	
 
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,KEY_SIZE); iterations=0; }
-	for(x=0;x<cuniq;x++) { for(y=0;y<clength;y++) if(cipher[y]==uniqstr[x]) solved[y]=key[x]; };
+	DECODE;
 	last_score=calcscore(clength,solved,info); 
 	
 	if(!improve) info.cur_fail++;
@@ -405,7 +403,7 @@ int ReadNGraphs(const char *filename, int n)
 	if(n==5) {ngraphs=&pentagraphs[0][0][0][0][0]; nsize=PENTA_SIZE;}
 
 	//init to zero
-	if(n>1) memset(ngraphs,0,nsize*sizeof(long));
+	if(n>1) memset(ngraphs,0,nsize*sizeof(int));
 
 	//read file
 	while(fscanf(tgfile,"%s : %i %f",ngraph,&freq,&percent)!=EOF) 
