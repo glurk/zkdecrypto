@@ -58,7 +58,6 @@ struct SOLVEINFO
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
 
 inline int		calcscore(const int,const char *,SOLVEINFO&);
-inline int		calclsoc(const int,const char *);
 inline void		shufflekey(char *,const int,const int,SOLVEINFO&);
 
 void			printcipher(int,const char *,char *,int,char *);

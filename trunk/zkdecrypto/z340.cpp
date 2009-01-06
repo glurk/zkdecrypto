@@ -232,32 +232,10 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
 	float cur_ent=ChiSquare(solv);
 	score_mult=(float)1.05-((float).05*ABS(cur_ent-(float).5));
 	score=int(score*score_mult);
-		
-	/*int lsoc=calclsoc(length_of_cipher,solv)-6;
-	if(lsoc<0) lsoc=0;
-	score_mult=(float)1.0-(.001*lsoc);
-	score=int(score*score_mult);*/
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
 	return(score);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//                       Calculate the "Longest String Of Consonants"                           //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-inline int calclsoc(const int length_of_cipher,const char *solv) {
-
-	int lsoc=0,lsocmax=0;
-	int	lsocdata[26]={0,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1};				//LONGEST STRING OF CONSONANTS DATA
-
-	for(int i=0;i<length_of_cipher;i++) {
-		if(lsocdata[solv[i]-'A']) { lsoc++; if(lsoc>lsocmax) lsocmax=lsoc; }
-		else lsoc=0; }
-
-	return(lsocmax);
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
