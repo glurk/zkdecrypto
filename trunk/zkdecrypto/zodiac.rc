@@ -88,9 +88,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Brute Force\tCtrl+B",        IDM_SOLVE_BRUTE
         MENUITEM "&Copy Best Solution",         IDM_SOLVE_COPY_BEST
-//        MENUITEM SEPARATOR
-//        MENUITEM "Lock Wo&rd",                  IDM_VIEW_LOCK_WORD
-//        MENUITEM "Unloc&k Word",                 IDM_VIEW_UNLOCK_WORD
         MENUITEM SEPARATOR
         POPUP "&Thread Priority"
         BEGIN
@@ -173,7 +170,7 @@ BEGIN
     CTEXT           "",IDC_TIME,207,56,56,11,SS_CENTERIMAGE
     CTEXT           "Iterations",IDC_TRY_TITLE,207,79,56,11,SS_CENTERIMAGE
     CTEXT           "",IDC_TRY,207,91,56,11,SS_CENTERIMAGE
-    CTEXT           "Failures",IDC_FAIL_TITLE,207,114,56,11,SS_CENTERIMAGE
+    CTEXT           "MaxRuns",IDC_FAIL_TITLE,208,114,56,11,SS_CENTERIMAGE
     CTEXT           "",IDC_FAIL,204,126,63,11,SS_CENTERIMAGE
     CTEXT           "Best Score",IDC_SCORE_TITLE,207,149,56,11,
                     SS_CENTERIMAGE
@@ -218,23 +215,14 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Options"
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        "Algorithm Parameters",IDC_STATIC,7,7,115,76,BS_CENTER
-    LTEXT           "Max Failure",IDC_STATIC,16,25,60,8
-    LTEXT           "Random Swaps",IDC_STATIC,16,45,60,8
-    LTEXT           "Revert Period",IDC_STATIC,16,65,60,8
-    EDITTEXT        IDC_MAXFAIL,81,22,30,14,ES_RIGHT | ES_NUMBER
-    EDITTEXT        IDC_SWAPS,81,42,30,14,ES_RIGHT | ES_NUMBER
-    EDITTEXT        IDC_REVERT,81,62,30,14,ES_RIGHT | ES_NUMBER
-    CONTROL         "Bigrams",IDC_USEBI,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,139,22,43,10
-    CONTROL         "Trigrams",IDC_USETRI,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,139,37,45,10
-    CONTROL         "Tetragrams",IDC_USETETRA,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,139,52,54,10
-    CONTROL         "Pentagrams",IDC_USEPENTA,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,139,67,56,10
-    GROUPBOX        "Include in Score",IDC_STATIC,127,7,76,76,BS_CENTER
-    GROUPBOX        "Misc Options",IDC_STATIC,7,83,196,150,BS_CENTER
+    GROUPBOX        "Algorithm Parameters",IDC_STATIC,7,7,196,76,BS_CENTER
+    LTEXT           "Maximum Number of Runs (MaxRuns)",IDC_STATIC,16,25,131,8
+    LTEXT           "Number of Random Swaps per Iteration",IDC_STATIC,16,45,131,8
+    LTEXT           "Length of Period to Revert to BestKey",IDC_STATIC,16,65,131,8
+    EDITTEXT        IDC_MAXFAIL,153,22,41,14,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_SWAPS,153,42,41,14,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_REVERT,153,62,41,14,ES_RIGHT | ES_NUMBER
+    GROUPBOX        "Program Options",IDC_STATIC,7,83,196,150,BS_CENTER
     LTEXT           "Characters per Line",IDC_STATIC,46,105,62,8
     EDITTEXT        IDC_LINECHARS,122,102,40,14,ES_RIGHT | ES_NUMBER
     LTEXT           "Language",IDC_STATIC,46,124,33,8

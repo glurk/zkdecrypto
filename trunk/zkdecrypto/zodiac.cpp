@@ -362,7 +362,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.max_fail=2000;
 	siSolveInfo.swaps=5;
 	siSolveInfo.revert=400;
-	siSolveInfo.use_graphs=USE_BI+USE_TRI+USE_TETRA+USE_PENTA;
 	siSolveInfo.disp_all=disp_all;
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;
