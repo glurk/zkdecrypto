@@ -219,12 +219,6 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemInt(hWnd,IDC_SWAPS,siSolveInfo.swaps,0);
 			SetDlgItemInt(hWnd,IDC_REVERT,siSolveInfo.revert,0);
 
-			//score parameters
-			SendMessage(GetDlgItem(hWnd,IDC_USEBI),BM_SETCHECK,siSolveInfo.use_graphs & USE_BI,0);
-			SendMessage(GetDlgItem(hWnd,IDC_USETRI),BM_SETCHECK,siSolveInfo.use_graphs & USE_TRI,0);
-			SendMessage(GetDlgItem(hWnd,IDC_USETETRA),BM_SETCHECK,siSolveInfo.use_graphs & USE_TETRA,0);
-			SendMessage(GetDlgItem(hWnd,IDC_USEPENTA),BM_SETCHECK,siSolveInfo.use_graphs & USE_PENTA,0);
-
 			//display options
 			SetDlgItemInt(hWnd,IDC_LINECHARS,iLineChars,0);
 
@@ -258,21 +252,6 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					siSolveInfo.swaps=GetDlgItemInt(hWnd,IDC_SWAPS,0,0);
 					siSolveInfo.revert=GetDlgItemInt(hWnd,IDC_REVERT,0,0);
 
-					//score parameters
-					siSolveInfo.use_graphs=0;
-					
-					if(SendMessage(GetDlgItem(hWnd,IDC_USEBI),BM_GETCHECK,0,0))
-						siSolveInfo.use_graphs+=USE_BI;
-						
-					if(SendMessage(GetDlgItem(hWnd,IDC_USETRI),BM_GETCHECK,0,0))
-						siSolveInfo.use_graphs+=USE_TRI;
-						
-					if(SendMessage(GetDlgItem(hWnd,IDC_USETETRA),BM_GETCHECK,0,0))
-						siSolveInfo.use_graphs+=USE_TETRA;
-						
-					if(SendMessage(GetDlgItem(hWnd,IDC_USEPENTA),BM_GETCHECK,0,0))
-						siSolveInfo.use_graphs+=USE_PENTA;
-
 					//display options
 					iLineChars=GetDlgItemInt(hWnd,IDC_LINECHARS,0,0);
 
@@ -295,13 +274,6 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						return 0;
 					}
 					
-					//no ngrams are checked
-					if(!siSolveInfo.use_graphs)
-					{
-						MessageBox(hWnd,"At least one set of ngrams must be selected","Notice",MB_ICONEXCLAMATION);
-						return 0;
-					}
-
 					//blank best key, so that additional chars are renewed
 					//siSolveInfo.best_key[0]='\0';
 					

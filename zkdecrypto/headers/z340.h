@@ -22,12 +22,6 @@
 #define TETRA_SIZE	456976		//26*26*26*26
 #define PENTA_SIZE	11881376	//26*26*26*26*26
 
-#define USE_BI		0x01
-#define USE_TRI		0x02
-#define USE_TETRA	0x04
-#define USE_PENTA	0x08
-#define USE_ALL		0x0F
-
 //parameters for solve function
 struct SOLVEINFO
 {
@@ -35,7 +29,6 @@ struct SOLVEINFO
 	long max_fail;
 	int swaps;
 	int revert;
-	int use_graphs;
 	char *locked;
 	char *exclude;
 	

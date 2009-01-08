@@ -38,10 +38,10 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	char uniqstr[ASCII_SIZE];
 	char *decoder[ASCII_SIZE];
 
-	for(i=0;i<MAX_CIPH_LENGTH;i++) solved[i]=0;										//INITIALIZE (ZERO) ARRAYS
-	for(i=0;i<ASCII_SIZE;i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;
+	for(i=MAX_CIPH_LENGTH;i--;) solved[i]=0;										//INITIALIZE (ZERO) ARRAYS
+	for(i=ASCII_SIZE;i--;) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
-	for(i=0;i<clength;i++) ++uniq[(unsigned char)cipher[i]];						//COUNT # OF UNIQUE CHARS IN CIPHER
+	for(i=clength;i--;) ++uniq[(unsigned char)cipher[i]];						//COUNT # OF UNIQUE CHARS IN CIPHER
 
 	i=255; j=0;																		//CALCULATE AND SORT THE CIPHER UNIQUES
 	for(y=0;y<255;y++) { 
@@ -59,7 +59,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	//make decoder, array of char* that point to the key plain text values
 	//indexed by the ascii value of the cipher symbols
 	//this makes decoding much faster, since only one loop and no compare is required
-	for(x=0; x<cuniq; x++) decoder[(unsigned char)uniqstr[x]]=&key[x];
+	for(x=cuniq;x--;) decoder[(unsigned char)uniqstr[x]]=&key[x];
 	DECODE;
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
@@ -86,11 +86,11 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 		
 		improve=0;
 		
-		for(int p1=0;p1<keylength;p1++) {
+		for(int p1=keylength;p1--;) {
 
 			if(info.locked[p1]) continue; //skip if symbol is locked
 
-			for(int p2=0;p2<keylength;p2++) {
+			for(int p2=keylength;p2--;) {
 				
 			//stop
 			if(!info.running) return 0;
@@ -135,7 +135,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 		}
 
 	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
-	for(i=0;i<info.swaps;i++) shufflekey(key,keylength,cuniq,info);	
+	for(i=info.swaps;i--;) shufflekey(key,keylength,cuniq,info);	
 
 	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,KEY_SIZE); iterations=0; }
 	DECODE;
@@ -165,10 +165,10 @@ inline float FastIoC(const char *string, int length)
 	
 	memset(freqs,0,256*sizeof(int));
 	
-	for(index=0; index<length; index++)
+	for(index=length; index--;)
 		freqs[(unsigned char)string[index]]++;
 
-	for(index=0; index<256; index++)
+	for(index=256; index--;)
 		if(freqs[index]>1) 
 			ic+=(freqs[index])*(freqs[index]-1); 
 
@@ -182,13 +182,6 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
 	int score, remaining;
-	int use_bi, use_tri, use_tetra, use_penta;
-		
-	//use ngrams in score
-	use_bi=info.use_graphs & USE_BI;
-	use_tri=info.use_graphs & USE_TRI;
-	use_tetra=info.use_graphs & USE_TETRA;
-	use_penta=info.use_graphs & USE_PENTA;
 
 	//get inital characters in for ngrams
 	t1=solv[0]-'A'; t2=solv[1]-'A'; t3=solv[2]-'A'; t4=solv[3]-'A'; t5=solv[4]-'A';
@@ -198,21 +191,20 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
 
 	for(int c=0; c<length_of_cipher-1; c++) 
 	{
-		//only score an ngram is all letters,
+		//only score an ngram which is all letters,
 		//enough characters remain in the text (i.e. not close to the end)
-		//and using these ngrams is enabled in options
 
 		if(IS_LETTER(t1) && IS_LETTER(t2)) {
-			if(use_bi) biscore+=bigraphs[t1][t2];
+             biscore+=bigraphs[t1][t2];
 
 			if(IS_LETTER(t3) && remaining>2) {
-				if(use_tri) triscore+=trigraphs[t1][t2][t3];
+                 triscore+=trigraphs[t1][t2][t3];
 			
 				if(IS_LETTER(t4) && remaining>3) {
-					if(use_tetra) tetrascore+=tetragraphs[t1][t2][t3][t4];
+                     tetrascore+=tetragraphs[t1][t2][t3][t4];
 				
-					if(IS_LETTER(t5) && remaining>4) 
-						if(use_penta) pentascore+=pentagraphs[t1][t2][t3][t4][t5];
+					if(IS_LETTER(t5) && remaining>4)
+                         pentascore+=pentagraphs[t1][t2][t3][t4][t5];
 				}
 			}
 		}

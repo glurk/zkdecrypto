@@ -213,7 +213,6 @@ int LoadINI()
 		else if(!stricmp(option,"fail")) siSolveInfo.max_fail=atoi(value);
 		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
 		else if(!stricmp(option,"revert")) siSolveInfo.revert=atoi(value);
-		else if(!stricmp(option,"use")) siSolveInfo.use_graphs=atoi(value);
 		else if(!stricmp(option,"line")) iLineChars=atoi(value);
 		else if(!stricmp(option,"lang")) iLang=atoi(value);
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
@@ -246,7 +245,6 @@ int SaveINI()
 	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_fail);
 	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
 	fprintf(ini_file,"revert = %i\n",siSolveInfo.revert);
-	fprintf(ini_file,"use = %i\n",siSolveInfo.use_graphs);
 	fprintf(ini_file,"line = %i\n",iLineChars);
 	fprintf(ini_file,"lang = %i\n",iLang);
 	fprintf(ini_file,"minword = %i\n",iWordMin);

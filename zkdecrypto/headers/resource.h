@@ -37,10 +37,10 @@
 #define IDC_MAP_VALUE                   1009
 #define IDC_MAP_TITLE                   1010
 #define IDC_WORD_MAX                    1010
-#define IDC_USEBI                       1011
-#define IDC_USETRI                      1012
-#define IDC_USETETRA                    1013
-#define IDC_USEPENTA                    1014
+//  1011
+//  1012
+//  1013
+//  1014
 #define IDC_MAXFAIL                     1017
 #define IDC_TIME                        1018
 #define IDC_LINECHARS                   1018
