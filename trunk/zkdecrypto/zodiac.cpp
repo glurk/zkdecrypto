@@ -253,6 +253,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	TCITEM tciTabItem;
 	RECT rMainRect;
 	MSG Msg;
+	char filename[1024];
 	
 	hInst=hInstance;
 	
@@ -265,9 +266,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	szEndDir=strrchr(szExeDir,'\\');
 	if(szEndDir) *(szEndDir+1)='\0';
 	
-	//set open/save dir as executable dir
-	strcpy(szCipherName,szExeDir);
-	strcpy(szKeyName,szExeDir);
+	//set open/save dir as their own
+	sprintf(filename,"%s",szExeDir);
+	strcat(filename,"cipher");
+	strcpy(szCipherName,filename);
+	sprintf(filename,"%s",szExeDir);
+	strcat(filename,"key");
+	strcpy(szKeyName,filename);
 	strcpy(szPlainName,szExeDir);
 
 	if(!LoadFONT())

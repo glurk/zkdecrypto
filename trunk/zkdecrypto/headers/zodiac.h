@@ -7,7 +7,7 @@
 #include <string>
 
 //program
-#define PROG_NAME	"Zodiac Decrypto"
+#define PROG_NAME	"ZKDecrypto"
 #define PROG_VER	"Version 1.1"
 
 //language
