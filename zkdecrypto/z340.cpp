@@ -30,7 +30,7 @@
 int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
 {
 	#define	DO_SWAP	{ unsigned char temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
-	#define DECODE {for(y=0;y<clength;y++) solved[y]=*decoder[(unsigned char)cipher[y]];}
+	#define DECODE {for(y=clength;y--;) solved[y]=*decoder[(unsigned char)cipher[y]];}
 
 	int cuniq,keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
@@ -239,7 +239,7 @@ inline void shufflekey(char *key,const int keylength,const int cuniq,SOLVEINFO &
 	int x,y,z,canswap=0;
 
 	//check if all characters are locked to avoid infinite loop
-	for(int symbol=0; symbol<keylength; symbol++) if(!info.locked[symbol]) { canswap=1; break; }
+	for(int symbol=keylength; symbol--;) if(!info.locked[symbol]) { canswap=1; break; }
 
 	if(canswap)
 	{
