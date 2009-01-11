@@ -260,17 +260,13 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					iLang=SendDlgItemMessage(hWnd,IDC_LANG,CB_GETCURSEL,0,0);
 					if(iLang!=iPrevLang) SetLanguage();
 
-					//word length
-					iWordMin=GetDlgItemInt(hWnd,IDC_WORD_MIN,false,false);
-					iWordMax=GetDlgItemInt(hWnd,IDC_WORD_MAX,false,false);
-
 					//extra letters
 					GetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr,MAX_EXTRA);
 					
 					//0 chars per line
 					if(!iLineChars)
 					{
-						MessageBox(hWnd,"Line length must be greather than 0","Notice",MB_ICONEXCLAMATION);
+						MessageBox(hWnd,"Line length must be greater than 0","Notice",MB_ICONEXCLAMATION);
 						return 0;
 					}
 					
