@@ -760,6 +760,13 @@ void ShowTab(int iTab)
 	//Word List
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_TITLE),iShowWord);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_LIST),iShowWord);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_STATIC),iShowWord);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_MIN),iShowWord);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_MAX),iShowWord);
+	//word length
+	SetDlgItemInt(hMainWnd,IDC_WORD_MIN,iWordMin,false);
+	SetDlgItemInt(hMainWnd,IDC_WORD_MAX,iWordMax,false);
+
 }
 
 void CreateTextMenu()

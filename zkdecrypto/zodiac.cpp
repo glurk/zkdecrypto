@@ -166,8 +166,18 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					iIoCWeight=GetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,false,false);
 					SetIoCWeight(iIoCWeight);
 					return 0;
-
-				case UDM_DISPALL:
+					
+				case IDC_WORD_MIN:
+					iWordMin=GetDlgItemInt(hMainWnd,IDC_WORD_MIN,false,false);
+					SetDlgInfo();
+                    return 0;
+                     
+				case IDC_WORD_MAX:
+					iWordMax=GetDlgItemInt(hMainWnd,IDC_WORD_MAX,false,false);
+					SetDlgInfo();
+                    return 0;
+                     
+                case UDM_DISPALL:
 					SetDlgInfo();
 					return 0;
 					
@@ -395,7 +405,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			}
 
 	SaveINI();
-	RemoveFONT(); //NEEDS ERROR-CHECKING!
+	RemoveFONT();
 
 	return(Msg.wParam);
 }

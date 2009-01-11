@@ -195,8 +195,7 @@ BEGIN
     CTEXT           "Vowel\r\nPercentage",IDC_VOWEL_ACT_TITLE,211,92,45,18
     CTEXT           "",IDC_VOWEL_ACT,211,114,45,11,SS_CENTERIMAGE
     CTEXT           "",IDC_VOWEL_EXP,211,126,45,11,SS_CENTERIMAGE
-    CTEXT           "Index of\r\nCoincidence",IDC_IOC_ACT_TITLE,211,143,45,
-                    18
+    CTEXT           "Index of\r\nCoincidence",IDC_IOC_ACT_TITLE,211,143,45,18
     CTEXT           "",IDC_IOC_ACT,211,165,45,11,SS_CENTERIMAGE
     CTEXT           "",IDC_IOC_EXP,211,177,45,11,SS_CENTERIMAGE
     
@@ -204,6 +203,9 @@ BEGIN
     CONTROL         "",IDC_MAIN_TAB,"SysTabControl32",TCS_FIXEDWIDTH,7,7,256,
                     13
     GROUPBOX        "Word List",IDC_WORD_TITLE,9,24,114,245,BS_CENTER
+    CONTROL         "Word Length to Display\n\n\nMinimum:\n\nMaximum:",IDC_WORD_STATIC, STATIC, SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 132, 42, 126, 67
+    EDITTEXT        IDC_WORD_MIN,179,64,30,14,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_WORD_MAX,179,80,30,14,ES_RIGHT | ES_NUMBER
     LISTBOX         IDC_WORD_LIST,15,36,102,232,LBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CTEXT           "IoC Weight",IDC_IOC_WEIGHT_TITLE,207,184,56,11,
@@ -231,11 +233,6 @@ BEGIN
     LTEXT           "Additional Key Letters",IDC_STATIC,70,163,69,8
     EDITTEXT        IDC_EXTRA_LTR,20,176,169,14,ES_CENTER | ES_UPPERCASE | 
                     ES_AUTOHSCROLL
-    LTEXT           "Word Length",IDC_STATIC,27,146,47,8
-    EDITTEXT        IDC_WORD_MIN,92,143,30,14,ES_RIGHT | ES_NUMBER
-    EDITTEXT        IDC_WORD_MAX,149,143,30,14,ES_RIGHT | ES_NUMBER
-    RTEXT           "Min",IDC_STATIC,70,146,20,8
-    RTEXT           "Max",IDC_STATIC,127,146,20,8
     PUSHBUTTON      "Full Alphabet",IDC_EXTRA_ALPHABET,65,192,80,14
     DEFPUSHBUTTON   "OK",IDOK,52,213,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,107,213,50,14

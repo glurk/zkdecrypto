@@ -36,18 +36,18 @@
 #define IDC_REVERT                      1009
 #define IDC_MAP_VALUE                   1009
 #define IDC_MAP_TITLE                   1010
-#define IDC_WORD_MAX                    1010
-//  1011
-//  1012
-//  1013
+#define IDC_WORD_STATIC                 1011
+#define IDC_WORD_MAX                    1012
+#define IDC_WORD_MIN                    1013
 //  1014
+//  1015
+//  1016
 #define IDC_MAXFAIL                     1017
 #define IDC_TIME                        1018
 #define IDC_LINECHARS                   1018
 #define IDC_TRY                         1019
 #define IDC_EXTRA_LTR                   1019
 #define IDC_FAIL                        1020
-#define IDC_WORD_MIN                    1020
 #define IDC_SCORE                       1021
 #define IDC_DIFF                        1022
 #define IDC_VOWEL                       1023
