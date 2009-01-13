@@ -39,7 +39,7 @@
 #define IDC_WORD_STATIC                 1011
 #define IDC_WORD_MAX                    1012
 #define IDC_WORD_MIN                    1013
-//  1014
+#define IDC_TEXT_STATUS					1014
 //  1015
 //  1016
 #define IDC_MAXFAIL                     1017
@@ -72,7 +72,7 @@
 #define IDC_TS_DOWN                     1046
 #define IDC_MERSYM1                     1047
 #define IDC_MERSYM2                     1048
-#define IDC_TEXTINFO                    1048
+// 1049
 #define IDC_ANAGRAM                     1050
 #define IDC_INIT                        1051
 #define IDC_CIPHER_BORDER               1051

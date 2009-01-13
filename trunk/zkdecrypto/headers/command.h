@@ -320,7 +320,6 @@ inline int CommandView(int cmd_id)
 			SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
 			SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_SETCURSEL,iCurWord,0);
 			SetText();
-			SetDlgItemText(hTextWnd,IDC_TEXTINFO,"");
 			return 0;
 
 		case IDM_VIEW_LOCK_WORD: LockWord(true); SetKey(); return 0;
