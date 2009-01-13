@@ -266,6 +266,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	char filename[1024];
 	
 	hInst=hInstance;
+	HWND hStatus;
 	
 	srand(time(0));
 
@@ -394,6 +395,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ShowWindow(hTextWnd,SW_SHOWNORMAL);
 	ShowWindow(hCipher,SW_SHOWNORMAL);
 	ShowWindow(hPlain,SW_SHOWNORMAL);
+
+	//create status bar with gripper
+	hStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0,
+        hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
+
+    int statwidths[] = {80, 140, 200, -1};
+    SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
+	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
+
 
 	//message loop
 	while(GetMessage(&Msg,NULL,0,0))

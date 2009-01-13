@@ -224,6 +224,7 @@ void OutputText(int bSection)
 void SetText()
 {
 	int msg_len=message.GetLength();
+	HWND hStatus;
 	
 	iDispStart=iScrollPos*iLineChars;
 	iDispEnd=iDispStart+(iDispLines*iLineChars);
@@ -233,11 +234,24 @@ void SetText()
 	OutputText(1);
 	DrawOutlines();
 	
-	if((iRowSel+1) && (iColSel+1) && (iTextSel+1))
-		sprintf(szText,"%s: Row %i, Column %i, Character %i",szLanguage,iRowSel+1,iColSel+1,iTextSel+1);
-		else sprintf(szText,"%s: ",szLanguage);
+	sprintf(szText,"");
 
-	SetDlgItemText(hTextWnd,IDC_TEXTINFO,szText);
+	sprintf(szText,"LANG: %s",szLanguage);
+	hStatus = GetDlgItem(hTextWnd, IDC_TEXT_STATUS);
+    SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)szText);
+
+	if(iRowSel+1) sprintf(szText,"ROW: %i",iRowSel+1);
+		else sprintf(szText,"ROW: ");
+	SendMessage(hStatus, SB_SETTEXT, 1, (LPARAM)szText);
+
+	if(iColSel+1) sprintf(szText,"COL: %i",iColSel+1);
+		else sprintf(szText,"COL: ");
+	SendMessage(hStatus, SB_SETTEXT, 2, (LPARAM)szText);
+
+	if(iTextSel+1) sprintf(szText,"CHAR: %i",iTextSel+1);
+		else sprintf(szText,"CHAR: ");
+	SendMessage(hStatus, SB_SETTEXT, 3, (LPARAM)szText);
+
 }
 
 //update when the selected symbol changes
@@ -674,7 +688,7 @@ void ResizeText(int iNewWidth, int iNewHeight)
 	SetWindowPos(hCipher,0,iX,iY,iW,iH,SWP_NOZORDER);
 
 	//plain 
-	iPlainX=(iX=iX+iW+2);
+	iPlainX=(iX=iX+iW+19);
 	iPlainY=iY;
 	SetWindowPos(hPlain,0,iX,iY,iW,iH,SWP_NOZORDER);
 
@@ -683,27 +697,12 @@ void ResizeText(int iNewWidth, int iNewHeight)
 	iW=18;
 	SetWindowPos(hScroll,0,iX,iY,iW,iH,SWP_NOZORDER);
 
-	//text info 
-	iX=(iMargin<<1);
-	iY=iNewHeight-(iMargin<<1)-13;
-	iW=250;
-	iH=15;
-	SetWindowPos(GetDlgItem(hTextWnd,IDC_TEXTINFO),0,iX,iY,iW,iH,SWP_NOZORDER);
-
-	//text size buttons 
-	iX=iNewWidth-(iMargin<<1)-16;
-	SetWindowPos(GetDlgItem(hTextWnd,IDC_TS_UP),0,iX,iY,iW,iH,SWP_NOZORDER | SWP_NOSIZE);
-	iX-=20;
-	SetWindowPos(GetDlgItem(hTextWnd,IDC_TS_DOWN),0,iX,iY,iW,iH,SWP_NOZORDER | SWP_NOSIZE);
-
-	//text size 
-	iX-=50;
-	iW=50;
-	SetWindowPos(GetDlgItem(hTextWnd,IDC_TS_TEXT),0,iX,iY,iW,iH,SWP_NOZORDER);
+	//status size 
+    SendMessage(GetDlgItem(hTextWnd, IDC_TEXT_STATUS), WM_SIZE, 0, 0);
 
 	ClearTextAreas();
 	SetScrollBar();
-	//SetText();
+	SetText();
 }
 
 void ShowTab(int iTab)
