@@ -40,8 +40,8 @@
 #define IDC_WORD_MAX                    1012
 #define IDC_WORD_MIN                    1013
 #define IDC_TEXT_STATUS					1014
-//  1015
-//  1016
+#define	IDC_WORD_STATIC_MIN				1015
+#define IDC_WORD_STATIC_MAX				1016
 #define IDC_MAXFAIL                     1017
 #define IDC_TIME                        1018
 #define IDC_LINECHARS                   1018
