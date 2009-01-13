@@ -760,6 +760,8 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_TITLE),iShowWord);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_LIST),iShowWord);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_STATIC),iShowWord);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_STATIC_MIN),iShowWord);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_STATIC_MAX),iShowWord);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_MIN),iShowWord);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_WORD_MAX),iShowWord);
 	//word length
