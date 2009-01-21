@@ -40,13 +40,6 @@ void SetClipboardText(const char *szClipText)
 void SetTitle()
 {
 	sprintf(szTitle, "%s %s",PROG_NAME,PROG_VER);
-
-	if(bMsgLoaded) 
-	{
-		sprintf(szText," - %s",szCipherBase);
-		strcat(szTitle,szText);
-	}
-	
 	SetWindowText(hMainWnd,szTitle);
 }
 
@@ -632,6 +625,33 @@ inline void SetWordListTabInfo()
 	SetWordList();
 }
 
+inline void SetStatsTabInfo()
+{
+	if(!bMsgLoaded) return;
+
+	sprintf(szText,"Length [N]: %7i",message.GetLength());
+	SetDlgItemText(hMainWnd,IDC_STATS_LENGTH,szText);
+
+	sprintf(szText,"Multiplicity [M]: %.5f",message.Multiplicity());
+	SetDlgItemText(hMainWnd,IDC_STATS_MULTI,szText);
+
+	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetCipher()));
+	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO,szText);
+
+	sprintf(szText,"Index of Coincidence [IC]: %.5f",IoC(message.GetCipher()));
+	SetDlgItemText(hMainWnd,IDC_STATS_IOC,szText);
+
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetCipher()));
+	SetDlgItemText(hMainWnd,IDC_STATS_CHI2,szText);
+
+	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetPlain()));
+	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO_P,szText);
+	sprintf(szText,"Index of Coincidence [IC]: %.5f",IoC(message.GetPlain()));
+	SetDlgItemText(hMainWnd,IDC_STATS_IOC_P,szText);
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetPlain()));
+	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
+}
+
 inline void SetDlgInfo()
 {
 	if(!bMsgLoaded) return;
@@ -646,6 +666,7 @@ inline void SetDlgInfo()
 	SetSolveTabInfo();
 	SetAnalysisTabInfo();
 	SetWordListTabInfo();
+	SetStatsTabInfo();
 	
 	SetGraph();
 }
@@ -653,13 +674,7 @@ inline void SetDlgInfo()
 //call when the cipher is changed, i.e. symbol merge
 void SetCipher()
 {	
-	sprintf(szText,"N=%i, M=%.3f, H=%.3f, IC=%.3f, X2=%.3f",
-					message.GetLength(),
-					message.Multiplicity(),
-					Entropy(message.GetCipher()),
-					IoC(message.GetCipher()),
-					ChiSquare(message.GetCipher()));
-
+	sprintf(szText,"%s",szCipherBase);
 	SetWindowText(hTextWnd,szText);
 
 	szCipher=message.GetCipher();
@@ -710,6 +725,7 @@ void ShowTab(int iTab)
 	int iShowSolve=SW_HIDE;
 	int iShowAnalysis=SW_HIDE;
 	int iShowWord=SW_HIDE;
+	int iShowStats=SW_HIDE;
 	
 	iCurTab=iTab;
 
@@ -718,6 +734,7 @@ void ShowTab(int iTab)
 		case 0: iShowSolve=SW_SHOW; SetSolveTabInfo(); break;
 		case 1: iShowAnalysis=SW_SHOW; SetAnalysisTabInfo(); break;
 		case 2: iShowWord=SW_SHOW; SetWordListTabInfo(); break;
+		case 3: iShowStats=SW_SHOW; SetStatsTabInfo(); break;
 	}
 
 	//solve
@@ -768,6 +785,18 @@ void ShowTab(int iTab)
 	SetDlgItemInt(hMainWnd,IDC_WORD_MIN,iWordMin,false);
 	SetDlgItemInt(hMainWnd,IDC_WORD_MAX,iWordMax,false);
 
+	//Stats Tab
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_TITLE),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_LENGTH),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_MULTI),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_ENTRO),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_IOC),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_CHI2),iShowStats);
+
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_TITLE_P),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_ENTRO_P),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_IOC_P),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_CHI2_P),iShowStats);
 }
 
 void CreateTextMenu()

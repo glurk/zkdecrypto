@@ -60,6 +60,14 @@
 #define IDC_ABOUT2                      1027
 #define IDC_WORD                        1027
 #define IDC_ABOUT3                      1028
+
+#define IDC_STATS_TITLE                 1029
+#define IDC_STATS_LENGTH                1030
+#define IDC_STATS_MULTI                 1031
+#define IDC_STATS_ENTRO                 1032
+#define IDC_STATS_IOC                   1033
+#define IDC_STATS_CHI2                  1034
+
 #define IDC_LANG                        1036
 #define IDC_PATTERNS                    1037
 #define IDC_TABLE                       1038
@@ -163,6 +171,13 @@
 #define IDC_IOC_EXP                     1133
 #define IDC_ENT_ACT                     1134
 #define IDC_GRAPHS_R_SETS				1135
+
+#define IDC_STATS_TITLE_P               1136
+#define IDC_STATS_ENTRO_P				1137
+#define	IDC_STATS_IOC_P					1138
+#define IDC_STATS_CHI2_P				1139
+
+
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
 #define IDM_FILE_EXIT                   40003

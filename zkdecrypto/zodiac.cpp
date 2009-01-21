@@ -313,6 +313,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hMainTab,TCM_INSERTITEM,1,(LPARAM)&tciTabItem);
 	tciTabItem.pszText="Word List";
 	SendMessage(hMainTab,TCM_INSERTITEM,2,(LPARAM)&tciTabItem);
+	tciTabItem.pszText="Statistics";
+	SendMessage(hMainTab,TCM_INSERTITEM,3,(LPARAM)&tciTabItem);
 	ShowTab(0);
 
 	/*create text window*/
@@ -399,7 +401,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//create status bar with gripper
 	hStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0,
         hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
-
+ 
+    //setup status bar sections
     int statwidths[] = {80, 140, 200, -1};
     SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
 	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
