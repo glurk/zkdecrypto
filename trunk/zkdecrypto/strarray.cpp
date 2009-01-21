@@ -210,6 +210,7 @@ float Entropy(const char *string)
 		entropy+=prob_mass*(log(prob_mass)/log2);
 	}
 
+	if((-1*entropy) == -0.0) return 0;
 	return (-1*entropy);
 }
 
