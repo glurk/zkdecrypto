@@ -177,6 +177,8 @@
 #define	IDC_STATS_IOC_P					1138
 #define IDC_STATS_CHI2_P				1139
 
+#define IDC_EXTRA_ALPHABET_C			1140
+
 
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
