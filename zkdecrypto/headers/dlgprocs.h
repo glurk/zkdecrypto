@@ -245,6 +245,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_EXTRA_ALPHABET:
 					SetDlgItemText(hWnd,IDC_EXTRA_LTR,"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 					return 0;
+
+				case IDC_EXTRA_ALPHABET_C:
+					SetDlgItemText(hWnd,IDC_EXTRA_LTR,"");
+					return 0;
 					
 				case IDOK: //get new values
 					//hillclimber parameters
