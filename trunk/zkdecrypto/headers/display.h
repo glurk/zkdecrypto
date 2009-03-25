@@ -245,6 +245,10 @@ void SetText()
 		else sprintf(szText,"CHAR: ");
 	SendMessage(hStatus, SB_SETTEXT, 3, (LPARAM)szText);
 
+	if(iTextSel+1) sprintf(szText,"ASC: %i",(unsigned char)szCipher[iTextSel]);
+		else sprintf(szText,"ASC: ");
+	SendMessage(hStatus, SB_SETTEXT, 4, (LPARAM)szText);
+
 }
 
 //update when the selected symbol changes
