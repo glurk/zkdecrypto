@@ -403,7 +403,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
  
     //setup status bar sections
-    int statwidths[] = {80, 140, 200, -1};
+    int statwidths[] = {80, 140, 200, 275, -1};
     SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
 	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
 
