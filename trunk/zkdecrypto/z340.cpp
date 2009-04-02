@@ -34,17 +34,17 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 
 	int cuniq,keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
-	char solved[MAX_CIPH_LENGTH];
+	char *solved=new char[clength+1];
 	char uniqstr[ASCII_SIZE];
 	char *decoder[ASCII_SIZE];
 
-	for(i=MAX_CIPH_LENGTH;i--;) solved[i]=0;										//INITIALIZE (ZERO) ARRAYS
+	for(i=clength;i--;) solved[i]=0;										//INITIALIZE (ZERO) ARRAYS
 	for(i=ASCII_SIZE;i--;) uniq[i]=uniqstr[i]=uniqarr[i]=0;
 
 	for(i=clength;i--;) ++uniq[(unsigned char)cipher[i]];						//COUNT # OF UNIQUE CHARS IN CIPHER
 
-	i=255; j=0;																		//CALCULATE AND SORT THE CIPHER UNIQUES
-	for(y=0;y<255;y++) { 
+	i=4096; j=0;																		//CALCULATE AND SORT THE CIPHER UNIQUES
+	for(y=0;y<4096;y++) { 
 		for(x=255;x>0;x--)
 			{ if(uniq[x]==i) { uniqstr[j]=x; uniqarr[j++]=i; } } i--;}
 
@@ -68,11 +68,11 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	long start_time=0, end_time=0;
 	info.cur_try=0;
 	info.cur_fail=0;
-	
+
 	//initial score & feedback
 	last_score=calcscore(clength,solved,info);
 	info.best_score=last_score;
-	memcpy(info.best_key,key,KEY_SIZE);
+	memcpy(info.best_key,key,keylength);
 	if(info.disp_all) info.disp_all();
 
 	//go until max number of iterations or stop is pressed
@@ -86,66 +86,64 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 		
 		improve=0;
 		
-		for(int p1=keylength;p1--;) {
+		for(int p1=0; p1<keylength; p1++) {
 
 			if(info.locked[p1]) continue; //skip if symbol is locked
 
-			for(int p2=keylength;p2--;) {
+			for(int p2=0; p2<keylength; p2++) {
+			
+				if(!info.running) return 0; //stop
+
+				if(p1>=cuniq && p2>=cuniq) continue; //don't bother swapping if both symbols are in the extra letters area
+				if(info.locked[p2] || key[p1]==key[p2]) continue; //skip if symbol is locked or identical 
 				
-			//stop
-			if(!info.running) return 0;
-			if(info.locked[p2] || (p1==p2)) continue; //skip if symbol is locked or identical 
-			
-			/*exclusions*/
-			if(info.exclude)
-			{
-				if(p1<cuniq && strchr(info.exclude+(27*p1),key[p2])) continue; 
-				if(p2<cuniq && strchr(info.exclude+(27*p2),key[p1])) continue;
-			}
-
-			//swap & decode
-			DO_SWAP; DECODE;
-			
-			//don't bother scoring if both symbols are in the 
-			//extra letters area, as it won't make a difference 
-			if(p1>=cuniq && p2>=cuniq) continue;
-			
-			//score
-			score=calcscore(clength,solved,info); 
-
-			//undo if change made it worse than last score
-			if(score<last_score) {DO_SWAP;}
-			else //change is better or same as last score
-			{
-				last_score=score;
-
-				if(score>info.best_score) //this is the new best, save & display
+				if(info.exclude) //exclusions
 				{
-					//if (print) printcipher(clength,cipher,solved,score,key);
-					
-					//feedback info
-					info.best_score=score;
-					improve=1;
-					info.cur_fail=0;
-					memcpy(info.best_key,key,KEY_SIZE);
-					if(info.disp_all) info.disp_all();	
+					if(p1<cuniq && strchr(info.exclude+(27*p1),key[p2])) continue; 
+					if(p2<cuniq && strchr(info.exclude+(27*p2),key[p1])) continue;
 				}
-			}
+
+				//swap & decode
+				DO_SWAP; 
+				DECODE;
+			
+				score=calcscore(clength,solved,info); 
+
+				//undo if change made it worse than last score
+				if(score<last_score) {DO_SWAP;} 
+				else //change is better or same as last score
+				{
+					last_score=score;
+
+					if(score>info.best_score) //this is the new best, save & display
+					{
+						//if (print) printcipher(clength,cipher,solved,score,key);
+						
+						//feedback info
+						info.best_score=score;
+						improve=1;
+						info.cur_fail=0;
+						memcpy(info.best_key,key,keylength);
+						if(info.disp_all) info.disp_all();	
+					}
+				}
 			}
 		}
 
-	// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
-	for(i=info.swaps;i--;) shufflekey(key,keylength,cuniq,info);	
+		// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
+		for(i=info.swaps;i--;) shufflekey(key,keylength,cuniq,info);    
 
-	iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,KEY_SIZE); iterations=0; }
-	DECODE;
-	last_score=calcscore(clength,solved,info); 
-	
-	if(!improve) info.cur_fail++;
-	
-	if(info.time_func) end_time=info.time_func();
+		iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,keylength); iterations=0; }
+		DECODE;
+		last_score=calcscore(clength,solved,info); 
+		
+		if(!improve) info.cur_fail++;
+		
+		if(info.time_func) end_time=info.time_func();
 
 	}
+
+	delete solved;
 
 	return 0;
 }
@@ -175,6 +173,33 @@ inline float FastIoC(const char *string, int length)
 	ic/=(length)*(length-1);
 
 	return ic;
+}
+
+inline float FastChiSquare(const char *string)
+{
+	int freqs[256], length, unique;
+	float chi2=0, prob_mass, cur_calc;
+
+	if(!string) return 0;
+
+	length=(int)strlen(string);
+	
+	if(length<0) return 0;
+
+	unique=GetUniques(string,NULL,freqs);
+
+	//calculate chi2
+	for(int sym_index=0; sym_index<unique; sym_index++)
+	{
+		prob_mass=length*(1.0/unique);
+		cur_calc=freqs[sym_index]-prob_mass;
+		cur_calc*=cur_calc;
+		cur_calc/=prob_mass;
+
+		chi2+=cur_calc;
+	}
+
+	return chi2/length;
 }
 
 inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &info) {
@@ -216,14 +241,18 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1;
 
 	score=pentascore+tetrascore+triscore+biscore;
-	
+
 	float cur_ioc=FastIoC(solv,length_of_cipher);
-	float score_mult=(float)1.05-(ioc_weight*ABS(cur_ioc-lang_ioc));
-	score=int(score*score_mult);
-	
-	float cur_ent=ChiSquare(solv);
-	score_mult=(float)1.05-((float).05*ABS(cur_ent-(float).5));
-	score=int(score*score_mult);
+    float score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-info.lang_ioc));
+    score=int(score*score_mult);
+        
+    float cur_chi=ChiSquare(solv);
+    score_mult=(float)1.05-((float)info.chi_weight/100.0*ABS(cur_chi-(float).52));
+    score=int(score*score_mult);
+
+	float cur_ent=Entropy(solv);
+    score_mult=(float)1.05-((float)info.ent_weight/100.0*ABS(cur_ent-(float)4.1));
+    score=int(score*score_mult);
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
@@ -346,13 +375,6 @@ void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,
 void GetUnigraphs(double *dest) {memcpy(dest,unigraphs,26*sizeof(double));}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//                    Set the IoC & multipler for use in the hillclimber                        //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-void SetIoC(float ioc) {lang_ioc=ioc;}
-void SetIoCWeight(int weight) {ioc_weight=weight;}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 //             Read the specified ngram file, of size n, into the proper array                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -422,8 +444,8 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 	memset(&symbol,0,sizeof(SYMBOL));
 
 	//backup lang_ioc, and set to 0
-	old_ioc_weight=ioc_weight;
-	ioc_weight=0;
+	old_ioc_weight=info.ioc_weight;
+	info.ioc_weight=0;
 	info.exclude=NULL;
 
 	for(int position=0; position<=msg_len-word_len; position++)
@@ -473,7 +495,7 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 	msg.cur_map=best_map;
 
 	//restore old ioc weight
-	ioc_weight=old_ioc_weight;
+	info.ioc_weight=old_ioc_weight;
 	
 	return best_score;
 }

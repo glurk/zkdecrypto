@@ -246,7 +246,11 @@ void BruteNext(int iSymbol)
 	if(iBruteSymbols<1) return;
 	
 	//start solving if this is the last brute symbol
-	if(iSymbol==iBruteSymbols-1) SendMessage(hMainWnd,WM_COMMAND,IDC_SOLVE,0);
+	if(iSymbol==iBruteSymbols-1) 
+	{
+		SendMessage(hMainWnd,WM_COMMAND,IDM_KEY_SCRAMBLE,0);
+		SendMessage(hMainWnd,WM_COMMAND,IDC_SOLVE,0);
+	}
 }
 
 //on press stop, or failure of hillclimber
@@ -418,13 +422,11 @@ void SetLanguage()
 
 	switch(iLang)
 	{
-		case 0: strcpy(szLanguage,"English"); strcpy(szLang,LANG_ENG); fLangIoC=(float)IOC_ENG; break;
-		case 1: strcpy(szLanguage,"Spanish"); strcpy(szLang,LANG_SPA); fLangIoC=(float)IOC_SPA; break;
-		case 2: strcpy(szLanguage,"German"); strcpy(szLang,LANG_GER); fLangIoC=(float)IOC_GER; break;
-		case 3: strcpy(szLanguage,"Italian"); strcpy(szLang,LANG_ITA); fLangIoC=(float)IOC_ITA; break;
+		case 0: strcpy(szLanguage,"English"); strcpy(szLang,LANG_ENG); siSolveInfo.lang_ioc=(float)IOC_ENG; break;
+		case 1: strcpy(szLanguage,"Spanish"); strcpy(szLang,LANG_SPA); siSolveInfo.lang_ioc=(float)IOC_SPA; break;
+		case 2: strcpy(szLanguage,"German"); strcpy(szLang,LANG_GER); siSolveInfo.lang_ioc=(float)IOC_GER; break;
+		case 3: strcpy(szLanguage,"Italian"); strcpy(szLang,LANG_ITA); siSolveInfo.lang_ioc=(float)IOC_ITA; break;
 	}
-	
-	SetIoC(fLangIoC);
 	
 	for(int n=1; n<=5; n++)
 	{

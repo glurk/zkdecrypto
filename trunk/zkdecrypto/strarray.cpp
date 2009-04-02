@@ -171,7 +171,7 @@ float IoC(const char *string)
 
 	if(!string) return 0;
 
-	length=(int)strlen(string);
+	length=strlen(string);
 
 	if(length<2) return 0;	
 
@@ -194,8 +194,8 @@ float Entropy(const char *string)
 
 	if(!string) return 0;
 
-	length=(int)strlen(string);
-	
+	length=strlen(string);
+
 	if(length<0) return 0;
 
 	unique=GetUniques(string,NULL,freqs);
@@ -221,8 +221,8 @@ float ChiSquare(const char *string)
 
 	if(!string) return 0;
 
-	length=(int)strlen(string);
-	
+	length=strlen(string);
+
 	if(length<0) return 0;
 
 	unique=GetUniques(string,NULL,freqs);

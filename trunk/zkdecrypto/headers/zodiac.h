@@ -89,8 +89,6 @@ long lRowCol;
 SOLVEINFO siSolveInfo;
 int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
-float fLangIoC;
-int iIoCWeight;
 int iBruteSymbols, iBatchBestScore;
 char lprgcBatchBestKey[KEY_SIZE];
 
@@ -109,10 +107,10 @@ HANDLE		hSolveThread=NULL, hTimerThread=NULL;
 char szFileFilter[]=
 	{"Text Files (*.txt)\0" "*.txt;\0"
 	 "All Files (*.*)\0" "*.*\0\0"};
+
+int GetWordList(const char*,StringArray&);
 	 
 //callback functions for hillclimber
-int GetWordList(const char*,StringArray&);
-
 inline void disp_all()  {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPALL,0);}
 inline void disp_info() {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPINFO,0);}
 inline DWORD GetTime()	{return GetTickCount();}

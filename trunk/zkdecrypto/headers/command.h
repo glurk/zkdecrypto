@@ -133,7 +133,7 @@ inline int CommandCipher(int cmd_id)
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
 			{
 				if(iNumber<2) iNumber=2;
-				lRowCol=message.PolyKeySize(szGraph,iNumber,fLangIoC);
+				lRowCol=message.PolyKeySize(szGraph,iNumber,siSolveInfo.lang_ioc);
 				strcpy(szGraphTitle,"Polyalphabetic IoC Count");
 				if(lRowCol)	DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			}
