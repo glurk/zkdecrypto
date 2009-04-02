@@ -162,9 +162,19 @@
 #define IDC_HOMO_LEN_EDIT               1124
 #define IDC_HOMO_LEN_SPIN               1125
 #define IDC_HOMO_SETS                   1126
+
 #define IDC_IOC_WEIGHT_EDIT             1127
 #define IDC_IOC_WEIGHT_SPIN             1128
 #define IDC_IOC_WEIGHT_TITLE			1129
+
+#define IDC_ENT_WEIGHT_EDIT             1141
+#define IDC_ENT_WEIGHT_SPIN             1142
+#define IDC_ENT_WEIGHT_TITLE			1143
+
+#define IDC_CHI_WEIGHT_EDIT             1144
+#define IDC_CHI_WEIGHT_SPIN             1145
+#define IDC_CHI_WEIGHT_TITLE			1146
+
 #define IDC_EXTRA_ALPHABET				1130
 #define IDC_IOC_ACT_TITLE               1131
 #define IDC_IOC_ACT                     1132

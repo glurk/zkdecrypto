@@ -9,5 +9,6 @@
 #define CLOSER(A,B,C) (ABS((A)-(C))<ABS((B)-(C))) //TRUE if A is closer to C than B is
 #define CLOSE_TO(A,B,T) (ABS((A)-(B))<=ROUNDTOINT((B)*(T))? true:false)
 #define IS_BETWEEN(X,Y,Z) ((X)>=(Y) && (X)<=(Z))
+#define MIN(X,Y) (X>Y? Y:X)
 
 #endif

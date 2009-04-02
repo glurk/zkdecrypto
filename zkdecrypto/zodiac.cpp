@@ -163,8 +163,15 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDC_IOC_WEIGHT_EDIT: 
-					iIoCWeight=GetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,false,false);
-					SetIoCWeight(iIoCWeight);
+					siSolveInfo.ioc_weight=GetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,false,false);
+					return 0;
+
+				case IDC_ENT_WEIGHT_EDIT: 
+					siSolveInfo.ent_weight=GetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,false,false);
+					return 0;
+
+				case IDC_CHI_WEIGHT_EDIT: 
+					siSolveInfo.chi_weight=GetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,false,false);
 					return 0;
 					
 				case IDC_WORD_MIN:
@@ -362,7 +369,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	MsgEnable(false);
 	MapEnable(false);
 	SendDlgItemMessage(hMainWnd,IDC_IOC_WEIGHT_SPIN,UDM_SETRANGE,0,10);
+	SendDlgItemMessage(hMainWnd,IDC_ENT_WEIGHT_SPIN,UDM_SETRANGE,0,10);
+	SendDlgItemMessage(hMainWnd,IDC_CHI_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,5,false);
+	SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,5,false);
+	SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,5,false);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_ASC,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_NUM,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_SAVE_CIPHER,MF_BYCOMMAND | MF_GRAYED);
@@ -377,6 +388,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	
 	/*init solve info*/
 	memset(&siSolveInfo,0,sizeof(SOLVEINFO));
+	siSolveInfo.ioc_weight=siSolveInfo.ent_weight=siSolveInfo.chi_weight=5;
 	siSolveInfo.max_fail=2000;
 	siSolveInfo.swaps=5;
 	siSolveInfo.revert=400;

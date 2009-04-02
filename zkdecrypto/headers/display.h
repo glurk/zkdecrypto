@@ -461,7 +461,7 @@ void UpdateSymbol(int index)
 //refresh solver info
 inline void SetSolve()
 {
-	if(iCurTab!=0) return;
+	if(iCurTab!=0 && iCurTab!=3) return;
 	
 	//iteration & time
 	sprintf(szText,"%i (%.2fs)",siSolveInfo.cur_try,siSolveInfo.last_time);
@@ -542,7 +542,7 @@ void SetFreq()
 	sprintf(szText,"%.4f",IoC(szPlain));
 	SetDlgItemText(hMainWnd,IDC_IOC_ACT,szText);
 	
-	sprintf(szText,"%.4f",fLangIoC);
+	sprintf(szText,"%.4f",siSolveInfo.lang_ioc);
 	SetDlgItemText(hMainWnd,IDC_IOC_EXP,szText);
 
 	sprintf(szText,"%.4f",ChiSquare(szPlain));
@@ -557,7 +557,7 @@ int GetWordList(const char *text, StringArray &word_list)
 	char word[64];
 	std::string word_str;
 	DICTMAP::iterator iter;
-	
+	   
 	for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
 		{
@@ -572,9 +572,9 @@ int GetWordList(const char *text, StringArray &word_list)
 			if(dictionary.find(word_str)!=dictionary.end()) //is in dictionary
 				word_list.AddString(word);
 		}
-		
+		   
 	word_list.RemoveDups();
-	return word_list.GetNumStrings();	
+	return word_list.GetNumStrings();	  
 }
 
 void SetWordList()
@@ -583,22 +583,22 @@ void SetWordList()
 	int num_words;
 	char word[64];
 	StringArray word_list;
-	
+	   
 	if(iCurTab!=2) return;
-	
+	   
 	//clear list
 	cur_sel=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
 	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
 
 	//set list
 	num_words=GetWordList(szPlain,word_list);
-	
+	   
 	for(int cur_word=0; cur_word<num_words; cur_word++)
 	{
 		word_list.GetString(cur_word,word);
 		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_ADDSTRING,0,(LPARAM)word);
 	}
-		
+		   
 	//title
 	sprintf(szText,"Word List (%i words)",num_words);
 	SetDlgItemText(hMainWnd,IDC_WORD_TITLE,szText);
@@ -749,17 +749,14 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_VALUE),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_CHANGE),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE_TITLE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME_TITLE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY_TITLE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY),iShowSolve);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME_TITLE),iShowSolve | iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME),iShowSolve | iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY_TITLE),iShowSolve | iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY),iShowSolve | iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL_TITLE),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_TITLE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_EDIT),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_SPIN),iShowSolve);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve | iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve | iShowStats);
 
 	//analysis
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TABLE_TITLE),iShowAnalysis);
@@ -801,6 +798,16 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_ENTRO_P),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_IOC_P),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_STATS_CHI2_P),iShowStats);
+
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_TITLE),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_EDIT),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_IOC_WEIGHT_SPIN),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_ENT_WEIGHT_TITLE),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_ENT_WEIGHT_EDIT),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_ENT_WEIGHT_SPIN),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_TITLE),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_EDIT),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_SPIN),iShowStats);
 }
 
 void CreateTextMenu()

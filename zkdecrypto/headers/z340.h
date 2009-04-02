@@ -14,7 +14,6 @@
 
 #define		ASCII_SIZE 					256
 #define		KEY_SIZE					512
-#define		MAX_CIPH_LENGTH 			20480
 
 #define UNI_SIZE	26			//26
 #define BI_SIZE		676			//26*26
@@ -31,6 +30,11 @@ struct SOLVEINFO
 	int revert;
 	char *locked;
 	char *exclude;
+
+	float lang_ioc;
+	int ioc_weight;
+	int ent_weight;
+	int chi_weight;
 	
 	//feedback
 	char best_key[KEY_SIZE];
@@ -58,7 +62,5 @@ void			printfrequency(int,int *,char *,int);
 int				hillclimb(const char *,int,char *,SOLVEINFO&,int);
 
 void 			GetUnigraphs(double*);
-void			SetIoC(float);
-void			SetIoCWeight(int);
 int 			ReadNGraphs(const char*,int);
 int 			WordPlug(Message&,const char*,SOLVEINFO&);
