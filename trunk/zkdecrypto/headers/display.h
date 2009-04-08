@@ -748,13 +748,13 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_VALUE),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_CHANGE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE_TITLE),iShowSolve);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE_TITLE),iShowSolve | iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME_TITLE),iShowSolve | iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME),iShowSolve | iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY_TITLE),iShowSolve | iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY),iShowSolve | iShowStats);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL_TITLE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL_TITLE),iShowSolve | iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve | iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve | iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve | iShowStats);
 
