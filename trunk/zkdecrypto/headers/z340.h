@@ -38,6 +38,7 @@ struct SOLVEINFO
 	
 	//feedback
 	char best_key[KEY_SIZE];
+	char *best_trans;
 	int cur_try;
 	int cur_fail;
 	float last_time;
@@ -60,6 +61,7 @@ inline void		shufflekey(char *,const int,const int,SOLVEINFO&);
 void			printcipher(int,const char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
 int				hillclimb(const char *,int,char *,SOLVEINFO&,int);
+int				hillclimb2(Message&,SOLVEINFO&,int);
 
 void 			GetUnigraphs(double*);
 int 			ReadNGraphs(const char*,int);

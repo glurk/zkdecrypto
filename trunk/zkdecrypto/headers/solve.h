@@ -6,6 +6,7 @@ void SetUndo()
 	EnableMenuItem(hMainMenu,IDM_EDIT_UNDO,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_GRAYED);
 	undo_message+=message;
+	undo_line_size=iLineChars;
 }
 
 void Undo()
@@ -15,7 +16,12 @@ void Undo()
 	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_ENABLED);
 	redo_message=message;
 	message=undo_message;
-	SetCipher();
+	redo_line_size=iLineChars;
+	iLineChars=undo_line_size;
+	iLines=message.GetLength()/iLineChars;
+	ClearTextAreas();
+	SetText();
+	SetPatterns();
 }
 
 void Redo()
@@ -25,7 +31,11 @@ void Redo()
 	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_GRAYED);
 	undo_message=message;
 	message=redo_message;
-	SetCipher();
+	iLineChars=redo_line_size;
+	iLines=message.GetLength()/iLineChars;
+	ClearTextAreas();
+	SetText();
+	SetPatterns();
 }
 
 //change letter mapped to symbol
@@ -80,6 +90,8 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_CIPHER_HORZ,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_VERT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_REV,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_ROT_LEFT,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_ROT_RIGHT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_INIT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_SCRAMBLE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_CLEAR,MF_BYCOMMAND | menu_state);
@@ -134,6 +146,11 @@ void StopSolve()
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Start");
 	MsgEnable(true);
 	MapEnable(true);
+	if(siSolveInfo.best_trans)
+	{
+		delete siSolveInfo.best_trans;
+		siSolveInfo.best_trans=NULL;
+	}
 }
 
 //timer thread proc
@@ -279,42 +296,50 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 {
 	int num_symbols;
 	char key[KEY_SIZE];
-	char *exclude;
+	char *exclude=NULL;
 	SYMBOL symbol;
 	
 	if(!bMsgLoaded) return 0;
 	
 	SetThreadPriority(hSolveThread,iPriority);
 
-	num_symbols=message.cur_map.GetNumSymbols();
-	
-	//if best key is blank, set it to empty symbols + extra letters
-	if(!strlen(siSolveInfo.best_key)) 
-		message.cur_map.ToKey(siSolveInfo.best_key,szExtraLtr);
-	
-	//key=program map + additional chars of best key
-	message.cur_map.ToKey(key,siSolveInfo.best_key+num_symbols);
-	
-	//setup exclude list
-	exclude=new char[27*num_symbols];
-
-	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	if(iSolveType==0)
 	{
-		message.cur_map.GetSymbol(cur_symbol,&symbol);
-		strcpy(exclude+(27*cur_symbol),symbol.exclude);
+		num_symbols=message.cur_map.GetNumSymbols();
+		
+		//if best key is blank, set it to empty symbols + extra letters
+		if(!strlen(siSolveInfo.best_key)) 
+			message.cur_map.ToKey(siSolveInfo.best_key,szExtraLtr);
+		
+		//key=program map + additional chars of best key
+		message.cur_map.ToKey(key,siSolveInfo.best_key+num_symbols);
+		
+		//setup exclude list
+		exclude=new char[27*num_symbols];
+
+		for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		{
+			message.cur_map.GetSymbol(cur_symbol,&symbol);
+			strcpy(exclude+(27*cur_symbol),symbol.exclude);
+		}
+		
+		siSolveInfo.locked=(char*)message.cur_map.GetLocked();
+		siSolveInfo.exclude=exclude;
+		
+		hillclimb(szCipher,message.GetLength(),key,siSolveInfo,false);
 	}
-	
-	siSolveInfo.locked=(char*)message.cur_map.GetLocked();
-	siSolveInfo.exclude=exclude;
-	
-	hillclimb(szCipher,message.GetLength(),key,siSolveInfo,false);
+
+	if(iSolveType==1)
+	{
+		hillclimb2(message,siSolveInfo,iLineChars);
+	}
 
 	//reset window state
 	StopSolve();
 	SetDlgInfo();
 	
 	hSolveThread=NULL;
-	delete[] exclude;
+	if(exclude) delete[] exclude;
 	
 	StopNotify();
 	
@@ -494,4 +519,151 @@ void LockWord(int lock)
 		word_ptr+=word_len;
 	}
 }
-							
+
+int FindTrifidIndex(char symbol, int &x, int &y, int &z)
+{
+	for(x=0; x<3; x++)
+		for(y=0; y<3; y++)
+			for(z=0; z<3; z++)
+				if(symbol==trifid_array[x][z][y])
+					return 1;
+
+	return 0;
+}
+
+int FindBifidIndex(char symbol, int &x, int &y)
+{
+	for(x=0; x<5; x++)
+		for(y=0; y<5; y++)
+			if(symbol==bifid_array[y][x])
+				return 1;
+
+	return 0;
+}
+	
+void DecodeTrifid(char *block, int block_size)
+{
+	int x,y,z, cipher_len, iCurChar;
+	char cCurSymbol;
+	char *index_string=new char[block_size*3+1];
+	char *decode_string=new char[block_size+1];
+
+	if(block_size<1) return;
+
+	cipher_len=strlen(block);
+
+	for(int iBlockStart=0; iBlockStart+block_size<=cipher_len; iBlockStart+=block_size)
+	{
+		//get cipher symbol indexes and put them into string
+		for(iCurChar=0; iCurChar<block_size; iCurChar++)
+		{
+			cCurSymbol=block[iBlockStart+iCurChar];
+			
+			if(FindTrifidIndex(cCurSymbol,x,y,z))
+				sprintf(index_string+iCurChar*3,"%i%i%i",x,y,z);
+		}
+
+		index_string[block_size*3]='\0';
+
+		//split string into 3 sections and get plain indexes
+		for(iCurChar=0; iCurChar<block_size; iCurChar++)
+		{
+			x=index_string[iCurChar]-'0';
+			y=index_string[iCurChar+block_size]-'0';
+			z=index_string[iCurChar+(block_size<<1)]-'0';
+			
+			decode_string[iCurChar]=trifid_array[x][z][y];
+		}
+
+		decode_string[block_size]='\0';
+
+		memcpy(block+iBlockStart,decode_string,block_size);
+	}
+	
+	delete index_string;
+	delete decode_string;
+}
+
+void DecodeBifid(char *block, int block_size)
+{
+	int x,y, cipher_len, iCurChar;
+	char cCurSymbol;
+	char *index_string=new char[block_size*2+1];
+	char *decode_string=new char[block_size+1];
+
+	if(block_size<1) return;
+
+	cipher_len=strlen(block);
+
+	for(int iBlockStart=0; iBlockStart+block_size<=cipher_len; iBlockStart+=block_size)
+	{
+		//get cipher symbol indexes and put them into string
+		for(iCurChar=0; iCurChar<block_size; iCurChar++)
+		{
+			cCurSymbol=block[iBlockStart+iCurChar];
+			
+			if(FindBifidIndex(cCurSymbol,x,y))
+				sprintf(index_string+iCurChar*2,"%i%i",x,y);
+
+						else
+				x=x;
+		}
+
+		index_string[block_size*2]='\0';
+
+		//split string into 2 sections and get plain indexes
+		for(iCurChar=0; iCurChar<block_size; iCurChar++)
+		{
+			x=index_string[iCurChar]-'0';
+			y=index_string[iCurChar+block_size]-'0';
+			
+			decode_string[iCurChar]=bifid_array[y][x];
+		}
+
+		decode_string[block_size]='\0';
+
+		memcpy(block+iBlockStart,decode_string,block_size);
+	}
+	
+	delete index_string;
+	delete decode_string;
+}
+
+void DecodeVigenere(char *cipher, char *key)
+{
+	int cipher_len=strlen(cipher);
+	int key_len=strlen(key);
+	int iCipherIndex, iKeyIndex=0, iKeyRow, iCipherCol;
+
+	for(iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	{
+		for(iKeyRow=0; iKeyRow<26; iKeyRow++)
+			if(vigenere_array[iKeyRow][0]==key[iKeyIndex]) break;
+
+		iCipherCol=int(strchr(vigenere_array[iKeyRow],cipher[iCipherIndex])-vigenere_array[iKeyRow]);
+
+		cipher[iCipherIndex]=vigenere_array[0][iCipherCol];
+	
+		if(++iKeyIndex>=key_len) iKeyIndex=0;
+	}
+}
+
+/*void ColumnPermute(char *cipher,int length,int pos,int r)
+{
+   if(pos==r+1)
+   {
+       return; 
+   }
+   
+   for(int index=pos-1;index<=length-1;index++)
+   {
+       message.SwapColumns(pos,r);
+	   if(message.GetNumPatterns()>30) 
+	   {
+		   return;
+	   }
+       permute(cipher,length,pos+1,r);
+       message.SwapColumns(pos,r);
+   }
+}*/
+

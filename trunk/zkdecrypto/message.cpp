@@ -223,6 +223,93 @@ void Message::Flip(int flip_dir, int row_len)
 	FindPatterns(true);
 }
 
+void Message::Rotate(int row_len, int direction)
+{
+	char *rot=new char[msg_len+1];
+	int row, col, lines;
+
+	if(msg_len<row_len) row_len=msg_len;
+
+	lines=msg_len/row_len;
+
+	for(row=0; row<lines; row++)
+		for(col=0; col<row_len; col++)
+			if(direction) rot[col*lines+(lines-row-1)]=cipher[row*row_len+col];
+			else rot[(row_len-col-1)*lines+row]=cipher[row*row_len+col];
+
+	memcpy(cipher,rot,msg_len);
+	delete rot;
+	FindPatterns(true);
+}
+
+void SwapStringColumns(char *string, int iColumnA, int iColumnB, int iLineChars)
+{
+	int length=strlen(string);
+	int iLines=length/iLineChars;
+
+	if(iColumnA>=iLineChars) iColumnA=0;
+	if(iColumnB>=iLineChars) iColumnB=0;
+
+	for(int iRow=0; iRow<iLines; iRow++)
+	{
+		int iRowIndex=(iRow*iLineChars);
+
+		char cTemp=string[iRowIndex+iColumnA];
+		string[iRowIndex+iColumnA]=string[iRowIndex+iColumnB];
+		string[iRowIndex+iColumnB]=cTemp;
+	}
+}
+
+void SwapStringRows(char *string, int iRowA, int iRowB, int iLineChars)
+{
+	int length=strlen(string);
+	int iLines=length/iLineChars;
+
+	if(iRowA>=iLines) iRowA=0;
+	if(iRowB>=iLines) iRowB=0;
+
+	int iRowAIndex=(iRowA*iLineChars);
+	int iRowBIndex=(iRowB*iLineChars);
+
+	for(int iColumn=0; iColumn<iLineChars; iColumn++)
+	{
+		char cTemp=string[iRowAIndex+iColumn];
+		string[iRowAIndex+iColumn]=string[iRowBIndex+iColumn];
+		string[iRowBIndex+iColumn]=cTemp;
+	}
+}
+
+
+void Message::SwapColumns(int iColumnA, int iColumnB, int iLineChars)
+{
+	SwapStringColumns(cipher,iColumnA,iColumnB,iLineChars);
+	SwapStringColumns(plain,iColumnA,iColumnB,iLineChars);
+}
+
+void Message::SwapRows(int iRowA, int iRowB, int iLineChars)
+{
+	SwapStringRows(cipher,iRowA,iRowB,iLineChars);
+	SwapStringRows(plain,iRowA,iRowB,iLineChars);
+}
+
+char elgar[2][25]={{"ABCDEFGHIKLMNOPQRSTUWXYZ"},{"NOPQRSTUWXYZABCDEFGHIKLM"}};
+
+void Message::DecodeElgar()
+{
+	for(int index=0; index<msg_len; index++)
+		for(int letter=0; letter<24; letter++)
+			if(cipher[index]==elgar[0][letter]) 
+			{
+				cipher[index]=elgar[1][letter];
+				break;
+			}
+
+	SwapColumns(2,3,4);
+	SwapColumns(0,2,4);
+
+	SetInfo();
+}
+
 //replace all instances of symbol2 with symbol1, and update map
 void Message::MergeSymbols(char symbol1, char symbol2, int do_near)
 {

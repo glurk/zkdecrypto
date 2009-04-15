@@ -99,7 +99,9 @@ inline int CommandEdit(int cmd_id)
 
 inline int CommandCipher(int cmd_id)
 {
-	int new_pat;
+	int new_pat, trans, cur_symbol;
+	SYMBOL symbol;
+	char *symbols;
 
 	switch(cmd_id)
 	{
@@ -126,6 +128,72 @@ inline int CommandCipher(int cmd_id)
 			}
 			return 0;
 
+		case IDM_CIPHER_COPY_SYMBOLS:
+			symbols=new char[message.cur_map.GetNumSymbols()+1];
+
+			for(cur_symbol=0; cur_symbol<message.cur_map.GetNumSymbols(); cur_symbol++)
+			{
+				message.cur_map.GetSymbol(cur_symbol,&symbol);
+				symbols[cur_symbol]=symbol.cipher;
+			}
+
+			symbols[cur_symbol]='\0';
+			SetClipboardText(symbols);
+			delete symbols;
+			return 0;
+
+		case IDM_CIPHER_COL_LEFT:
+			if(!bMsgLoaded || iColSel==-1) return 0;
+			if(--iColSel<0) iColSel=iLineChars-1;
+			message.SwapColumns(iColSel,iColSel+1,iLineChars);
+			SetTextSel(iTextSel-1);
+			message.FindPatterns(1);
+			SetText();
+			SetPatterns();
+			return 0;
+
+		case IDM_CIPHER_COL_RIGHT:
+			if(!bMsgLoaded || iColSel==-1) return 0;
+			message.SwapColumns(iColSel,iColSel+1,iLineChars);
+			SetTextSel(iTextSel+1);
+			message.FindPatterns(1);
+			SetText();
+			SetPatterns();
+			return 0;
+
+		case IDM_CIPHER_ROW_UP:
+			if(!bMsgLoaded || iRowSel==-1) return 0;
+			if(--iRowSel<0) iRowSel=iLines-1;
+			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
+			SetTextSel(iTextSel-iLineChars);
+			message.FindPatterns(1);
+			SetText();
+			SetPatterns();
+			return 0;
+
+		case IDM_CIPHER_ROW_DOWN:
+			if(!bMsgLoaded || iRowSel==-1) return 0;
+			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
+			SetTextSel(iTextSel+iLineChars);
+			message.FindPatterns(1);
+			SetText();
+			SetPatterns();
+			return 0;
+
+		case IDM_CIPHER_RAND_TRANS:
+			
+			//message.FindPatterns(false);
+			new_pat=message.GetNumPatterns();
+
+			for(trans=0; message.GetNumPatterns()<=new_pat && trans<100000; trans++)
+			{
+				message.SwapColumns(rand()%iLineChars,rand()%iLineChars,iLineChars);
+				message.FindPatterns(true);
+			}
+			SetText();
+			SetPatterns();
+			return 0;
+
 		case IDM_CIPHER_POLYIC:
 			strcpy(szNumberTitle,"Max Key Length");
 			iNumber=25;
@@ -146,7 +214,7 @@ inline int CommandCipher(int cmd_id)
 			if(lRowCol) DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			return 0;
 
-		case IDM_CIPHER_RANDOM: RandCipher(340,63); return 0;
+		case IDM_CIPHER_RANDOM: message.DecodeElgar(); SetDlgInfo(); return 0;
 			
 		case IDM_CIPHER_SEQHOMO:
 			hHomo=CreateDialog(hInst,MAKEINTRESOURCE(IDD_SEQHOMO),hMainWnd,(DLGPROC)HomoProc);
@@ -172,6 +240,26 @@ inline int CommandCipher(int cmd_id)
 			message.Flip(3,iLineChars);
 			SetDlgInfo();
 			SetPatterns();
+			return 0;
+
+		case IDM_CIPHER_ROT_LEFT:
+			SetUndo();
+			message.Rotate(iLineChars,0);
+			iLineChars=iLines;
+			iLines=message.GetLength()/iLineChars;
+			SetPatterns();
+			ClearTextAreas();
+			SetText();
+			return 0;
+
+		case IDM_CIPHER_ROT_RIGHT:
+			SetUndo();
+			message.Rotate(iLineChars,1);
+			iLineChars=iLines;
+			iLines=message.GetLength()/iLineChars;
+			SetPatterns();
+			ClearTextAreas();
+			SetText();
 			return 0;
 	}
 
@@ -299,7 +387,11 @@ inline int CommandSolve(int cmd_id)
 		case IDM_SOLVE_TP_IDLE: SetPriority(4); return 0;
 		case IDM_SOLVE_TP_HIGH: SetPriority(3); return 0;	
 		case IDM_SOLVE_TP_NORM: SetPriority(2); return 0;	
-		case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;			
+		case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;
+			
+		case IDM_SOLVE_TRIFID:
+			DialogBox(hInst,MAKEINTRESOURCE(IDD_TRIFID),hMainWnd,(DLGPROC)TrifidProc);
+			return 0;
 	}
 
 	return 0;
@@ -355,6 +447,13 @@ inline int CommandView(int cmd_id)
 
 		case IDM_VIEW_BYSTRING: SetSort(0); return 0;
 		case IDM_VIEW_BYFREQ: SetSort(1); return 0;
+
+		case IDM_TEXT_SEL_LEFT:  if(!bMsgLoaded) return 0; SetTextSel(iTextSel-1); return 0;
+		case IDM_TEXT_SEL_RIGHT: if(!bMsgLoaded) return 0; SetTextSel(iTextSel+1); return 0;
+		case IDM_TEXT_SEL_UP:	 if(!bMsgLoaded) return 0; SetTextSel(iTextSel-iLineChars); return 0;
+		case IDM_TEXT_SEL_DOWN:  if(!bMsgLoaded) return 0; SetTextSel(iTextSel+iLineChars); return 0;
+
+
 	}
 
 	return 0;

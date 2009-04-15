@@ -98,8 +98,8 @@ LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:	
-			iWidth=LOWORD(lRowCol)*CHAR_WIDTH;
-			iHeight=HIWORD(lRowCol)*CHAR_HEIGHT+20;
+			iWidth=LOWORD(lRowCol)*(CHAR_WIDTH+1);
+			iHeight=HIWORD(lRowCol)*(CHAR_HEIGHT+2)+20;
 			SetWindowPos(GetDlgItem(hWnd,IDC_GRAPH),0,0,0,iWidth,iHeight,SWP_NOREPOSITION | SWP_NOMOVE);
 			SetWindowPos(hWnd,0,0,0,iWidth+(iMargin<<1),iHeight+(iMargin<<1),SWP_NOREPOSITION | SWP_NOMOVE);
 			SetDlgItemTextW(hWnd,IDC_GRAPH,(WCHAR*)szGraph);
@@ -529,6 +529,54 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			{
 				case IDC_HOMO_TOL_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
 				case IDC_HOMO_LEN_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
+							
+				case IDCANCEL: EndDialog(hWnd,0); hHomo=NULL; return 0;
+			}				
+			return 0;
+
+		case WM_DESTROY:
+			DeleteObject(hTempFont);
+			return 0;
+	}
+	return 0;
+}
+
+//Trifid Decoding
+LRESULT CALLBACK TrifidProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int iBlockSize;
+	long lfHeight;
+    HDC hdc;
+
+	hdc = GetDC(NULL);
+    lfHeight = -MulDiv(14, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+    ReleaseDC(NULL, hdc);
+
+    hTempFont = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
+
+	switch(iMsg)
+	{
+		case WM_INITDIALOG:
+			SendDlgItemMessage(hWnd,IDC_TRIFID_DECODE, WM_SETFONT, (WPARAM)hTempFont, TRUE);
+			//set up/down control ranges
+			SendDlgItemMessage(hWnd,IDC_TRIFID_BLOCK_SPIN,UDM_SETRANGE,1,message.GetLength());
+			SetDlgItemInt(hWnd,IDC_TRIFID_BLOCK_EDIT,1,false);
+
+		case UDM_HOMO_UPDATE:
+			iBlockSize=GetDlgItemInt(hWnd,IDC_TRIFID_BLOCK_EDIT,false,false);
+	
+			memcpy(szText,message.GetCipher(),message.GetLength());
+			szText[message.GetLength()]='\0';
+			//DecodeBifid(szText,iBlockSize);
+			DecodeTrifid(szText,iBlockSize);
+			//DecodeVigenere(szText,"IF");
+			SetDlgItemText(hWnd,IDC_TRIFID_DECODE,(CHAR*)szText);
+			return 0;			
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDC_TRIFID_BLOCK_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
 							
 				case IDCANCEL: EndDialog(hWnd,0); hHomo=NULL; return 0;
 			}				

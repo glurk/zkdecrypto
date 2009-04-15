@@ -97,7 +97,7 @@ int LoadMessage(char *filename)
 	SetCipher();
 	SetPatterns();
 	SetDlgInfo();
-	
+
 	return 1;
 }
 
