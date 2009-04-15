@@ -302,7 +302,7 @@ void SwapCols(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int co
 
 void FlipHorz(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
 {
-	for(int cur_col=0; cur_col<=(row_len>>1); cur_col++)
+	for(int cur_col=0; cur_col<(row_len>>1); cur_col++)
 		SwapCols(xfm,num_xfm,str_len,row_len,cur_col,row_len-cur_col-1);
 }
 
@@ -310,6 +310,6 @@ void FlipVert(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
 {
 	int num_rows=NUM_ROWS(str_len,row_len);
 	
-	for(int cur_row=0; cur_row<=(num_rows>>1); cur_row++)
+	for(int cur_row=0; cur_row<(num_rows>>1); cur_row++)
 		SwapRows(xfm,num_xfm,str_len,row_len,cur_row,num_rows-cur_row-1);
 }

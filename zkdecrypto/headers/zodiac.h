@@ -39,6 +39,7 @@
 //cipher/key data & files
 Message message; //cipher & main key
 Message undo_message, redo_message; //undo/redo messages
+int undo_line_size, redo_line_size;
 char szCipherName[1024], szKeyName[1024], szPlainName[1024], szGraphName[1024]; //filenames
 char *szCipherBase, *szKeyBase; //file basenames
 char szLanguage[32];
@@ -69,7 +70,7 @@ IDC_INIT_Y_EDIT,IDC_INIT_Z_EDIT
 
 //text gui
 COLORREF crRed, crGreen, crBlue, crOrange, crYellow, crBlack, crWhite;
-float iCharSize=1.0; //font size multiplier
+float iCharSize=2.0; //font size multiplier
 int iLineChars=17, iLines, iDispLines; //text line data
 int iScrollPos, iMaxScroll; //scrollbar
 int iDispStart, iDispEnd; //index of the start/end characters being displayed
@@ -85,9 +86,111 @@ wchar szGraph[40960];//[20480];
 char szGraphTitle[128];
 long lRowCol;
 
+//Trifid Decoding
+int iTrifidSize=0;
+
+//Column  Shift
+int iCurColumn=0, iCurCycle=0;
+/*
+char trifid_array[4][4][4]=
+{
+	{
+		{'A', 'B', 'C', 'D'},
+		{'E', 'F', 'G', 'H'},
+		{'I', 'J', 'K', 'L'},
+		{'M', 'N', 'O', 'P'},
+	},
+
+	{
+		{'Q', 'R', 'S', 'T'},
+		{'V', 'W', 'X', 'Z'},
+		{'u', 'y', 'Â', 'Ã'},
+		{'Ä', 'Æ', 'Ê', 'ƒ'},
+	},
+
+	{
+		{'Ë', 'Ì', 'Ð', 'ˆ'},
+		{'Ñ', 'Ô', 'Ÿ', '„'},
+		{'+', '-', '/', '•'},
+		{'^', '<', '>', '¤'},
+	},
+
+	{
+		{'µ', '±', '´', '²'},
+		{'³', '°', '¢', '£'},
+		{'¾', '¼', '½', '·'},
+		{'¸', '¹', '»', 'º'},
+	}
+};
+*/
+
+char trifid_array[3][3][3]=
+{
+	{
+		{'K','R','Y'},
+		{'P','T','O'},
+		{'S','A','B'}
+	},
+
+	{
+		{'C','D','E'},
+		{'F','G','H'},
+		{'I','J','L'}
+	},
+
+	{
+		{'M','N','Q'},
+		{'U','V','W'},
+		{'X','Z','.'}
+	}
+};
+
+
+char bifid_array[5][5]=
+{
+	{'K','R','Y','P','T'},
+	{'O','S','A','B','C'},
+	{'D','E','F','G','H'},
+	{'I','J','L','M','N'},
+	{'U','V','W','X','Z'}
+};
+
+char vigenere_array[26][27]=
+{
+	{"KRYPTOSABCDEFGHIJLMNQUVWXZ"},
+	{"RYPTOSABCDEFGHIJLMNQUVWXZK"},
+	{"YPTOSABCDEFGHIJLMNQUVWXZKR"},
+	{"PTOSABCDEFGHIJLMNQUVWXZKRY"},
+	{"TOSABCDEFGHIJLMNQUVWXZKRYP"},
+	{"OSABCDEFGHIJLMNQUVWXZKRYPT"},
+	{"SABCDEFGHIJLMNQUVWXZKRYPTO"},
+	{"ABCDEFGHIJLMNQUVWXZKRYPTOS"},
+	{"BCDEFGHIJLMNQUVWXZKRYPTOSA"},
+	{"CDEFGHIJLMNQUVWXZKRYPTOSAB"},
+	{"DEFGHIJLMNQUVWXZKRYPTOSABC"},
+	{"EFGHIJLMNQUVWXZKRYPTOSABCD"},
+	{"FGHIJLMNQUVWXZKRYPTOSABCDE"},
+	{"GHIJLMNQUVWXZKRYPTOSABCDEF"},
+	{"HIJLMNQUVWXZKRYPTOSABCDEFG"},
+	{"IJLMNQUVWXZKRYPTOSABCDEFGH"},
+	{"JLMNQUVWXZKRYPTOSABCDEFGHI"},
+	{"LMNQUVWXZKRYPTOSABCDEFGHIJ"},
+	{"MNQUVWXZKRYPTOSABCDEFGHIJL"},
+	{"NQUVWXZKRYPTOSABCDEFGHIJLM"},
+	{"QUVWXZKRYPTOSABCDEFGHIJLMN"},
+	{"UVWXZKRYPTOSABCDEFGHIJLMNQ"},
+	{"VWXZKRYPTOSABCDEFGHIJLMNQU"},
+	{"WXZKRYPTOSABCDEFGHIJLMNQUV"},
+	{"XZKRYPTOSABCDEFGHIJLMNQUVW"},
+	{"ZKRYPTOSABCDEFGHIJLMNQUVWX"}
+};
+
+
+
+
 //solver data
 SOLVEINFO siSolveInfo;
-int iPriority, iLang, iBestScore=0;
+int iPriority, iLang, iBestScore=0, iSolveType=0;
 char szExtraLtr[MAX_EXTRA+1]="";
 int iBruteSymbols, iBatchBestScore;
 char lprgcBatchBestKey[KEY_SIZE];

@@ -499,3 +499,95 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 	
 	return best_score;
 }
+
+
+
+
+
+
+
+int hillclimb2(Message &msg, SOLVEINFO &info, int iLineChars)
+{
+	//#define MSG_SWAP {temp=solved[p1]; solved[p1]=solved[p2]; solved[p2]=temp;}
+	#define MSG_SWAP {if(rand()%2) SwapStringColumns(solved,p1,p2,iLineChars); else SwapStringRows(solved,p1,p2,iLineChars);}
+	int i,p1,p2,clength,temp;
+	char *solved;
+
+	clength=msg.GetLength();
+	solved=new char[clength+1];
+	info.best_trans=new char[clength+1];
+
+	strcpy(solved,msg.GetCipher());
+
+	int score = 0, last_score=0, iterations = 0, improve = 0;
+	long start_time=0, end_time=0;
+	info.cur_try=0;
+	info.cur_fail=0;
+
+	//initial score & feedback
+	last_score=calcscore(clength,solved,info);
+	info.best_score=last_score;
+	strcpy(info.best_trans,solved);
+	if(info.disp_all) info.disp_all();
+
+	//go until max number of iterations or stop is pressed
+	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
+		
+		/*feedback info*/
+		info.cur_try=iterations;
+		info.last_time=float(end_time-start_time)/1000;
+		if(info.time_func) start_time=info.time_func();
+		if(info.disp_info) info.disp_info();
+		
+		improve=0;
+		
+		for(p1=0; p1<iLineChars<<1; p1++) {
+			for(p2=0; p2<iLineChars<<1; p2++) {
+			
+				if(!info.running) return 0; //stop	
+				if(p1==p2) continue;
+			
+				//swap & score
+				MSG_SWAP;
+				score=calcscore(clength,solved,info); 
+
+				//undo if change made it worse than last score
+				if(score<last_score) {MSG_SWAP;} 
+				else //change is better or same as last score
+				{
+					last_score=score;
+
+					if(score>info.best_score) //this is the new best, save & display
+					{
+						//feedback info
+						info.best_score=score;
+						improve=1;
+						info.cur_fail=0;
+						strcpy(info.best_trans,solved);
+						//msg.SetCipherTrans(best);
+						if(info.disp_all) info.disp_all();	
+					}
+				}
+			}
+		}
+
+		// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
+		for(i=info.swaps;i--;) 
+		{
+			p1=rand()%clength;
+			p2=rand()%clength;
+			MSG_SWAP;
+		}    
+
+		iterations++; if(iterations>info.revert) { strcpy(solved,info.best_trans); iterations=0; }
+		last_score=calcscore(clength,solved,info); 
+		
+		if(!improve) info.cur_fail++;
+		
+		if(info.time_func) end_time=info.time_func();
+	}
+
+	delete solved;
+
+	return 0;
+}

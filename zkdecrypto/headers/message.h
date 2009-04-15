@@ -37,6 +37,8 @@ public:
 	int Read(const char*);
 	int Write(const char*);
 	void SetCipher(const char*);
+	void SetCipherTrans(const char *new_cipher) {strcpy(cipher,new_cipher);}
+
 	void Insert(int,const char*);
 	
 	const char * GetCipher() {return cipher;}
@@ -59,10 +61,17 @@ public:
 	int Simplify(char*);
 	long SeqHomo(wchar*,char*,float,int);
 	void Flip(int,int);
+	void Rotate(int,int);
+	void SwapColumns(int,int,int);
+	void SwapRows(int,int,int);
+	void DecodeElgar();
 
 	long LetterGraph(wchar*);
 	long PolyKeySize(wchar*,int,float);
 	long RowColIoC(wchar*,int);
+
+	void SetInfo();
+	void FindPatterns(int);
 	
 	void operator += (Message &src_msg)
 	{
@@ -95,8 +104,6 @@ public:
 
 private:
 	void Decode();
-	void SetInfo();
-	void FindPatterns(int);
 	int FindPattern(const char*,NGRAM*&,NGRAM*,NGRAM*);
 	int FindPattern(const char*,NGRAM*&);
 	int AddPattern(NGRAM&,int);
@@ -110,4 +117,6 @@ private:
 	int num_patterns, good_pat;
 };
 
+void SwapStringColumns(char*,int,int,int);
+void SwapStringRows(char*,int,int,int);
 #endif

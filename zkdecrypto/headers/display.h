@@ -303,6 +303,17 @@ int TextClick(int click_x, int click_y)
 	return 1;
 }
 
+SetTextSel(int iIndex)
+{
+	if(iIndex<0) iIndex+=message.GetLength();
+	if(iIndex>=message.GetLength()) iIndex-=message.GetLength();
+
+	iTextSel=iIndex;
+	iRowSel=iTextSel/iLineChars;
+	iColSel=iTextSel%iLineChars;
+	UpdateSelectedSymbol();
+}
+
 //draw white rects on text areas, and set up cliping paths
 void ClearTextAreas()
 {
@@ -662,7 +673,10 @@ inline void SetDlgInfo()
 	
 	//set key to hillclimber best if running
 	if(siSolveInfo.running)
-		message.cur_map.FromKey(siSolveInfo.best_key);
+	{
+		if(iSolveType==0) message.cur_map.FromKey(siSolveInfo.best_key);
+		if(iSolveType==1) message.SetCipherTrans(siSolveInfo.best_trans);
+	}
 		
 	SetPlain();
 	

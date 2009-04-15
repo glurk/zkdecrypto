@@ -23,6 +23,7 @@
 #define IDD_SEQHOMO						121
 #define IDD_GRAPHS_R					122
 #define IDR_ACCEL                       123
+#define IDD_TRIFID						124
 #define IDC_PLAIN                       1000
 #define IDC_CIPHER                      1001
 #define IDC_SOLVE                       1002
@@ -188,7 +189,11 @@
 #define IDC_STATS_CHI2_P				1139
 
 #define IDC_EXTRA_ALPHABET_C			1140
-
+#define IDC_TRIFID_DECODE				1141
+#define IDC_TRIFID_BLOCK_EDIT			1142
+#define IDC_TRIFID_BLOCK_SPIN			1143
+#define IDC_RS_DOWN						1144
+#define IDC_RS_UP						1145
 
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
@@ -248,11 +253,25 @@
 #define IDM_SOLVE_INSERT                40059
 #define IDM_KEY_INVERT_LOCK             40060
 #define IDM_SOLVE_COPY_BEST             40061
+#define IDM_CIPHER_SOLVEHOMO			40062
+#define IDM_CIPHER_RAND_TRANS			40063
+#define IDM_CIPHER_ROT_LEFT 			40064
+#define IDM_CIPHER_ROT_RIGHT			40065
 #define UDM_DISPALL                     40100
 #define UDM_DISPINFO                    40101
 #define UDM_INIT_TOTAL                  40102
 #define UDM_INIT_TARGET                 40103
 #define UDM_HOMO_UPDATE                 40104
+#define IDM_CIPHER_COPY_SYMBOLS			40105
+#define IDM_SOLVE_TRIFID				40106
+#define IDM_CIPHER_COL_LEFT				40107
+#define IDM_CIPHER_COL_RIGHT			40108
+#define IDM_TEXT_SEL_LEFT				40109
+#define IDM_TEXT_SEL_RIGHT				40110
+#define IDM_CIPHER_ROW_UP				40111
+#define IDM_CIPHER_ROW_DOWN				40112
+#define IDM_TEXT_SEL_UP					40113
+#define IDM_TEXT_SEL_DOWN				40114
 
 // Next default values for new objects
 // 

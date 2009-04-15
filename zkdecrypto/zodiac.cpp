@@ -32,6 +32,18 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					iCharSize-=float(0.1);
 					SetCharSize();
 					return 0;
+
+				case IDC_RS_UP:
+					if(iLineChars<message.GetLength()-1) iLineChars++;
+					ClearTextAreas();
+					SetText();
+					return 0;
+
+				case IDC_RS_DOWN:
+					if(iLineChars>1) iLineChars--;
+					ClearTextAreas();
+					SetText();
+					return 0;
 			}
 
 		//scroll text
@@ -395,6 +407,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.disp_all=disp_all;
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;
+	siSolveInfo.best_trans=NULL;
 	Reset();
 
 	//language
