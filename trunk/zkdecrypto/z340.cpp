@@ -191,7 +191,7 @@ inline float FastChiSquare(const char *string)
 	//calculate chi2
 	for(int sym_index=0; sym_index<unique; sym_index++)
 	{
-		prob_mass=length*(1.0/unique);
+		prob_mass=(float)(length*(1.0/unique));
 		cur_calc=freqs[sym_index]-prob_mass;
 		cur_calc*=cur_calc;
 		cur_calc/=prob_mass;
@@ -247,11 +247,11 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
     score=int(score*score_mult);
         
     float cur_chi=ChiSquare(solv);
-    score_mult=(float)1.05-((float)info.chi_weight/100.0*ABS(cur_chi-(float).52));
+    score_mult=(float)(1.05-((float)info.chi_weight/100.0*ABS(cur_chi-(float).52)));
     score=int(score*score_mult);
 
 	float cur_ent=Entropy(solv);
-    score_mult=(float)1.05-((float)info.ent_weight/100.0*ABS(cur_ent-(float)4.1));
+    score_mult=(float)(1.05-((float)info.ent_weight/100.0*ABS(cur_ent-(float)4.1)));
     score=int(score*score_mult);
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
@@ -510,7 +510,7 @@ int hillclimb2(Message &msg, SOLVEINFO &info, int iLineChars)
 {
 	//#define MSG_SWAP {temp=solved[p1]; solved[p1]=solved[p2]; solved[p2]=temp;}
 	#define MSG_SWAP {if(rand()%2) SwapStringColumns(solved,p1,p2,iLineChars); else SwapStringRows(solved,p1,p2,iLineChars);}
-	int i,p1,p2,clength,temp;
+	int i,p1,p2,clength;
 	char *solved;
 
 	clength=msg.GetLength();

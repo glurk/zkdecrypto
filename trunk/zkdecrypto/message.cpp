@@ -294,7 +294,7 @@ void Message::Rotate(int row_len, int direction)
 
 void SwapStringColumns(char *string, int iColumnA, int iColumnB, int iLineChars)
 {
-	int length=strlen(string);
+	int length=(int)strlen(string);
 	int iLines=length/iLineChars;
 
 	if(iColumnA>=iLineChars) iColumnA=0;
@@ -312,7 +312,7 @@ void SwapStringColumns(char *string, int iColumnA, int iColumnB, int iLineChars)
 
 void SwapStringRows(char *string, int iRowA, int iRowB, int iLineChars)
 {
-	int length=strlen(string);
+	int length=(int)strlen(string);
 	int iLines=length/iLineChars;
 
 	if(iRowA>=iLines) iRowA=0;
