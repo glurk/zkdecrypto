@@ -1,3 +1,5 @@
+#pragma warning( disable : 4267)	// STOP MSVS2005 WARNINGS
+
 /*Edit Functions*/
 
 void SetUndo()

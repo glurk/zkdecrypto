@@ -35,6 +35,7 @@ public:
 	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(patterns) ClearPatterns(patterns);}
 
 	int Read(const char*);
+	int ReadNumeric(const char*);
 	int Write(const char*);
 	void SetCipher(const char*);
 	void SetCipherTrans(const char *new_cipher) {strcpy(cipher,new_cipher);}
