@@ -171,7 +171,7 @@ float IoC(const char *string)
 
 	if(!string) return 0;
 
-	length=strlen(string);
+	length=(int)strlen(string);
 
 	if(length<2) return 0;	
 
@@ -194,7 +194,7 @@ float Entropy(const char *string)
 
 	if(!string) return 0;
 
-	length=strlen(string);
+	length=(int)strlen(string);
 
 	if(length<0) return 0;
 
@@ -221,7 +221,7 @@ float ChiSquare(const char *string)
 
 	if(!string) return 0;
 
-	length=strlen(string);
+	length=(int)strlen(string);
 
 	if(length<0) return 0;
 
