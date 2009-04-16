@@ -40,6 +40,56 @@ int Message::Read(const char *filename)
 	return msg_len;
 }
 
+int Message::ReadNumeric(const char *filename)
+{
+	FILE *msgfile;
+	int size;
+	char number[10];
+	int unicount=33;
+	int x;
+	int uniques[10000];
+
+	for(x=0;x<10000;x++)
+		uniques[x]=0;
+
+	if(!(msgfile=fopen(filename,"r"))) return 0;
+
+	//get file size
+	fseek(msgfile,0,SEEK_END);
+	size=ftell(msgfile)+1;
+	fseek(msgfile,0,SEEK_SET);
+
+	//allocate text arrays
+	if(cipher) delete[] cipher;
+	if(plain) delete[] plain;
+	cipher=new char[size];
+	plain=new char[size];
+
+	if(!cipher || !plain) return 0;
+
+	//read from file
+	msg_len=0;
+
+	while(fscanf(msgfile,"%s",number)!=EOF)
+	{
+		if(atoi(number) < 0 || atoi(number) > 9999) continue;
+		if(uniques[atoi(number)]==0) {
+			uniques[atoi(number)]=unicount;
+			cipher[msg_len++]=unicount;
+			unicount++;
+		}
+		else cipher[msg_len++]=uniques[atoi(number)];
+		if(unicount>254) break;
+	}
+
+	cipher[msg_len]='\0';
+	fclose(msgfile);
+	
+	SetInfo();
+
+	return msg_len;
+}
+
 int Message::Write(const char *filename)
 {
 	FILE *msgfile;

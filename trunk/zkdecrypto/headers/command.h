@@ -1,31 +1,17 @@
 inline int CommandFile(int cmd_id)
 {
-	char filename[1024], num2asc_name[1024], *szBase;
+	char filename[1024];
 
 	switch(cmd_id)
 	{
 		case IDM_FILE_OPEN_ASC:
 			if(!GetFilename(filename,szCipherName,0)) return 0;
-			LoadMessage(filename);				
+			LoadMessage(filename,0);				
 			return 0;
 
 		case IDM_FILE_OPEN_NUM:
 			if(!GetFilename(filename,szCipherName,0)) return 0;
-			strcpy(num2asc_name,filename);
-
-			//append suffix to file name
-			szBase=strrchr(num2asc_name,'.');
-			if(szBase) strcpy(szBase,".ascii.txt");
-			else strcat(szCipherName,".ascii.txt");
-
-			//convert and load
-			if(!Num2Asc(filename,num2asc_name))
-			{
-				sprintf(szText,"Error loading \"%s\"",filename);
-				MessageBox(hMainWnd,szText,"Error",MB_ICONEXCLAMATION);
-			}
-			
-			else LoadMessage(num2asc_name);				
+            LoadMessage(filename,1);			
 			return 0;
 			
 		case IDM_FILE_SAVE_CIPHER:

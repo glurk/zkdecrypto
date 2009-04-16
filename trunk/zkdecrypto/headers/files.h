@@ -56,9 +56,20 @@ void OpenWith(char *szFileName)
 	ShellExecuteEx(&seiShellExec);
 }
 
-int LoadMessage(char *filename)
+int LoadMessage(char *filename, int type)
 {
-	if(!message.Read(filename)) 
+	int loaderror=false;
+
+	switch(type) {
+		case 0:
+			if(!message.Read(filename)) loaderror=true;
+			break;
+		case 1:
+			if(!message.ReadNumeric(filename)) loaderror=true;
+			break;
+	}
+
+	if(loaderror) 
 	{
 		sprintf(szText,"Cannot open %s",(const char*)filename);
 		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
@@ -297,5 +308,5 @@ void RandCipher(int length, int symbols)
 	if(!(rand_cipher=fopen(szText,"w"))) return;
 	for(int x=0; x<340; x++) putc((rand()%63)+0x21,rand_cipher);
 	fclose(rand_cipher);
-	LoadMessage(szText);
+	LoadMessage(szText,0);
 }
