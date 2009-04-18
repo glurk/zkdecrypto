@@ -229,23 +229,29 @@ inline int CommandCipher(int cmd_id)
 			return 0;
 
 		case IDM_CIPHER_ROT_LEFT:
-			SetUndo();
-			message.Rotate(iLineChars,0);
-			iLineChars=iLines;
-			iLines=message.GetLength()/iLineChars;
-			SetPatterns();
-			ClearTextAreas();
-			SetText();
+			if(message.Rotate(iLineChars,0)) {
+				SetUndo();
+				iLineChars=iLines;
+				iLines=message.GetLength()/iLineChars;
+				SetPatterns();
+				ClearTextAreas();
+				SetText();
+				SetDlgInfo();
+				SetPlain();
+			}
 			return 0;
 
 		case IDM_CIPHER_ROT_RIGHT:
-			SetUndo();
-			message.Rotate(iLineChars,1);
-			iLineChars=iLines;
-			iLines=message.GetLength()/iLineChars;
-			SetPatterns();
-			ClearTextAreas();
-			SetText();
+			if(message.Rotate(iLineChars,1)) {
+				SetUndo();
+				iLineChars=iLines;
+				iLines=message.GetLength()/iLineChars;
+				SetPatterns();
+				ClearTextAreas();
+				SetText();
+				SetDlgInfo();
+				SetPlain();
+			}
 			return 0;
 	}
 

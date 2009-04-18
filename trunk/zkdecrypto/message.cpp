@@ -273,10 +273,15 @@ void Message::Flip(int flip_dir, int row_len)
 	FindPatterns(true);
 }
 
-void Message::Rotate(int row_len, int direction)
+int Message::Rotate(int row_len, int direction)
 {
 	char *rot=new char[msg_len+1];
 	int row, col, lines;
+
+	if(msg_len % row_len) {
+		delete rot;
+		return 0;
+	}
 
 	if(msg_len<row_len) row_len=msg_len;
 
@@ -290,6 +295,7 @@ void Message::Rotate(int row_len, int direction)
 	memcpy(cipher,rot,msg_len);
 	delete rot;
 	FindPatterns(true);
+	return 1;
 }
 
 void SwapStringColumns(char *string, int iColumnA, int iColumnB, int iLineChars)

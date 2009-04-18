@@ -62,7 +62,7 @@ public:
 	int Simplify(char*);
 	long SeqHomo(wchar*,char*,float,int);
 	void Flip(int,int);
-	void Rotate(int,int);
+	int Rotate(int,int);
 	void SwapColumns(int,int,int);
 	void SwapRows(int,int,int);
 	void DecodeElgar();
