@@ -231,10 +231,8 @@ inline int CommandCipher(int cmd_id)
 		case IDM_CIPHER_ROT_LEFT:
 			SetUndo();
 			if(message.Rotate(iLineChars,0)) {
-				//SetUndo();
 				iLines=message.GetLength()/iLineChars;
 				iLineChars=iLines;
-				//iLines=message.GetLength()/iLineChars;
 				SetPatterns();
 				ClearTextAreas();
 				SetText();
@@ -246,10 +244,8 @@ inline int CommandCipher(int cmd_id)
 		case IDM_CIPHER_ROT_RIGHT:
 			SetUndo();
 			if(message.Rotate(iLineChars,1)) {
-				//SetUndo();
 				iLines=message.GetLength()/iLineChars;
 				iLineChars=iLines;
-				//iLines=message.GetLength()/iLineChars;
 				SetPatterns();
 				ClearTextAreas();
 				SetText();
