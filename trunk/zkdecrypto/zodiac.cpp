@@ -35,12 +35,14 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDC_RS_UP:
 					if(iLineChars<message.GetLength()-1) iLineChars++;
+					SetScrollBar();
 					ClearTextAreas();
 					SetText();
 					return 0;
 
 				case IDC_RS_DOWN:
 					if(iLineChars>1) iLineChars--;
+					SetScrollBar();					
 					ClearTextAreas();
 					SetText();
 					return 0;
