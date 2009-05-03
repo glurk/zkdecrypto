@@ -24,6 +24,7 @@
 #define IDD_GRAPHS_R					122
 #define IDR_ACCEL                       123
 #define IDD_TRIFID						124
+#define IDD_WORD_FIND					125
 #define IDC_PLAIN                       1000
 #define IDC_CIPHER                      1001
 #define IDC_SOLVE                       1002
@@ -163,37 +164,36 @@
 #define IDC_HOMO_LEN_EDIT               1124
 #define IDC_HOMO_LEN_SPIN               1125
 #define IDC_HOMO_SETS                   1126
-
 #define IDC_IOC_WEIGHT_EDIT             1127
 #define IDC_IOC_WEIGHT_SPIN             1128
 #define IDC_IOC_WEIGHT_TITLE			1129
-
-#define IDC_ENT_WEIGHT_EDIT             1141
-#define IDC_ENT_WEIGHT_SPIN             1142
-#define IDC_ENT_WEIGHT_TITLE			1143
-
-#define IDC_CHI_WEIGHT_EDIT             1144
-#define IDC_CHI_WEIGHT_SPIN             1145
-#define IDC_CHI_WEIGHT_TITLE			1146
-
-#define IDC_EXTRA_ALPHABET				1130
-#define IDC_IOC_ACT_TITLE               1131
-#define IDC_IOC_ACT                     1132
-#define IDC_IOC_EXP                     1133
-#define IDC_ENT_ACT                     1134
-#define IDC_GRAPHS_R_SETS				1135
-
-#define IDC_STATS_TITLE_P               1136
-#define IDC_STATS_ENTRO_P				1137
-#define	IDC_STATS_IOC_P					1138
-#define IDC_STATS_CHI2_P				1139
-
-#define IDC_EXTRA_ALPHABET_C			1140
-#define IDC_TRIFID_DECODE				1141
-#define IDC_TRIFID_BLOCK_EDIT			1142
-#define IDC_TRIFID_BLOCK_SPIN			1143
-#define IDC_RS_DOWN						1144
-#define IDC_RS_UP						1145
+#define IDC_ENT_WEIGHT_EDIT             1130
+#define IDC_ENT_WEIGHT_SPIN             1131
+#define IDC_ENT_WEIGHT_TITLE			1132
+#define IDC_CHI_WEIGHT_EDIT             1133
+#define IDC_CHI_WEIGHT_SPIN             1134
+#define IDC_CHI_WEIGHT_TITLE			1135
+#define IDC_EXTRA_ALPHABET				1136
+#define IDC_IOC_ACT_TITLE               1137
+#define IDC_IOC_ACT                     1138
+#define IDC_IOC_EXP                     1139
+#define IDC_ENT_ACT                     1140
+#define IDC_GRAPHS_R_SETS				1141
+#define IDC_STATS_TITLE_P               1142
+#define IDC_STATS_ENTRO_P				1143
+#define	IDC_STATS_IOC_P					1144
+#define IDC_STATS_CHI2_P				1145
+#define IDC_EXTRA_ALPHABET_C			1146
+#define IDC_TRIFID_DECODE				1147
+#define IDC_BLOCK_EDIT					1148
+#define IDC_BLOCK_SPIN					1149
+#define IDC_RS_DOWN						1150
+#define IDC_RS_UP						1151
+#define IDC_SOLVE_TYPE					1152
+#define IDC_KEY_LEN						1153
+#define IDC_BLOCK_TITLE					1154
+#define IDC_KEY_EDIT					1155
+#define IDC_WORD_FIND					1156
 
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
@@ -263,7 +263,7 @@
 #define UDM_INIT_TARGET                 40103
 #define UDM_HOMO_UPDATE                 40104
 #define IDM_CIPHER_COPY_SYMBOLS			40105
-#define IDM_SOLVE_TRIFID				40106
+#define IDM_WORD_FIND				40106
 #define IDM_CIPHER_COL_LEFT				40107
 #define IDM_CIPHER_COL_RIGHT			40108
 #define IDM_TEXT_SEL_LEFT				40109
@@ -272,6 +272,10 @@
 #define IDM_CIPHER_ROW_DOWN				40112
 #define IDM_TEXT_SEL_UP					40113
 #define IDM_TEXT_SEL_DOWN				40114
+#define IDM_EDIT_CRIBS					40115
+#define IDM_EDIT_CRIBS_RELOAD			40116
+#define IDM_KEY_CT						40117
+#define IDM_CIPHER_UPPER				40118
 
 // Next default values for new objects
 // 

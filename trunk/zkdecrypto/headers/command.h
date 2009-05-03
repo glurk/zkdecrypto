@@ -78,6 +78,8 @@ inline int CommandEdit(int cmd_id)
 		case IDM_EDIT_REDO: Redo(); SetCipher(); return 0;
 		case IDM_EDIT_MSG: if(bMsgLoaded) OpenWith(szCipherName); return 0;
 		case IDM_EDIT_MAP: if(bMsgLoaded) OpenWith(szKeyName); return 0;
+		case IDM_EDIT_CRIBS: if(bMsgLoaded) {sprintf(szText,"%s%s",szExeDir,"cribs.txt"); OpenWith(szText);} return 0;
+		case IDM_EDIT_CRIBS_RELOAD: LoadCribs(); return 0;
 	}
 
 	return 0;
@@ -166,6 +168,14 @@ inline int CommandCipher(int cmd_id)
 			SetPatterns();
 			return 0;
 
+		case IDM_CIPHER_UPPER:
+			strupr(message.GetCipher());
+			message.SetInfo();
+			SetKey();
+			SetPatterns();
+			SetDlgInfo();
+			return 0;
+
 		case IDM_CIPHER_RAND_TRANS:
 			
 			//message.FindPatterns(false);
@@ -200,11 +210,16 @@ inline int CommandCipher(int cmd_id)
 			if(lRowCol) DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			return 0;
 
-		case IDM_CIPHER_RANDOM: message.DecodeElgar(); SetDlgInfo(); return 0;
+		case IDM_CIPHER_RANDOM: 
+			//message.DecodeElgar(); 
+			//KryptosMatrix(lines,1);
+			SetDlgInfo(); 
+			return 0;
 			
 		case IDM_CIPHER_SEQHOMO:
-			hHomo=CreateDialog(hInst,MAKEINTRESOURCE(IDD_SEQHOMO),hMainWnd,(DLGPROC)HomoProc);
-			ShowWindow(hHomo,SW_SHOWNORMAL);
+			if(hHomoWnd) return 0;
+			hHomoWnd=CreateDialog(hInst,MAKEINTRESOURCE(IDD_SEQHOMO),hMainWnd,(DLGPROC)HomoProc);
+			ShowWindow(hHomoWnd,SW_SHOWNORMAL);
 			return 0;
 
 		case IDM_CIPHER_HORZ: 
@@ -274,6 +289,11 @@ inline int CommandKey(int cmd_id)
 				SetDlgInfo();
 			}
 			
+			return 0;
+
+		case IDM_KEY_CT:
+			message.cur_map.AsCipher();
+			SetDlgInfo();
 			return 0;
 
 		case IDM_KEY_SCRAMBLE:
@@ -381,8 +401,10 @@ inline int CommandSolve(int cmd_id)
 		case IDM_SOLVE_TP_NORM: SetPriority(2); return 0;	
 		case IDM_SOLVE_TP_LOW: SetPriority(1); return 0;
 			
-		case IDM_SOLVE_TRIFID:
-			DialogBox(hInst,MAKEINTRESOURCE(IDD_TRIFID),hMainWnd,(DLGPROC)TrifidProc);
+		case IDM_WORD_FIND:
+			if(hWordWnd) return 0;
+			hWordWnd=CreateDialog(hInst,MAKEINTRESOURCE(IDD_WORD_FIND),hMainWnd,(DLGPROC)WordFindProc);
+			ShowWindow(hWordWnd,SW_SHOWNORMAL);
 			return 0;
 	}
 

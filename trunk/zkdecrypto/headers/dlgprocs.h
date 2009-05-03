@@ -209,7 +209,7 @@ LRESULT CALLBACK StringProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //options dialog
 LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	int iPrevLang;
+	int iPrevLang, iMaxKeyLen;
 
 	switch(iMsg)
 	{
@@ -229,6 +229,17 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_ADDSTRING,0,(LPARAM)"Italian");
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_ADDSTRING,0,(LPARAM)"French");
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_SETCURSEL,iLang,0);
+
+			//solve type		
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Substition");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Vigenere");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Bifid");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Trifid");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Anagram");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Row/Col Trans");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Kryptos Trans");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_SETCURSEL,iSolveType,0);
+			SetDlgItemInt(hWnd,IDC_KEY_LEN,iKeyLength,0);
 
 			//word length
 			SetDlgItemInt(hWnd,IDC_WORD_MIN,iWordMin,false);
@@ -274,15 +285,37 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						MessageBox(hWnd,"Line length must be greater than 0","Notice",MB_ICONEXCLAMATION);
 						return 0;
 					}
-					
-					//blank best key, so that additional chars are renewed
-					//siSolveInfo.best_key[0]='\0';
+
+					//solve type
+					iSolveType=SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_GETCURSEL,0,0);
+					message.SetDecodeType(iSolveType);
+
+					iKeyLength=GetDlgItemInt(hWnd,IDC_KEY_LEN,0,0);
+					message.SetKeyLength(iKeyLength);
+
+
+					switch(iSolveType) //set key max length
+					{
+						case SOLVE_BIFID: iMaxKeyLen=25; break;
+						case SOLVE_TRIFID: iMaxKeyLen=27; break;
+						case SOLVE_VIG: iMaxKeyLen=iKeyLength; break;
+						case SOLVE_HOMO:
+						case SOLVE_ANAGRAM: 
+						case SOLVE_COLTRANS: iMaxKeyLen=0; szText[0]='\0'; break;
+					}
+
+					SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0);
 					
 					//update display
-					SetScrollBar();					
-					SetDlgInfo();
-					ClearTextAreas();
-					SetText();
+					if(bMsgLoaded && !siSolveInfo.running)
+					{
+						SetScrollBar();					
+						SetDlgInfo();
+						ClearTextAreas();
+						SetPlain();
+						SetText();
+						SetKeyEdit();
+					}
 
 				case IDCANCEL:
 					EndDialog(hWnd,0);
@@ -324,64 +357,6 @@ void LetterDist(int target, HWND hWnd)
 			SetDlgItemInt(hWnd,lprgiInitID[letter],int(n[letter]),false);
 }
 
-/*
-void LetterDist(int target, HWND hWnd)
-{
-	int letter, set_symbols=0, max_letter, x, y;
-	float n[26], unitemp[27], unitemp2[27], maxtemp=0, skewvalue=(float)0.095, unimax=0, temp;
-
-	memset(n,0,26*sizeof(float));
-
-	//make a temp copy of the unigraphs for sorting
-	for(letter=0; letter<26; letter++) {
-		temp=unitemp2[letter]=unitemp[letter]=message.cur_map.GetUnigraph(letter);
-		if(temp>unimax) unimax=temp; 
-	}
-	
-	//calculate the skew based on number of uniques
-	//still have to derive the formula for this
-//	skewvalue=(unimax/94)-0.040127;
-//	unimax/=94;
-//	skevalue*=message.cur_map.GetNumSymbols();
-
-	//create a frequency-sorted alphabet
-	for(y=0; y<26; y++) {
-		letter=-1;
-		maxtemp=0;
-		for(x=0; x<26; x++) {
-			if(unitemp[x]-skewvalue>maxtemp) { maxtemp=unitemp[x]; letter=x; }
-		}
-		if(letter != -1 && set_symbols<target) { unitemp[letter]=0; n[letter]++; set_symbols++; }
-	}
-	
-	if(set_symbols<target) { 
-		//calculate real number of occurences for each letter
-		for(letter=0; letter<26; letter++)
-		{
-			temp=(message.cur_map.GetUnigraph(letter)/100)*(target);
-			if((int)temp>0) temp--;
-			n[letter]+=temp;
-			if(temp>0) set_symbols+=(int)temp;
-		}
-	}
-	
-	while(set_symbols<target)
-	{
-		//find the letter with the highest freq.
-		x=0;
-
-		for(letter=0; letter<26; letter++)
-			if(unitemp2[letter]>unitemp2[x]) { x=letter; unitemp2[x]--; }
-	
-		//set that letter to the next whole number
-		n[x]++;
-		set_symbols++;
-	}
-
-	for(letter=0; letter<26; letter++)
-		SetDlgItemInt(hWnd,lprgiInitID[letter],int(n[letter]),false);
-}
-*/
 
 //init key dialog
 LRESULT CALLBACK InitProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -531,7 +506,7 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_HOMO_TOL_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
 				case IDC_HOMO_LEN_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
 							
-				case IDCANCEL: EndDialog(hWnd,0); hHomo=NULL; return 0;
+				case IDCANCEL: EndDialog(hWnd,0); hHomoWnd=NULL; return 0;
 			}				
 			return 0;
 
@@ -542,15 +517,42 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-//Trifid Decoding
-LRESULT CALLBACK TrifidProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+inline int MatchStringTemplate(std::string sTemp, std::string sWord)
 {
-	int iBlockSize;
+	int length=sTemp.length();
+
+	if(length!=sWord.length()) return 0;
+
+	for(int i=0; i<length; i++)
+	{
+		if(sTemp.at(i)=='*') continue; //wild card
+		
+		else if(sTemp.at(i)>='0' && sTemp.at(i)<='9') //pattern number
+			for(int j=0; j<length; j++) //compare word letter at each position
+			{
+				if(sTemp.at(j)<'0' || sTemp.at(j)>'9') continue; //not a pattern number
+				if(sTemp.at(j)==sTemp.at(i) && sWord.at(j)!=sWord.at(i)) return 0; //same pattern number, different word letter
+				if(sTemp.at(j)!=sTemp.at(i) && sWord.at(j)==sWord.at(i)) return 0; //different pattern number, same word letter
+			}
+
+		else if(sTemp.at(i)!=sWord.at(i)) return 0; //exact letter	
+	}
+
+	return 1;
+}
+
+//Trifid Decoding
+LRESULT CALLBACK WordFindProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int iWordLen;
 	long lfHeight;
-    HDC hdc;
+	std::string word_str;
+	DICTMAP::iterator iter;
+
+	HDC hdc;
 
 	hdc = GetDC(NULL);
-    lfHeight = -MulDiv(14, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+    lfHeight = -MulDiv(10, GetDeviceCaps(hdc, LOGPIXELSY), 72);
     ReleaseDC(NULL, hdc);
 
     hTempFont = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
@@ -558,28 +560,31 @@ LRESULT CALLBACK TrifidProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	switch(iMsg)
 	{
 		case WM_INITDIALOG:
-			SendDlgItemMessage(hWnd,IDC_TRIFID_DECODE, WM_SETFONT, (WPARAM)hTempFont, TRUE);
-			//set up/down control ranges
-			SendDlgItemMessage(hWnd,IDC_TRIFID_BLOCK_SPIN,UDM_SETRANGE,1,message.GetLength());
-			SetDlgItemInt(hWnd,IDC_TRIFID_BLOCK_EDIT,1,false);
+			SetFocus(GetDlgItem(hWnd,IDC_WORD_FIND));
+			SendDlgItemMessage(hWnd,IDC_WORD_LIST, WM_SETFONT, (WPARAM)hTempFont, TRUE);
+			return 0;
 
 		case UDM_HOMO_UPDATE:
-			iBlockSize=GetDlgItemInt(hWnd,IDC_TRIFID_BLOCK_EDIT,false,false);
-	
-			memcpy(szText,message.GetCipher(),message.GetLength());
-			szText[message.GetLength()]='\0';
-			//DecodeBifid(szText,iBlockSize);
-			DecodeTrifid(szText,iBlockSize);
-			//DecodeVigenere(szText,"IF");
-			SetDlgItemText(hWnd,IDC_TRIFID_DECODE,(CHAR*)szText);
+
+			SendDlgItemMessage(hWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
+			GetDlgItemText(hWnd,IDC_WORD_FIND,szText,30);
+			strupr(szText);
+			word_str=szText;
+
+			for( iter = dictionary.begin(); iter != dictionary.end(); ++iter ) 
+			{
+				if(MatchStringTemplate(word_str,iter->first))
+					SendDlgItemMessage(hWnd,IDC_WORD_LIST,LB_ADDSTRING,0, (WPARAM)std::string(iter->first).data() );
+			}
+			
 			return 0;			
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDC_TRIFID_BLOCK_EDIT: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
+				case IDC_WORD_FIND: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
 							
-				case IDCANCEL: EndDialog(hWnd,0); hHomo=NULL; return 0;
+				case IDCANCEL: EndDialog(hWnd,0); hWordWnd=NULL; return 0;
 			}				
 			return 0;
 
@@ -587,6 +592,7 @@ LRESULT CALLBACK TrifidProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			DeleteObject(hTempFont);
 			return 0;
 	}
+	
 	return 0;
 }
 

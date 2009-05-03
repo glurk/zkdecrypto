@@ -371,6 +371,7 @@ void SetCharSize()
 //call when key is changed to decode and display plain text
 void SetPlain()
 {
+	if(siSolveInfo.running) return;
 	szPlain=message.GetPlain();
 }
 
@@ -667,6 +668,31 @@ inline void SetStatsTabInfo()
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
 }
 
+void SetKeyEdit()
+{
+	switch(iSolveType) //set key
+	{
+		case SOLVE_BIFID: strcpy(szText,message.bifid_array); break;
+		case SOLVE_TRIFID: strcpy(szText,message.trifid_array); break;
+		case SOLVE_VIG: strcpy(szText,message.GetKey()); break;
+		case SOLVE_HOMO:
+		case SOLVE_ANAGRAM: 
+		case SOLVE_COLTRANS: szText[0]='\0'; break;
+			case SOLVE_KRYPTOS: break;
+			{
+				szText[0]='\0';
+
+				for(int iCurIndex=0; iCurIndex<14; iCurIndex++)
+				{
+					sprintf(szText+iCurIndex*8,"(%02i,%02i) ",siSolveInfo.best_key4[iCurIndex]>>8 & 0x000000FF, siSolveInfo.best_key4[iCurIndex] & 0x000000FF);
+					SetWindowText(hTextWnd,szText);
+				}
+			}
+	}
+
+	SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText);
+}
+
 inline void SetDlgInfo()
 {
 	if(!bMsgLoaded) return;
@@ -674,11 +700,13 @@ inline void SetDlgInfo()
 	//set key to hillclimber best if running
 	if(siSolveInfo.running)
 	{
-		if(iSolveType==0) message.cur_map.FromKey(siSolveInfo.best_key);
-		if(iSolveType==1) message.SetCipherTrans(siSolveInfo.best_trans);
+		strcpy(szText,message.GetKey());
+
+		if(iSolveType==SOLVE_HOMO) message.cur_map.FromKey(siSolveInfo.best_key);
+		else SetKeyEdit();
 	}
 		
-	SetPlain();
+	else SetPlain();
 	
 	//info on tabs
 	SetSolveTabInfo();
@@ -686,7 +714,7 @@ inline void SetDlgInfo()
 	SetWordListTabInfo();
 	SetStatsTabInfo();
 	
-	SetGraph();
+	if(hLetter) SetGraph();
 }
 
 //call when the cipher is changed, i.e. symbol merge
@@ -822,6 +850,9 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_TITLE),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_EDIT),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_SPIN),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_TITLE),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_EDIT),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_SPIN),iShowStats);
 }
 
 void CreateTextMenu()

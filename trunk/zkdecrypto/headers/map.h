@@ -39,6 +39,7 @@ public:
 	int Write(const char*);
 	void Clear(int);
 	void Init(int*);
+	void AsCipher();
 
 	int AddSymbol(SYMBOL&,int);
 	int GetSymbol(int,SYMBOL*);
