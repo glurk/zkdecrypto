@@ -453,6 +453,7 @@ void SetLanguage()
 		case 1: strcpy(szLanguage,"Spanish"); strcpy(szLang,LANG_SPA); siSolveInfo.lang_ioc=(float)IOC_SPA; break;
 		case 2: strcpy(szLanguage,"German"); strcpy(szLang,LANG_GER); siSolveInfo.lang_ioc=(float)IOC_GER; break;
 		case 3: strcpy(szLanguage,"Italian"); strcpy(szLang,LANG_ITA); siSolveInfo.lang_ioc=(float)IOC_ITA; break;
+		case 4: strcpy(szLanguage,"French"); strcpy(szLang,LANG_FRE); siSolveInfo.lang_ioc=(float)IOC_FRE; break;
 	}
 	
 	for(int n=1; n<=5; n++)
