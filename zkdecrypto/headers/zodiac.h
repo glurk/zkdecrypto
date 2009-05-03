@@ -16,6 +16,7 @@
 #define LANG_SPA	"spa"
 #define LANG_GER	"ger"
 #define LANG_ITA	"ita"
+#define LANG_FRE    "fre"
 
 //language IoC
 #define IOC_ENG		.0665
