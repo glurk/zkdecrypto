@@ -95,6 +95,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_CIPHER_ROT_LEFT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_ROT_RIGHT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_INIT,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_KEY_CT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_SCRAMBLE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_CLEAR,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_SOLVE_WORD,MF_BYCOMMAND | menu_state);
@@ -148,11 +149,21 @@ void StopSolve()
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Start");
 	MsgEnable(true);
 	MapEnable(true);
-	if(siSolveInfo.best_trans)
+
+	switch(iSolveType)
 	{
-		delete siSolveInfo.best_trans;
-		siSolveInfo.best_trans=NULL;
+		case SOLVE_HOMO: break;
+		case SOLVE_VIG: message.SetKey(siSolveInfo.best_key); break;
+		case SOLVE_BIFID: strcpy(message.bifid_array,siSolveInfo.best_key); break;
+		case SOLVE_TRIFID: strcpy(message.trifid_array,siSolveInfo.best_key); break;
+		case SOLVE_ANAGRAM:
+		case SOLVE_COLTRANS: if(siSolveInfo.best_trans) 	message.SetCipherTrans(siSolveInfo.best_trans);	break;
 	}
+
+	delete siSolveInfo.best_trans;
+	siSolveInfo.best_trans=NULL;
+
+	SetDlgInfo();
 }
 
 //timer thread proc
@@ -296,7 +307,7 @@ void StopNotify()
 //solve thread proc
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
-	int num_symbols;
+	int num_symbols, use_key_len;
 	char key[KEY_SIZE];
 	char *exclude=NULL;
 	SYMBOL symbol;
@@ -305,7 +316,7 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 	
 	SetThreadPriority(hSolveThread,iPriority);
 
-	if(iSolveType==0)
+	if(iSolveType==SOLVE_HOMO)
 	{
 		num_symbols=message.cur_map.GetNumSymbols();
 		
@@ -328,12 +339,26 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		siSolveInfo.locked=(char*)message.cur_map.GetLocked();
 		siSolveInfo.exclude=exclude;
 		
-		hillclimb(szCipher,message.GetLength(),key,siSolveInfo,false);
+		hillclimb(message,szCipher,message.GetLength(),key,siSolveInfo,false);
 	}
 
-	if(iSolveType==1)
+	else 
 	{
-		hillclimb2(message,siSolveInfo,iLineChars);
+		if(iSolveType==SOLVE_KRYPTOS) hillclimb2(message,siSolveInfo,iSolveType,key,iLineChars);
+
+		else
+		{
+			switch(iSolveType)
+			{
+				case SOLVE_VIG: strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
+				case SOLVE_BIFID: strcpy(key,message.bifid_array); break;
+				case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
+				case SOLVE_ANAGRAM:	break;
+				case SOLVE_COLTRANS: break;
+			}
+
+			hillclimb2(message,siSolveInfo,iSolveType,key,iLineChars);
+		}
 	}
 
 	//reset window state
@@ -523,134 +548,36 @@ void LockWord(int lock)
 	}
 }
 
-int FindTrifidIndex(char symbol, int &x, int &y, int &z)
-{
-	for(x=0; x<3; x++)
-		for(y=0; y<3; y++)
-			for(z=0; z<3; z++)
-				if(symbol==trifid_array[x][z][y])
-					return 1;
+/*
 
-	return 0;
-}
-
-int FindBifidIndex(char symbol, int &x, int &y)
-{
-	for(x=0; x<5; x++)
-		for(y=0; y<5; y++)
-			if(symbol==bifid_array[y][x])
-				return 1;
-
-	return 0;
-}
-	
-void DecodeTrifid(char *block, int block_size)
-{
-	int x,y,z, cipher_len, iCurChar;
-	char cCurSymbol;
-	char *index_string=new char[block_size*3+1];
-	char *decode_string=new char[block_size+1];
-
-	if(block_size<1) return;
-
-	cipher_len=strlen(block);
-
-	for(int iBlockStart=0; iBlockStart+block_size<=cipher_len; iBlockStart+=block_size)
-	{
-		//get cipher symbol indexes and put them into string
-		for(iCurChar=0; iCurChar<block_size; iCurChar++)
-		{
-			cCurSymbol=block[iBlockStart+iCurChar];
-			
-			if(FindTrifidIndex(cCurSymbol,x,y,z))
-				sprintf(index_string+iCurChar*3,"%i%i%i",x,y,z);
-		}
-
-		index_string[block_size*3]='\0';
-
-		//split string into 3 sections and get plain indexes
-		for(iCurChar=0; iCurChar<block_size; iCurChar++)
-		{
-			x=index_string[iCurChar]-'0';
-			y=index_string[iCurChar+block_size]-'0';
-			z=index_string[iCurChar+(block_size<<1)]-'0';
-			
-			decode_string[iCurChar]=trifid_array[x][z][y];
-		}
-
-		decode_string[block_size]='\0';
-
-		memcpy(block+iBlockStart,decode_string,block_size);
-	}
-	
-	delete index_string;
-	delete decode_string;
-}
-
-void DecodeBifid(char *block, int block_size)
-{
-	int x,y, cipher_len, iCurChar;
-	char cCurSymbol;
-	char *index_string=new char[block_size*2+1];
-	char *decode_string=new char[block_size+1];
-
-	if(block_size<1) return;
-
-	cipher_len=strlen(block);
-
-	for(int iBlockStart=0; iBlockStart+block_size<=cipher_len; iBlockStart+=block_size)
-	{
-		//get cipher symbol indexes and put them into string
-		for(iCurChar=0; iCurChar<block_size; iCurChar++)
-		{
-			cCurSymbol=block[iBlockStart+iCurChar];
-			
-			if(FindBifidIndex(cCurSymbol,x,y))
-				sprintf(index_string+iCurChar*2,"%i%i",x,y);
-
-						else
-				x=x;
-		}
-
-		index_string[block_size*2]='\0';
-
-		//split string into 2 sections and get plain indexes
-		for(iCurChar=0; iCurChar<block_size; iCurChar++)
-		{
-			x=index_string[iCurChar]-'0';
-			y=index_string[iCurChar+block_size]-'0';
-			
-			decode_string[iCurChar]=bifid_array[y][x];
-		}
-
-		decode_string[block_size]='\0';
-
-		memcpy(block+iBlockStart,decode_string,block_size);
-	}
-	
-	delete index_string;
-	delete decode_string;
-}
-
-void DecodeVigenere(char *cipher, char *key)
+void DecodeVigenere(char *cipher, char *key, int key_len)
 {
 	int cipher_len=strlen(cipher);
-	int key_len=strlen(key);
-	int iCipherIndex, iKeyIndex=0, iKeyRow, iCipherCol;
+	//int key_len=strlen(key);
+	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
+	char *lpcCipherInKeyRow;
 
 	for(iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
 	{
+		//find key row
 		for(iKeyRow=0; iKeyRow<26; iKeyRow++)
 			if(vigenere_array[iKeyRow][0]==key[iKeyIndex]) break;
 
-		iCipherCol=int(strchr(vigenere_array[iKeyRow],cipher[iCipherIndex])-vigenere_array[iKeyRow]);
+		if(iKeyRow>25) continue;
 
+		//find cipher column
+		lpcCipherInKeyRow=strchr(vigenere_array[iKeyRow],cipher[iCipherIndex]);
+		if(!lpcCipherInKeyRow) continue;
+
+		iCipherCol=int(lpcCipherInKeyRow-vigenere_array[iKeyRow]);
+
+		//get plain text character in key row 0
 		cipher[iCipherIndex]=vigenere_array[0][iCipherCol];
 	
 		if(++iKeyIndex>=key_len) iKeyIndex=0;
 	}
 }
-
+*/
 /*void ColumnPermute(char *cipher,int length,int pos,int r)
 {
    if(pos==r+1)
@@ -670,3 +597,172 @@ void DecodeVigenere(char *cipher, char *key)
    }
 }*/
 
+/*
+void KryptosMatrix()
+{
+	int cipher_len=message.GetLength();
+	char *new_cipher=new char[cipher_len+1];
+	const char *cipher=message.GetCipher();
+	int iAdds=-1, iAddSub=0; 
+	int iNewIndex=-1, iSkipAdd=false;
+
+	int iAdd=192, iSub=144, iMaxAdds=3;
+	iAdd=48; iSub=48;
+	
+
+	memset(new_cipher,1,cipher_len);
+
+	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	{
+
+			iNewIndex+=iAdd;
+			if(iNewIndex>=cipher_len) iNewIndex-=cipher_len;
+				
+		
+
+		
+		new_cipher[iNewIndex--]=cipher[iCipherIndex];
+	}
+
+	new_cipher[cipher_len]='\0';
+
+	message.SetCipherTrans(new_cipher);
+	delete new_cipher;
+}
+*/
+/*
+void KryptosMatrix(int *key, int enc_dec)
+{
+	int cipher_len=message.GetLength();
+	char *new_cipher=new char[cipher_len+1];
+	const char *cipher=message.GetCipher();
+	int iKeyIndex=0, key_len=7;
+	int iNewIndex=-1;
+	int line_len=cipher_len/7;
+	int line_diff;
+	
+	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	{
+		if(iKeyIndex) line_diff=lines[iKeyIndex]-lines[iKeyIndex-1];
+		else line_diff=lines[iKeyIndex];
+		
+		iNewIndex+=line_len*line_diff;
+		if(iKeyIndex%2) iNewIndex--;
+
+		if(iNewIndex<0) {iNewIndex+=cipher_len; iNewIndex++;}
+		if(iNewIndex>=cipher_len) {iNewIndex-=cipher_len; iNewIndex--;}
+			
+		if(enc_dec) new_cipher[iCipherIndex]=cipher[iNewIndex];
+		else new_cipher[iNewIndex]=cipher[iCipherIndex];
+
+		if(++iKeyIndex==key_len) iKeyIndex=0;
+	}
+
+	new_cipher[cipher_len]='\0';
+
+	message.SetCipherTrans(new_cipher);
+	delete new_cipher;
+}*/
+
+/*
+void KryptosMatrix(int *key, int key_len, int enc_dec)
+{
+	int cipher_len=message.GetLength();
+	char *new_cipher=new char[cipher_len+1];
+	const char *cipher=message.GetCipher();
+	int iKeyIndex=0;
+	int iNewIndex=-1;
+	int line_len=cipher_len/7;
+	int line_diff;
+	
+	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	{
+		if(iKeyIndex) line_diff=key[iKeyIndex]-key[iKeyIndex-1];
+		else line_diff=key[iKeyIndex];
+		
+		iNewIndex+=line_len*line_diff;
+		if(iKeyIndex%2) iNewIndex--;
+
+		if(iNewIndex<0) {iNewIndex+=cipher_len; iNewIndex++;}
+		if(iNewIndex>=cipher_len) {iNewIndex-=cipher_len; iNewIndex--;}
+			
+		if(enc_dec) new_cipher[iCipherIndex]=cipher[iNewIndex];
+		else new_cipher[iNewIndex]=cipher[iCipherIndex];
+
+		if(++iKeyIndex==key_len) iKeyIndex=0;
+	}
+
+	new_cipher[cipher_len]='\0';
+
+	message.SetCipherTrans(new_cipher);
+	delete new_cipher;
+}
+*/
+
+void KryptosMatrix(int *key, int enc_dec)
+{
+	int cipher_len=message.GetLength();
+	char *new_cipher=new char[cipher_len+1];
+	const char *cipher=message.GetCipher();
+	int iKeyIndex=0, iNewIndex;
+	int iLines;
+	int cur_row, cur_col=-1;
+
+	memset(new_cipher,1,cipher_len);
+	
+	if(cipher_len==336) {iLineChars=42;}
+	if(cipher_len==98) {iLineChars=7;}
+
+	iLines=cipher_len/iLineChars;
+
+	cur_col=key[iKeyIndex] & 0x000000FF;
+	cur_row=key[iKeyIndex]>>8 & 0x000000FF;
+	if(++iKeyIndex==14) iKeyIndex=0;
+	
+	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	{
+		//set cipher//plain character
+		iNewIndex=iLineChars*cur_row+cur_col;
+
+		if(enc_dec) {if(new_cipher[iNewIndex]!=1) continue; new_cipher[iNewIndex]=cipher[iCipherIndex];}
+		else new_cipher[iCipherIndex]=cipher[iNewIndex];
+
+		if(iLines>8) //K4 7 cols
+		{
+			cur_col--;
+			cur_row-=8;
+			if(cur_row<0) cur_row+=iLines;
+		}
+
+		else
+		{
+	
+			cur_row-=2; cur_col-=2; //move to next hole
+
+			if(cur_row<0) 
+			{
+				cur_row+=iLines;
+				
+				if((iLines%2)) //odd # lines 
+				{
+					if(cur_row==iLines-1) {cur_row--; cur_col--;} //on the last line, go up & left
+					else if(cur_row==iLines-2) {cur_row++; cur_col++;} //on next to last, down & right
+				}
+				
+				else cur_col++;	//just go right on even # rows
+			}
+		}
+
+		if(cur_col<0) //start next shift position
+		{
+			cur_col=key[iKeyIndex] & 0x000000FF;
+			cur_row=key[iKeyIndex]>>8 & 0x000000FF;
+			if(++iKeyIndex==14) iKeyIndex=0;
+		} 
+	}
+
+	new_cipher[cipher_len]='\0';
+
+	message.SetCipherTrans(new_cipher);
+	delete new_cipher;
+}

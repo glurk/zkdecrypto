@@ -27,7 +27,7 @@
 #include "headers/z340Globals.h"
 #include "headers/strarray.h"
 
-int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
+int hillclimb(Message &msg, const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
 {
 	#define	DO_SWAP	{ unsigned char temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 	#define DECODE {for(y=clength;y--;) solved[y]=*decoder[(unsigned char)cipher[y]];}
@@ -70,7 +70,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 	info.cur_fail=0;
 
 	//initial score & feedback
-	last_score=calcscore(clength,solved,info);
+	last_score=calcscore(msg,clength,solved,info);
 	info.best_score=last_score;
 	memcpy(info.best_key,key,keylength);
 	if(info.disp_all) info.disp_all();
@@ -107,7 +107,7 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 				DO_SWAP; 
 				DECODE;
 			
-				score=calcscore(clength,solved,info); 
+				score=calcscore(msg,clength,solved,info); 
 
 				//undo if change made it worse than last score
 				if(score<last_score) {DO_SWAP;} 
@@ -133,9 +133,9 @@ int hillclimb(const char cipher[],int clength,char key[],SOLVEINFO &info, int pr
 		// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
 		for(i=info.swaps;i--;) shufflekey(key,keylength,cuniq,info);    
 
-		iterations++; if(iterations>info.revert) { memcpy(key,info.best_key,keylength); iterations=0; }
+		if(++iterations>info.revert) { memcpy(key,info.best_key,keylength); iterations=0; }
 		DECODE;
-		last_score=calcscore(clength,solved,info); 
+		last_score=calcscore(msg,clength,solved,info); 
 		
 		if(!improve) info.cur_fail++;
 		
@@ -202,7 +202,7 @@ inline float FastChiSquare(const char *string)
 	return chi2/length;
 }
 
-inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &info) {
+inline int calcscore(Message &msg, const int length_of_cipher,const char *solv, SOLVEINFO &info) {
 
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
@@ -242,6 +242,18 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
 
 	score=pentascore+tetrascore+triscore+biscore;
 
+	//score=10000;
+
+	int lprgiActFreq[26], lprgiExpFreq[26], letter;
+	float freq_diff=0;
+	
+	memset(lprgiActFreq,0,26*sizeof(int));
+	for(letter=0; letter<length_of_cipher; letter++) lprgiActFreq[solv[letter]-'A']++;
+	msg.GetExpFreq(lprgiExpFreq);
+	for(letter=0; letter<26; letter++) freq_diff+=ABS(lprgiExpFreq[letter]-lprgiActFreq[letter]);
+
+	//score*=(float)1.05-(.001*freq_diff);
+
 	float cur_ioc=FastIoC(solv,length_of_cipher);
     float score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-info.lang_ioc));
     score=int(score*score_mult);
@@ -253,6 +265,9 @@ inline int calcscore(const int length_of_cipher,const char *solv, SOLVEINFO &inf
 	float cur_ent=Entropy(solv);
     score_mult=(float)(1.05-((float)info.ent_weight/100.0*ABS(cur_ent-(float)4.1)));
     score=int(score*score_mult);
+
+	for(int cur_crib=0; cur_crib<info.num_cribs; cur_crib++)
+		if(strstr(solv,info.cribs[cur_crib])) score*=1.025;
 
 //	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
 	
@@ -483,7 +498,7 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 		if(fail) continue;
 		
 		//compare score
-		cur_score=calcscore(msg_len,plain,info);
+		cur_score=calcscore(msg,msg_len,plain,info);
 		
 		if(cur_score>best_score)
 		{
@@ -500,40 +515,137 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 	return best_score;
 }
 
+//K3
+//int key_n[]={ 5<<8 | 40, 4<<8 | 40, 3<<8 | 40, 2<<8 | 40, 1<<8 | 40, 0<<8 | 40, 7<<8 | 41,  6<<8 | 41, 5<<8 | 41,  4<<8 | 41,  3<<8 | 41,  2<<8 | 41, 1<<8 | 41, 	0<<8 | 41};
+	
+//K4 14 cols
+//int key[]={4<<8 | 12, 3<<8 | 12, 2<<8 | 12, 1<<8 | 12, 	0<<8 | 12, 5<<8 | 11, 6<<8 | 13,  5<<8 | 13,  4<<8 | 13,  3<<8 | 13,  2<<8 | 13, 1<<8 | 13, 0<<8 | 13, 5<<8 | 12};
 
+//K3 7 Cols
+//int key[]={3<<8 | 6, 10<<8 | 6, 1<<8 | 6, 2<<8 | 6, 8<<8 | 6, 7<<8 | 6, 11<<8 | 6,  6<<8 | 6,  4<<8 | 6,  0<<8 | 6, 5<<8 | 6, 12<<8 | 6,  13<<8 | 6, 9<<8 | 6};	
 
-
-
-
-
-int hillclimb2(Message &msg, SOLVEINFO &info, int iLineChars)
+/*for(int ki=0; ki<14; ki++)
 {
-	//#define MSG_SWAP {temp=solved[p1]; solved[p1]=solved[p2]; solved[p2]=temp;}
-	#define MSG_SWAP {if(rand()%2) SwapStringColumns(solved,p1,p2,iLineChars); else SwapStringRows(solved,p1,p2,iLineChars);}
-	int i,p1,p2,clength;
-	char *solved;
 
-	clength=msg.GetLength();
-	solved=new char[clength+1];
-	info.best_trans=new char[clength+1];
+}*/
 
-	strcpy(solved,msg.GetCipher());
+void KryptosMatrix4(char *cipher, char *solved, int *key, int iLineChars, int enc_dec)
+{
+	int cipher_len=strlen(cipher);
+	int iKeyIndex=0, iNewIndex, iLines;
+	int cur_row, cur_col=-1;
 
-	int score = 0, last_score=0, iterations = 0, improve = 0;
+	memset(solved,1,cipher_len);
+	
+	if(cipher_len==336) {iLineChars=42;}
+	//if(cipher_len==98) {iLineChars=7;}
+
+	iLines=cipher_len/iLineChars;
+
+	cur_col=key[iKeyIndex] & 0x000000FF;
+	cur_row=key[iKeyIndex]>>8 & 0x000000FF;
+	if(++iKeyIndex==14) iKeyIndex=0;
+	
+	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	{
+		//set cipher//plain character
+		iNewIndex=iLineChars*cur_row+cur_col;
+
+		if(enc_dec) {if(solved[iNewIndex]!=1) continue; solved[iNewIndex]=cipher[iCipherIndex];}
+		else solved[iCipherIndex]=cipher[iNewIndex];
+
+		if(iLines>8) //K4 7 cols
+		{
+			cur_col--;
+			cur_row-=8;
+			if(cur_row<0) cur_row+=iLines;
+		}
+
+		else //K3
+		{
+			cur_row-=2; cur_col-=2; //move to next hole
+
+			if(cur_row<0) 
+			{
+				cur_row+=iLines;
+				
+				if((iLines%2)) //odd # lines 
+				{
+					if(cur_row==iLines-1) {cur_row--; cur_col--;} //on the last line, go up & left
+					else if(cur_row==iLines-2) {cur_row++; cur_col++;} //on next to last, down & right
+				}
+				
+				else cur_col++;	//just go right on even # rows
+			}
+		}
+
+		if(cur_col<0) //start next shift position
+		{
+			cur_col=key[iKeyIndex] & 0x000000FF;
+			cur_row=key[iKeyIndex]>>8 & 0x000000FF;
+			if(++iKeyIndex==14) iKeyIndex=0;
+		} 
+	}
+
+	solved[cipher_len]='\0';
+}
+
+#define MSG_SWAP switch(solve_type) { \
+					case SOLVE_VIG:	case SOLVE_BIFID: case SOLVE_TRIFID: case SOLVE_KRYPTOS: temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; break; \
+					case SOLVE_ANAGRAM:		temp=cipher[p1]; cipher[p1]=cipher[p2]; cipher[p2]=temp;; break; \
+					case SOLVE_COLTRANS:	SwapStringColumns(cipher,p1,p2,iLineChars); break;}
+
+#define MSG_DECODE	switch(solve_type) { \
+					case SOLVE_VIG:			msg.SetKey(key); msg.DecodeVigenere(); break; \
+					case SOLVE_BIFID:		strcpy(msg.bifid_array,key); msg.DecodeXfid(2); break; \
+					case SOLVE_TRIFID:		strcpy(msg.trifid_array,key); msg.DecodeXfid(3); break; \
+					case SOLVE_ANAGRAM:		msg.DecodeHomo(); break; \
+					case SOLVE_COLTRANS:	msg.DecodeHomo(); break; \
+					case SOLVE_KRYPTOS:		KryptosMatrix4(cipher,solved,(int*)key,iLineChars,1); strcpy(cipher,solved); msg.DecodeHomo(); break;}
+		
+int hillclimb2(Message &msg, SOLVEINFO &info, int solve_type, char *key , int iLineChars)
+{
+	int i, p1, p2, clength, temp;
+	int score=0, last_score=0, iterations=0, improve=0;
 	long start_time=0, end_time=0;
+	char *cipher, *solved;
+	int use_key_len=msg.GetKeyLength();
+	int full_key_len=strlen(key);
+
 	info.cur_try=0;
 	info.cur_fail=0;
 
-	//initial score & feedback
-	last_score=calcscore(clength,solved,info);
+	clength=msg.GetLength();
+	cipher=msg.GetCipher();
+	solved=msg.GetPlain();
+
+	full_key_len=strlen(key);
+
+	switch(solve_type)
+	{
+		case SOLVE_BIFID: use_key_len=full_key_len; break;
+		case SOLVE_TRIFID: use_key_len=full_key_len; break;
+		case SOLVE_ANAGRAM: use_key_len=full_key_len=clength; break;
+		case SOLVE_COLTRANS: use_key_len=full_key_len=iLineChars<<1; break;
+		case SOLVE_KRYPTOS: use_key_len=full_key_len=14; break;
+	}
+ 
+	info.best_trans=new char[clength+1];
+
+	key[full_key_len]='\0';
+
+	//initial score, save best, & feedback
+	MSG_DECODE;
+	last_score=calcscore(msg,clength,solved,info);
 	info.best_score=last_score;
-	strcpy(info.best_trans,solved);
+	strcpy(info.best_key,key);
+	strcpy(info.best_trans,cipher);
 	if(info.disp_all) info.disp_all();
 
 	//go until max number of iterations or stop is pressed
 	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
 		
-		/*feedback info*/
+		//feedback info
 		info.cur_try=iterations;
 		info.last_time=float(end_time-start_time)/1000;
 		if(info.time_func) start_time=info.time_func();
@@ -541,53 +653,82 @@ int hillclimb2(Message &msg, SOLVEINFO &info, int iLineChars)
 		
 		improve=0;
 		
-		for(p1=0; p1<iLineChars<<1; p1++) {
-			for(p2=0; p2<iLineChars<<1; p2++) {
+		for(p1=0; p1<full_key_len; p1++) {
+			for(p2=0; p2<full_key_len; p2++) {
 			
-				if(!info.running) return 0; //stop	
+				if(!info.running) return 0;	
 				if(p1==p2) continue;
+				if(p1>use_key_len && p2>use_key_len) continue;
 			
-				//swap & score
+				//swap, decode, score
 				MSG_SWAP;
-				score=calcscore(clength,solved,info); 
+				MSG_DECODE; 
+				score=calcscore(msg,clength,solved,info);
 
-				//undo if change made it worse than last score
-				if(score<last_score) {MSG_SWAP;} 
+				if(score<last_score) {MSG_SWAP;} //undo if change made it worse than last score
+	
 				else //change is better or same as last score
 				{
 					last_score=score;
 
 					if(score>info.best_score) //this is the new best, save & display
 					{
-						//feedback info
-						info.best_score=score;
+						//save best, & feedback info
 						improve=1;
 						info.cur_fail=0;
-						strcpy(info.best_trans,solved);
-						//msg.SetCipherTrans(best);
+						info.best_score=score;
+						strcpy(info.best_key,key);
+						strcpy(info.best_trans,cipher);
 						if(info.disp_all) info.disp_all();	
 					}
 				}
+
+				if(solve_type==90) return 0; //for some reason this has to be here, or there are weird errors in release
 			}
 		}
 
 		// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
-		for(i=info.swaps;i--;) 
-		{
-			p1=rand()%clength;
-			p2=rand()%clength;
-			MSG_SWAP;
-		}    
+		for(i=info.swaps;i--;) 	{p1=rand()%full_key_len; p2=rand()%full_key_len; MSG_SWAP;}    
 
-		iterations++; if(iterations>info.revert) { strcpy(solved,info.best_trans); iterations=0; }
-		last_score=calcscore(clength,solved,info); 
+		if(++iterations>info.revert) { strcpy(key,info.best_key); /*strcpy(cipher,info.best_trans);*/ iterations=0; }
+		MSG_DECODE;
+		last_score=calcscore(msg,clength,solved,info);
 		
 		if(!improve) info.cur_fail++;
 		
 		if(info.time_func) end_time=info.time_func();
-	}
-
-	delete solved;
-
+	}	
+	
 	return 0;
 }
+
+
+/*
+void KryptosMatrix4(char *cipher, char *solved, char *key, int enc_dec)
+{
+	int cipher_len=strlen(cipher);
+	int iKeyIndex=0, key_len=6;
+	int iNewIndex=-1;
+	int line_len=cipher_len/key_len;
+	int line_diff;
+	
+	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	{
+		if(iKeyIndex) line_diff=(key[iKeyIndex]-'0')-(key[iKeyIndex-1]-'0');
+		else line_diff=(key[iKeyIndex]-'0');
+		
+		iNewIndex+=line_len*line_diff;
+		if(iKeyIndex%2) iNewIndex--;
+
+		if(iNewIndex<0) {iNewIndex+=cipher_len; iNewIndex++;}
+		if(iNewIndex>=cipher_len) {iNewIndex-=cipher_len; iNewIndex--;}
+			
+		if(enc_dec) solved[iCipherIndex]=cipher[iNewIndex];
+		else solved[iNewIndex]=cipher[iCipherIndex];
+
+		if(++iKeyIndex==key_len) iKeyIndex=0;
+	}
+
+	solved[cipher_len]='\0';
+}
+*/

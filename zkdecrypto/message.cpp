@@ -207,8 +207,27 @@ int Message::GetColumn(int col, int line_len, char *dest)
 	return row;
 }
 
+void Message::InitArrays(int skip_index)
+{
+	int index, skip=0;
+
+	strcpy(bifid_array,"ABCDEFGHIKLMNOPQRSTUVWXYZ");
+	//strcpy(bifid_array,"ABCDEFGHIKLMNOPQRSTUVWXYZ");
+	strcpy(trifid_array,"ABCDEFGHIJKLMNOPQRSTUVWXYZ.");
+	
+	char key_alpha[27]="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+	for(index=0; index<26; index++) 
+	{
+		for(int index2=0; index2<26; index2++)
+			vigenere_array[index][index2]=key_alpha[((index2+index)%26)];
+		
+		vigenere_array[index][26]='\0';
+	}
+}
+
 //decode cipher into plain
-void Message::Decode()
+void Message::DecodeHomo()
 {
 	int cur_symbol, num_symbols;
 	char decoder[256];
@@ -229,6 +248,112 @@ void Message::Decode()
 		plain[cur_symbol]=decoder[(unsigned char)cipher[cur_symbol]];
 
 	plain[msg_len]='\0';
+}
+
+void Message::DecodeVigenere()
+{
+	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
+	char *lpcCipherInKeyRow;
+
+	for(iCipherIndex=0; iCipherIndex<msg_len; iCipherIndex++)
+	{
+		if(!strchr(vigenere_array[0],cipher[iCipherIndex]))
+		{
+			plain[iCipherIndex]=cipher[iCipherIndex];
+			continue;
+		}
+
+		//find key row
+		for(iKeyRow=0; iKeyRow<26; iKeyRow++)
+			if(vigenere_array[iKeyRow][0]==key[iKeyIndex]) break;
+
+		if(iKeyRow>25) {if(++iKeyIndex>=key_len) iKeyIndex=0; iCipherIndex--; continue;}
+
+		//find cipher column
+		lpcCipherInKeyRow=strchr(vigenere_array[iKeyRow],cipher[iCipherIndex]);
+		if(!lpcCipherInKeyRow) continue;
+
+		iCipherCol=int(lpcCipherInKeyRow-vigenere_array[iKeyRow]);
+
+		//get plain text character in key row 0
+		plain[iCipherIndex]=vigenere_array[0][iCipherCol];
+	
+		if(++iKeyIndex>=key_len) iKeyIndex=0;
+	}
+
+	plain[msg_len]='\0';
+}
+
+int Message::FindBifidIndex(char symbol, int &x, int &y)
+{
+	for(x=0; x<5; x++)
+		for(y=0; y<5; y++)
+			if(symbol==bifid_array[5*x+y])
+				return 1;
+
+	return 0;
+}
+
+int Message::FindTrifidIndex(char symbol, int &x, int &y, int &z)
+{
+	for(x=0; x<3; x++)
+		for(y=0; y<3; y++)
+			for(z=0; z<3; z++)
+				if(symbol==trifid_array[9*x+3*z+y])
+					return 1;
+
+	return 0;
+}
+	
+void Message::DecodeXfid(int fract_size)
+{
+	int x,y,z, bFound, iBlockIndex=0, iCipherIndex, iPlainIndex=0, index_rw=0, org_block_size=block_size;
+	char cCurSymbol, *index_string;
+
+	//init plain string
+	memset(plain,'-',msg_len);
+	plain[msg_len]='\0';
+
+	if(block_size<2) {return;}
+
+	index_string=new char[block_size*fract_size];
+
+	for(iCipherIndex=0; iCipherIndex<msg_len; iCipherIndex++)
+	{
+		//find cipher symbol in array
+		cCurSymbol=cipher[iCipherIndex];
+
+		if(fract_size==2) bFound=FindBifidIndex(cCurSymbol,x,y);
+		else bFound=FindTrifidIndex(cCurSymbol,x,y,z);
+
+		if(!bFound) {plain[iCipherIndex]=cipher[iCipherIndex]; continue;}
+
+		index_string[index_rw++]=x; index_string[index_rw++]=y; 
+		if(fract_size==3) index_string[index_rw++]=z;
+
+		iBlockIndex++;
+		
+		if(iCipherIndex==msg_len-1) block_size=iBlockIndex; //at end of cipher, do a short block
+	
+		if(iBlockIndex==block_size) //split string into sections and get plain indexes
+		{
+			for(iBlockIndex=0; iBlockIndex<block_size; iBlockIndex++)
+			{
+				while(iPlainIndex<msg_len && plain[iPlainIndex]!='-') 	iPlainIndex++;
+				if(iPlainIndex>=msg_len) break;
+
+				x=index_string[iBlockIndex]; y=index_string[iBlockIndex+block_size];
+				if(fract_size==2) plain[iPlainIndex++]=bifid_array[5*x+y];
+				else {z=index_string[iBlockIndex+(block_size<<1)]; plain[iPlainIndex++]=trifid_array[9*x+3*z+y];}
+			}
+
+			iBlockIndex=index_rw=0;
+		}
+	}
+
+	block_size=org_block_size;
+
+	delete index_string;
 }
 
 void Message::GetExpFreq(int *freq)

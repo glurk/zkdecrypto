@@ -124,6 +124,15 @@ void Map::Init(int *ltr_homo)
 	}
 }
 
+//make plain text characters same as cipher characters (for transposition)
+void Map::AsCipher()
+{
+	memset(locked,0,num_symbols);
+
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		symbols[cur_symbol].plain=symbols[cur_symbol].cipher;
+}
+
 //add/update a symbol; if inc_freq is true, 
 //when an existing symbol is updated its frequency is incremented
 int Map::AddSymbol(SYMBOL &symbol, int inc_freq)

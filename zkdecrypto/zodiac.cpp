@@ -176,26 +176,58 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					}
 					return 0;
 
-				case IDC_IOC_WEIGHT_EDIT: 
+				case IDC_IOC_WEIGHT_EDIT:
+					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					siSolveInfo.ioc_weight=GetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,false,false);
 					return 0;
 
-				case IDC_ENT_WEIGHT_EDIT: 
+				case IDC_ENT_WEIGHT_EDIT:
+					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					siSolveInfo.ent_weight=GetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,false,false);
 					return 0;
 
 				case IDC_CHI_WEIGHT_EDIT: 
+					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					siSolveInfo.chi_weight=GetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,false,false);
+					return 0;
+
+				case IDC_BLOCK_EDIT:
+					if(HIWORD(wParam)!=EN_CHANGE) return 0;
+					if(!bMsgLoaded) return 0;
+					if(siSolveInfo.running) return 0;
+					iBlockSize=GetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,false,false);
+					siSolveInfo.best_block=iBlockSize;
+					message.SetBlockSize(iBlockSize); 
+					SetPlain(); SetText();
+					return 0;
+
+				case IDC_KEY_EDIT:
+					if(HIWORD(wParam)!=EN_CHANGE) return 0;
+					if(!bMsgLoaded) return 0;
+					if(siSolveInfo.running) return 0;
+					GetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText,255);
+					
+					switch(iSolveType)
+					{
+						case SOLVE_VIG: message.SetKey(szText); break;
+						case SOLVE_BIFID: memcpy(message.bifid_array,szText,25); break;
+						case SOLVE_TRIFID: memcpy(message.trifid_array,szText,27); break;
+					}
+
+					//SetPlain(); SetText(); SetStatsTabInfo(); 
+					if(strlen(szText)) SetDlgInfo();
 					return 0;
 					
 				case IDC_WORD_MIN:
+					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					iWordMin=GetDlgItemInt(hMainWnd,IDC_WORD_MIN,false,false);
-					SetDlgInfo();
+					SetWordListTabInfo();
                     return 0;
                      
 				case IDC_WORD_MAX:
+					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					iWordMax=GetDlgItemInt(hMainWnd,IDC_WORD_MAX,false,false);
-					SetDlgInfo();
+					SetWordListTabInfo();
                     return 0;
                      
                 case UDM_DISPALL:
@@ -385,9 +417,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendDlgItemMessage(hMainWnd,IDC_IOC_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SendDlgItemMessage(hMainWnd,IDC_ENT_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SendDlgItemMessage(hMainWnd,IDC_CHI_WEIGHT_SPIN,UDM_SETRANGE,0,10);
+	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,1);
 	SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,5,false);
 	SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,5,false);
 	SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,5,false);
+	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,1,false);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_ASC,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_NUM,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_SAVE_CIPHER,MF_BYCOMMAND | MF_GRAYED);
@@ -414,8 +448,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	//language
 	iLang=0;
+	LoadCribs();
 	LoadINI();
 	SetLanguage();
+
+	//sovle types
+	message.SetDecodeType(iSolveType);
+	message.SetKeyLength(iKeyLength);
+	message.SetKey(szExtraLtr);
+	message.SetBlockSize(1);
 
 	//show the windows
 	GetWindowRect(hMainWnd,&rMainRect);
@@ -433,6 +474,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     int statwidths[] = {80, 140, 200, 275, -1};
     SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
 	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
+
+	SetKeyEdit();
 
 
 	//message loop

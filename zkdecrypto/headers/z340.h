@@ -30,6 +30,8 @@ struct SOLVEINFO
 	int revert;
 	char *locked;
 	char *exclude;
+	char cribs[100][64];
+	int num_cribs;
 
 	float lang_ioc;
 	int ioc_weight;
@@ -38,11 +40,13 @@ struct SOLVEINFO
 	
 	//feedback
 	char best_key[KEY_SIZE];
+	int best_key4[14];
 	char *best_trans;
 	int cur_try;
 	int cur_fail;
 	float last_time;
 	int best_score;
+	int best_block;
 
 	//control
 	int running;
@@ -55,13 +59,14 @@ struct SOLVEINFO
 
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
 
-inline int		calcscore(const int,const char *,SOLVEINFO&);
+inline int		calcscore(Message&,const int,const char *,SOLVEINFO&);
 inline void		shufflekey(char *,const int,const int,SOLVEINFO&);
 
 void			printcipher(int,const char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
-int				hillclimb(const char *,int,char *,SOLVEINFO&,int);
-int				hillclimb2(Message&,SOLVEINFO&,int);
+int				hillclimb(Message&,const char *,int,char *,SOLVEINFO&,int);
+int				hillclimb2(Message&,SOLVEINFO&,int,char*,int);
+int				hillclimb4(Message&,SOLVEINFO&);
 
 void 			GetUnigraphs(double*);
 int 			ReadNGraphs(const char*,int);

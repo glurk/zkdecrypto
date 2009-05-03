@@ -16,7 +16,7 @@
 #define LANG_SPA	"spa"
 #define LANG_GER	"ger"
 #define LANG_ITA	"ita"
-#define LANG_FRE    "fre"
+#define LANG_FRE	"fre"
 
 //language IoC
 #define IOC_ENG		.0665
@@ -87,9 +87,6 @@ wchar szGraph[40960];//[20480];
 char szGraphTitle[128];
 long lRowCol;
 
-//Trifid Decoding
-int iTrifidSize=0;
-
 //Column  Shift
 int iCurColumn=0, iCurCycle=0;
 /*
@@ -125,79 +122,19 @@ char trifid_array[4][4][4]=
 };
 */
 
-char trifid_array[3][3][3]=
-{
-	{
-		{'K','R','Y'},
-		{'P','T','O'},
-		{'S','A','B'}
-	},
-
-	{
-		{'C','D','E'},
-		{'F','G','H'},
-		{'I','J','L'}
-	},
-
-	{
-		{'M','N','Q'},
-		{'U','V','W'},
-		{'X','Z','.'}
-	}
-};
-
-
-char bifid_array[5][5]=
-{
-	{'K','R','Y','P','T'},
-	{'O','S','A','B','C'},
-	{'D','E','F','G','H'},
-	{'I','J','L','M','N'},
-	{'U','V','W','X','Z'}
-};
-
-char vigenere_array[26][27]=
-{
-	{"KRYPTOSABCDEFGHIJLMNQUVWXZ"},
-	{"RYPTOSABCDEFGHIJLMNQUVWXZK"},
-	{"YPTOSABCDEFGHIJLMNQUVWXZKR"},
-	{"PTOSABCDEFGHIJLMNQUVWXZKRY"},
-	{"TOSABCDEFGHIJLMNQUVWXZKRYP"},
-	{"OSABCDEFGHIJLMNQUVWXZKRYPT"},
-	{"SABCDEFGHIJLMNQUVWXZKRYPTO"},
-	{"ABCDEFGHIJLMNQUVWXZKRYPTOS"},
-	{"BCDEFGHIJLMNQUVWXZKRYPTOSA"},
-	{"CDEFGHIJLMNQUVWXZKRYPTOSAB"},
-	{"DEFGHIJLMNQUVWXZKRYPTOSABC"},
-	{"EFGHIJLMNQUVWXZKRYPTOSABCD"},
-	{"FGHIJLMNQUVWXZKRYPTOSABCDE"},
-	{"GHIJLMNQUVWXZKRYPTOSABCDEF"},
-	{"HIJLMNQUVWXZKRYPTOSABCDEFG"},
-	{"IJLMNQUVWXZKRYPTOSABCDEFGH"},
-	{"JLMNQUVWXZKRYPTOSABCDEFGHI"},
-	{"LMNQUVWXZKRYPTOSABCDEFGHIJ"},
-	{"MNQUVWXZKRYPTOSABCDEFGHIJL"},
-	{"NQUVWXZKRYPTOSABCDEFGHIJLM"},
-	{"QUVWXZKRYPTOSABCDEFGHIJLMN"},
-	{"UVWXZKRYPTOSABCDEFGHIJLMNQ"},
-	{"VWXZKRYPTOSABCDEFGHIJLMNQU"},
-	{"WXZKRYPTOSABCDEFGHIJLMNQUV"},
-	{"XZKRYPTOSABCDEFGHIJLMNQUVW"},
-	{"ZKRYPTOSABCDEFGHIJLMNQUVWX"}
-};
-
-
-
-
 //solver data
 SOLVEINFO siSolveInfo;
-int iPriority, iLang, iBestScore=0, iSolveType=0;
+int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
 int iBruteSymbols, iBatchBestScore;
 char lprgcBatchBestKey[KEY_SIZE];
 
+
+//solve type
+int iSolveType=0, iKeyLength=0, iBlockSize=0;
+
 //Win32 object handles
-HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hCipher=NULL, hPlain=NULL, hLetter=NULL, hHomo=NULL, hScroll;
+HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hHomoWnd=NULL, hWordWnd=NULL, hCipher=NULL, hPlain=NULL, hLetter=NULL, hScroll;
 HACCEL		hAccel;
 HPEN 		hRedPen, hGreenPen, hBluePen, hOrangePen, hWhitePen;
 HBRUSH		hWhiteBrush;

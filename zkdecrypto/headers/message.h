@@ -10,10 +10,82 @@
 #include "strarray.h"
 #include "macros.h"
 
+/*
+char bifid_array[5][5]=
+{
+	{'A','B','C','D','E'},
+	{'F','G','H','I','K'},
+	{'L','M','N','O','P'},
+	{'Q','R','S','T','U'},
+	{'V','W','X','Y','Z'}
+};
+
+char trifid_array[3][3][3]=
+{
+	{
+		{'A','B','C'},
+		{'D','E','F'},
+		{'G','H','I'}
+	},
+
+	{
+		{'J','K','L'},
+		{'M','N','O'},
+		{'P','Q','R'}
+	},
+
+	{
+		{'S','T','U'},
+		{'V','W','X'},
+		{'Y','Z','?'}
+	}
+};
+
+
+char vigenere_array[26][27]=
+{
+	{"KRYPTOSABCDEFGHIJLMNQUVWXZ"},
+	{"RYPTOSABCDEFGHIJLMNQUVWXZK"},
+	{"YPTOSABCDEFGHIJLMNQUVWXZKR"},
+	{"PTOSABCDEFGHIJLMNQUVWXZKRY"},
+	{"TOSABCDEFGHIJLMNQUVWXZKRYP"},
+	{"OSABCDEFGHIJLMNQUVWXZKRYPT"},
+	{"SABCDEFGHIJLMNQUVWXZKRYPTO"},
+	{"ABCDEFGHIJLMNQUVWXZKRYPTOS"},
+	{"BCDEFGHIJLMNQUVWXZKRYPTOSA"},
+	{"CDEFGHIJLMNQUVWXZKRYPTOSAB"},
+	{"DEFGHIJLMNQUVWXZKRYPTOSABC"},
+	{"EFGHIJLMNQUVWXZKRYPTOSABCD"},
+	{"FGHIJLMNQUVWXZKRYPTOSABCDE"},
+	{"GHIJLMNQUVWXZKRYPTOSABCDEF"},
+	{"HIJLMNQUVWXZKRYPTOSABCDEFG"},
+	{"IJLMNQUVWXZKRYPTOSABCDEFGH"},
+	{"JLMNQUVWXZKRYPTOSABCDEFGHI"},
+	{"LMNQUVWXZKRYPTOSABCDEFGHIJ"},
+	{"MNQUVWXZKRYPTOSABCDEFGHIJL"},
+	{"NQUVWXZKRYPTOSABCDEFGHIJLM"},
+	{"QUVWXZKRYPTOSABCDEFGHIJLMN"},
+	{"UVWXZKRYPTOSABCDEFGHIJLMNQ"},
+	{"VWXZKRYPTOSABCDEFGHIJLMNQU"},
+	{"WXZKRYPTOSABCDEFGHIJLMNQUV"},
+	{"XZKRYPTOSABCDEFGHIJLMNQUVW"},
+	{"ZKRYPTOSABCDEFGHIJLMNQUVWX"}
+};
+*/
+
+
 #define MAX_SYM		256
 #define MAX_PAT_LEN	15
 
 #pragma warning( disable : 4996)  //STOP MSVS2005 WARNINGS
+
+#define SOLVE_HOMO		0
+#define SOLVE_VIG		1
+#define SOLVE_BIFID		2
+#define SOLVE_TRIFID	3
+#define SOLVE_ANAGRAM	4
+#define SOLVE_COLTRANS	5
+#define SOLVE_KRYPTOS	6
 
 struct NGRAM
 {
@@ -31,19 +103,21 @@ struct NGRAM
 class Message
 {
 public:
-	Message() {msg_len=0; patterns=NULL; num_patterns=0; good_pat=0; min_pat_len=2; cipher=NULL; plain=NULL;}
+	Message() {msg_len=0; patterns=NULL; num_patterns=0; good_pat=0; min_pat_len=2; cipher=NULL; plain=NULL; InitArrays(9); bifid_array[25]=trifid_array[27]='\0';}
 	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(patterns) ClearPatterns(patterns);}
 
 	int Read(const char*);
 	int ReadNumeric(const char*);
 	int Write(const char*);
 	void SetCipher(const char*);
-	void SetCipherTrans(const char *new_cipher) {strcpy(cipher,new_cipher);}
+	void SetCipherTrans(char *cipher_trans) {strcpy(cipher,cipher_trans);}
+	void SetPlain(char * new_plain) {strcpy(plain,new_plain);}
 
 	void Insert(int,const char*);
 	
-	const char * GetCipher() {return cipher;}
-	const char * GetPlain() {Decode(); return plain;}
+	char * GetCipher() {return cipher;}
+	char * GetPlain() {Decode(); return plain;}
+
 	int GetLength() {return msg_len;}
 	int GetRow(int,int,char*);
 	int GetColumn(int,int,char*);
@@ -73,6 +147,35 @@ public:
 
 	void SetInfo();
 	void FindPatterns(int);
+
+	void SetKey(char *new_key) {memcpy(key,new_key,key_len); key[key_len]='\0';}
+	char *GetKey() {return key;}
+	void SetKeyLength(int new_key_len) {key_len=new_key_len;}
+	int GetKeyLength() {return key_len;}
+	void SetBlockSize(int new_block_size) {block_size=new_block_size;}
+	int GetBlockSize() {return block_size;} 
+
+	
+	void DecodeHomo();
+	void DecodeVigenere();
+	void DecodeXfid(int);
+	
+	void Decode()
+	{
+		switch(decode_type)
+		{
+
+			case SOLVE_HOMO:	DecodeHomo(); break;
+			case SOLVE_VIG:		DecodeVigenere(); break;
+			case SOLVE_BIFID:	DecodeXfid(2); break;
+			case SOLVE_TRIFID:	DecodeXfid(3); break;
+			case SOLVE_ANAGRAM: DecodeHomo(); break;
+			case SOLVE_COLTRANS: DecodeHomo(); break;
+		}
+	}
+
+	void SetDecodeType(int new_type) {decode_type=new_type;}
+	int GetDecodeType() {return decode_type;}
 	
 	void operator += (Message &src_msg)
 	{
@@ -103,19 +206,33 @@ public:
 
 	Map cur_map;
 
+	//decoding arrays
+	char bifid_array[26];
+	char trifid_array[28];
+	char vigenere_array[26][27];
+
+	int FindBifidIndex(char,int&,int&);
+	int FindTrifidIndex(char,int&,int&,int&);
+
 private:
-	void Decode();
 	int FindPattern(const char*,NGRAM*&,NGRAM*,NGRAM*);
 	int FindPattern(const char*,NGRAM*&);
 	int AddPattern(NGRAM&,int);
 	long ForAllPatterns(NGRAM *,int,void (*do_func)(NGRAM*));
 	void ClearPatterns(NGRAM*);
+	void InitArrays(int);
 	
 	char *cipher, *plain;
 	int msg_len, min_pat_len;
 	int exp_freq[26];
 	NGRAM *patterns;
 	int num_patterns, good_pat;
+	
+	//for different decoding
+	int decode_type;
+	char key[1024];
+	int key_len;
+	int block_size;
 };
 
 void SwapStringColumns(char*,int,int,int);

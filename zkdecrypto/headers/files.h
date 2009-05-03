@@ -102,12 +102,14 @@ int LoadMessage(char *filename, int type)
 	iCurSymbol=-1;
 	iTextSel=-1;
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
+	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,message.GetLength());
 	ClearTextAreas();
 	SetScrollBar();
 	SetTitle();
 	SetCipher();
 	SetPatterns();
 	SetDlgInfo();
+	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,message.GetLength(),false);
 
 	return 1;
 }
@@ -196,6 +198,37 @@ int RemoveFONT()
 	return 1;
 }
 
+//read crips text file
+int LoadCribs()
+{
+	FILE *ini_file;
+	char filename[1024], crib[32];
+	char *comment;
+	int read;
+
+	sprintf(filename,"%s\\cribs.txt",szExeDir);
+
+	ini_file=fopen(filename,"r");
+
+	siSolveInfo.num_cribs=0;
+
+	if(!ini_file) 
+	{
+		ini_file=fopen(filename,"w");
+		if(ini_file) fclose(ini_file);
+		return 0;
+	}
+
+	while((read=fscanf(ini_file,"%s",crib))!=EOF)
+	{
+		strcpy(siSolveInfo.cribs[siSolveInfo.num_cribs],crib);
+		siSolveInfo.num_cribs++;
+	}
+
+	fclose(ini_file);
+
+}
+
 //read configuration file
 int LoadINI()
 {
@@ -229,6 +262,8 @@ int LoadINI()
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
 		else if(!stricmp(option,"maxword")) iWordMax=atoi(value);
 		else if(!stricmp(option,"extra")) strcpy(szExtraLtr,value);
+		else if(!stricmp(option,"solve")) iSolveType=atoi(value);
+		else if(!stricmp(option,"key_len")) iKeyLength=atoi(value);
 	}
 
 	fclose(ini_file);
@@ -261,6 +296,8 @@ int SaveINI()
 	fprintf(ini_file,"minword = %i\n",iWordMin);
 	fprintf(ini_file,"maxword = %i\n",iWordMax);
 	fprintf(ini_file,"extra = %s\n",szExtraLtr);
+	fprintf(ini_file,"solve = %i\n",iSolveType);
+	fprintf(ini_file,"key_len = %i\n",iKeyLength);
 
 	fclose(ini_file);
 
