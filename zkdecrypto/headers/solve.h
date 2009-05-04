@@ -89,6 +89,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_CIPHER_POLYIC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_RC_IOC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_SEQHOMO,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_UPPER,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_HORZ,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_VERT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_REV,MF_BYCOMMAND | menu_state);
@@ -344,21 +345,17 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 
 	else 
 	{
-		if(iSolveType==SOLVE_KRYPTOS) hillclimb2(message,siSolveInfo,iSolveType,key,iLineChars);
-
-		else
+		switch(iSolveType)
 		{
-			switch(iSolveType)
-			{
-				case SOLVE_VIG: strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
-				case SOLVE_BIFID: strcpy(key,message.bifid_array); break;
-				case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
-				case SOLVE_ANAGRAM:	break;
-				case SOLVE_COLTRANS: break;
-			}
-
-			hillclimb2(message,siSolveInfo,iSolveType,key,iLineChars);
+			case SOLVE_VIG: strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
+			case SOLVE_BIFID: strcpy(key,message.bifid_array); break;
+			case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
+			case SOLVE_ANAGRAM:	break;
+			case SOLVE_COLTRANS: break;
+			case SOLVE_KRYPTOS: break;
 		}
+
+		hillclimb2(message,siSolveInfo,iSolveType,key,iLineChars);
 	}
 
 	//reset window state
@@ -550,155 +547,6 @@ void LockWord(int lock)
 
 /*
 
-void DecodeVigenere(char *cipher, char *key, int key_len)
-{
-	int cipher_len=strlen(cipher);
-	//int key_len=strlen(key);
-	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
-	char *lpcCipherInKeyRow;
-
-	for(iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
-	{
-		//find key row
-		for(iKeyRow=0; iKeyRow<26; iKeyRow++)
-			if(vigenere_array[iKeyRow][0]==key[iKeyIndex]) break;
-
-		if(iKeyRow>25) continue;
-
-		//find cipher column
-		lpcCipherInKeyRow=strchr(vigenere_array[iKeyRow],cipher[iCipherIndex]);
-		if(!lpcCipherInKeyRow) continue;
-
-		iCipherCol=int(lpcCipherInKeyRow-vigenere_array[iKeyRow]);
-
-		//get plain text character in key row 0
-		cipher[iCipherIndex]=vigenere_array[0][iCipherCol];
-	
-		if(++iKeyIndex>=key_len) iKeyIndex=0;
-	}
-}
-*/
-/*void ColumnPermute(char *cipher,int length,int pos,int r)
-{
-   if(pos==r+1)
-   {
-       return; 
-   }
-   
-   for(int index=pos-1;index<=length-1;index++)
-   {
-       message.SwapColumns(pos,r);
-	   if(message.GetNumPatterns()>30) 
-	   {
-		   return;
-	   }
-       permute(cipher,length,pos+1,r);
-       message.SwapColumns(pos,r);
-   }
-}*/
-
-/*
-void KryptosMatrix()
-{
-	int cipher_len=message.GetLength();
-	char *new_cipher=new char[cipher_len+1];
-	const char *cipher=message.GetCipher();
-	int iAdds=-1, iAddSub=0; 
-	int iNewIndex=-1, iSkipAdd=false;
-
-	int iAdd=192, iSub=144, iMaxAdds=3;
-	iAdd=48; iSub=48;
-	
-
-	memset(new_cipher,1,cipher_len);
-
-	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
-	{
-
-			iNewIndex+=iAdd;
-			if(iNewIndex>=cipher_len) iNewIndex-=cipher_len;
-				
-		
-
-		
-		new_cipher[iNewIndex--]=cipher[iCipherIndex];
-	}
-
-	new_cipher[cipher_len]='\0';
-
-	message.SetCipherTrans(new_cipher);
-	delete new_cipher;
-}
-*/
-/*
-void KryptosMatrix(int *key, int enc_dec)
-{
-	int cipher_len=message.GetLength();
-	char *new_cipher=new char[cipher_len+1];
-	const char *cipher=message.GetCipher();
-	int iKeyIndex=0, key_len=7;
-	int iNewIndex=-1;
-	int line_len=cipher_len/7;
-	int line_diff;
-	
-	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
-	{
-		if(iKeyIndex) line_diff=lines[iKeyIndex]-lines[iKeyIndex-1];
-		else line_diff=lines[iKeyIndex];
-		
-		iNewIndex+=line_len*line_diff;
-		if(iKeyIndex%2) iNewIndex--;
-
-		if(iNewIndex<0) {iNewIndex+=cipher_len; iNewIndex++;}
-		if(iNewIndex>=cipher_len) {iNewIndex-=cipher_len; iNewIndex--;}
-			
-		if(enc_dec) new_cipher[iCipherIndex]=cipher[iNewIndex];
-		else new_cipher[iNewIndex]=cipher[iCipherIndex];
-
-		if(++iKeyIndex==key_len) iKeyIndex=0;
-	}
-
-	new_cipher[cipher_len]='\0';
-
-	message.SetCipherTrans(new_cipher);
-	delete new_cipher;
-}*/
-
-/*
-void KryptosMatrix(int *key, int key_len, int enc_dec)
-{
-	int cipher_len=message.GetLength();
-	char *new_cipher=new char[cipher_len+1];
-	const char *cipher=message.GetCipher();
-	int iKeyIndex=0;
-	int iNewIndex=-1;
-	int line_len=cipher_len/7;
-	int line_diff;
-	
-	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
-	{
-		if(iKeyIndex) line_diff=key[iKeyIndex]-key[iKeyIndex-1];
-		else line_diff=key[iKeyIndex];
-		
-		iNewIndex+=line_len*line_diff;
-		if(iKeyIndex%2) iNewIndex--;
-
-		if(iNewIndex<0) {iNewIndex+=cipher_len; iNewIndex++;}
-		if(iNewIndex>=cipher_len) {iNewIndex-=cipher_len; iNewIndex--;}
-			
-		if(enc_dec) new_cipher[iCipherIndex]=cipher[iNewIndex];
-		else new_cipher[iNewIndex]=cipher[iCipherIndex];
-
-		if(++iKeyIndex==key_len) iKeyIndex=0;
-	}
-
-	new_cipher[cipher_len]='\0';
-
-	message.SetCipherTrans(new_cipher);
-	delete new_cipher;
-}
-*/
-
 void KryptosMatrix(int *key, int enc_dec)
 {
 	int cipher_len=message.GetLength();
@@ -766,3 +614,4 @@ void KryptosMatrix(int *key, int enc_dec)
 	message.SetCipherTrans(new_cipher);
 	delete new_cipher;
 }
+*/

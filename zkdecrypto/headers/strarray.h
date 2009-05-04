@@ -30,9 +30,10 @@ class StringArray
 };
 
 int GetUniques(const char*, char*, int*);
-float IoC(const char*);
-float Entropy(const char*);
-float ChiSquare(const char*);
+float IoC(const char*,int);
+float DIoC(const char*,int);
+float Entropy(const char*,int);
+float ChiSquare(const char*,int);
 void Transform(char*,unsigned long*,int);
 void Reverse(char*);
 void FlipHorz(unsigned long*,int&,int,int);

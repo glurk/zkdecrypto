@@ -194,6 +194,9 @@
 #define IDC_BLOCK_TITLE					1154
 #define IDC_KEY_EDIT					1155
 #define IDC_WORD_FIND					1156
+#define IDC_FREQ_WEIGHT_TITLE			1157
+#define IDC_FREQ_WEIGHT_EDIT			1158
+#define IDC_FREQ_WEIGHT_SPIN			1159
 
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002

@@ -551,13 +551,13 @@ void SetFreq()
 	sprintf(szText,"%.2f%%",exp_vowel);
 	SetDlgItemText(hMainWnd,IDC_VOWEL_EXP,szText);
 	
-	sprintf(szText,"%.4f",IoC(szPlain));
+	sprintf(szText,"%.4f",IoC(szPlain,message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_IOC_ACT,szText);
 	
 	sprintf(szText,"%.4f",siSolveInfo.lang_ioc);
 	SetDlgItemText(hMainWnd,IDC_IOC_EXP,szText);
 
-	sprintf(szText,"%.4f",ChiSquare(szPlain));
+	sprintf(szText,"%.4f",ChiSquare(szPlain,message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_ENT_ACT,szText);
 }
 
@@ -651,20 +651,20 @@ inline void SetStatsTabInfo()
 	sprintf(szText,"Multiplicity [M]: %.5f",message.Multiplicity());
 	SetDlgItemText(hMainWnd,IDC_STATS_MULTI,szText);
 
-	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetCipher()));
+	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetCipher(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO,szText);
 
-	sprintf(szText,"Index of Coincidence [IC]: %.5f",IoC(message.GetCipher()));
+	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC,szText);
 
-	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetCipher()));
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetCipher(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2,szText);
 
-	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetPlain()));
+	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetPlain(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO_P,szText);
-	sprintf(szText,"Index of Coincidence [IC]: %.5f",IoC(message.GetPlain()));
+	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC_P,szText);
-	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetPlain()));
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetPlain(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
 }
 
@@ -850,6 +850,9 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_TITLE),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_EDIT),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_SPIN),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FREQ_WEIGHT_TITLE),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FREQ_WEIGHT_EDIT),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FREQ_WEIGHT_SPIN),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_TITLE),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_EDIT),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_SPIN),iShowStats);

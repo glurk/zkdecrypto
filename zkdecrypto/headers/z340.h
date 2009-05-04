@@ -34,6 +34,7 @@ struct SOLVEINFO
 	int num_cribs;
 
 	float lang_ioc;
+	int freq_weight;
 	int ioc_weight;
 	int ent_weight;
 	int chi_weight;

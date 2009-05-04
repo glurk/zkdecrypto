@@ -169,6 +169,7 @@ inline int CommandCipher(int cmd_id)
 			return 0;
 
 		case IDM_CIPHER_UPPER:
+			SetUndo();
 			strupr(message.GetCipher());
 			message.SetInfo();
 			SetKey();
@@ -250,6 +251,7 @@ inline int CommandCipher(int cmd_id)
 				iLineChars=iLines;
 				SetPatterns();
 				ClearTextAreas();
+				SetScrollBar();
 				SetText();
 				SetDlgInfo();
 				SetPlain();
@@ -263,6 +265,7 @@ inline int CommandCipher(int cmd_id)
 				iLineChars=iLines;
 				SetPatterns();
 				ClearTextAreas();
+				SetScrollBar();
 				SetText();
 				SetDlgInfo();
 				SetPlain();
@@ -438,6 +441,7 @@ inline int CommandView(int cmd_id)
 			return 0;
 			
 		case IDM_VIEW_LTRGRAPH:
+			if(hLetter) return 0;
 			if(message.GetLength() < 5) return 0;
 			lRowCol=message.LetterGraph(szGraph);
 			strcpy(szGraphTitle,"Letter Frequencies");

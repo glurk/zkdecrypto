@@ -156,17 +156,36 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],SOLVEINFO
 
 #define IS_LETTER(L) ((L<0 || L>25)? 0:1)
 
-inline float FastIoC(const char *string, int length)
+/*inline float FastIoC(const char *string, int length)
 {
 	int index, freqs[256];
 	float ic=0;
 	
 	memset(freqs,0,256*sizeof(int));
 	
-	for(index=length; index--;)
+	for(index=length; index--;) 
 		freqs[(unsigned char)string[index]]++;
 
 	for(index=256; index--;)
+		if(freqs[index]>1) 
+			ic+=(freqs[index])*(freqs[index]-1); 
+
+	ic/=(length)*(length-1);
+
+	return ic;
+}
+
+inline float FastDIoC(const char* string, int length)
+{
+	int index, freqs[65536];
+	float ic=0;
+	
+	memset(freqs,0,65536*sizeof(int));
+	
+	for(index=length-1; index--;)
+		freqs[(unsigned char)string[index]*(unsigned char)string[index+1]]++;
+
+	for(index=65536; index--;)
 		if(freqs[index]>1) 
 			ic+=(freqs[index])*(freqs[index]-1); 
 
@@ -201,7 +220,7 @@ inline float FastChiSquare(const char *string)
 
 	return chi2/length;
 }
-
+*/
 inline int calcscore(Message &msg, const int length_of_cipher,const char *solv, SOLVEINFO &info) {
 
 	int t1,t2,t3,t4,t5;
@@ -242,30 +261,44 @@ inline int calcscore(Message &msg, const int length_of_cipher,const char *solv, 
 
 	score=pentascore+tetrascore+triscore+biscore;
 
-	//score=10000;
-
-	int lprgiActFreq[26], lprgiExpFreq[26], letter;
-	float freq_diff=0;
 	
-	memset(lprgiActFreq,0,26*sizeof(int));
-	for(letter=0; letter<length_of_cipher; letter++) lprgiActFreq[solv[letter]-'A']++;
-	msg.GetExpFreq(lprgiExpFreq);
-	for(letter=0; letter<26; letter++) freq_diff+=ABS(lprgiExpFreq[letter]-lprgiActFreq[letter]);
+	//Letter Frequencies
+	if(info.freq_weight)
+	{
 
-	//score*=(float)1.05-(.001*freq_diff);
+		int lprgiActFreq[26], lprgiExpFreq[26], letter;
+		float freq_diff=0;
+		
+		memset(lprgiActFreq,0,26*sizeof(int));
+		for(letter=0; letter<length_of_cipher; letter++) lprgiActFreq[solv[letter]-'A']++;
+		msg.GetExpFreq(lprgiExpFreq);
+		for(letter=0; letter<26; letter++) freq_diff+=ABS(lprgiExpFreq[letter]-lprgiActFreq[letter]);
 
-	float cur_ioc=FastIoC(solv,length_of_cipher);
+		score*=(float)1.05-((info.freq_weight/500)*freq_diff);
+	}
+	
+
+	//IC
+	float cur_ioc=IoC(solv,length_of_cipher);
     float score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-info.lang_ioc));
     score=int(score*score_mult);
+
+	//DIC
+	cur_ioc=DIoC(solv,length_of_cipher);
+    score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-.0070));
+    score=int(score*score_mult);
         
-    float cur_chi=ChiSquare(solv);
-    score_mult=(float)(1.05-((float)info.chi_weight/100.0*ABS(cur_chi-(float).52)));
+	//Chi^2
+    float cur_chi=ChiSquare(solv,length_of_cipher);
+    score_mult=(float)(1.05-(((float)info.chi_weight/100.0)*ABS(cur_chi-(float).52)));
     score=int(score*score_mult);
 
-	float cur_ent=Entropy(solv);
-    score_mult=(float)(1.05-((float)info.ent_weight/100.0*ABS(cur_ent-(float)4.1)));
+	//Entropy
+	float cur_ent=Entropy(solv,length_of_cipher);
+    score_mult=(float)(1.05-(((float)info.ent_weight/100.0)*ABS(cur_ent-(float)4.1)));
     score=int(score*score_mult);
 
+	//Cribs
 	for(int cur_crib=0; cur_crib<info.num_cribs; cur_crib++)
 		if(strstr(solv,info.cribs[cur_crib])) score*=1.025;
 
