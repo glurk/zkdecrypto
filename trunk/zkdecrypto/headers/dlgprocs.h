@@ -235,9 +235,9 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Vigenere");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Bifid");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Trifid");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Columar Trans");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Anagram");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Row/Col Trans");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Kryptos Trans");
+			//SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Kryptos Trans");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_SETCURSEL,iSolveType,0);
 			SetDlgItemInt(hWnd,IDC_KEY_LEN,iKeyLength,0);
 

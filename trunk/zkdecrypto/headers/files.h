@@ -222,6 +222,7 @@ int LoadCribs()
 	while((read=fscanf(ini_file,"%s",crib))!=EOF)
 	{
 		strcpy(siSolveInfo.cribs[siSolveInfo.num_cribs],crib);
+		strupr(siSolveInfo.cribs[siSolveInfo.num_cribs]);
 		siSolveInfo.num_cribs++;
 	}
 

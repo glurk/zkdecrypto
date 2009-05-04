@@ -8,7 +8,7 @@
 
 //program
 #define PROG_NAME	"ZKDecrypto"
-#define PROG_VER	"Version 1.1"
+#define PROG_VER	"Version 1.2"
 
 //language
 #define LANG_DIR	"language"
@@ -71,7 +71,7 @@ IDC_INIT_Y_EDIT,IDC_INIT_Z_EDIT
 
 //text gui
 COLORREF crRed, crGreen, crBlue, crOrange, crYellow, crBlack, crWhite;
-float iCharSize=2.0; //font size multiplier
+float iCharSize=1.5; //font size multiplier
 int iLineChars=17, iLines, iDispLines; //text line data
 int iScrollPos, iMaxScroll; //scrollbar
 int iDispStart, iDispEnd; //index of the start/end characters being displayed

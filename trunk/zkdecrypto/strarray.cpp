@@ -164,39 +164,50 @@ int GetUniques(const char *string, char *unique_str, int *unique_freq)
 }
 
 //index of coincidence of a string
-float IoC(const char *string)
+float IoC(const char *string, int length)
 {
-	int freqs[256], length, unique;
+	int index, freqs[256];
 	float ic=0;
+	
+	memset(freqs,0,256*sizeof(int));
+	
+	for(index=length-1; index--;) 
+		freqs[(unsigned char)string[index]]++;
 
-	if(!string) return 0;
-
-	length=(int)strlen(string);
-
-	if(length<2) return 0;	
-
-	unique=GetUniques(string,NULL,freqs);
-
-	//calculate index of coincidence
-	for(int sym_index=0; sym_index<unique; sym_index++)
-		if(freqs[sym_index]>1) 
-			ic+=(freqs[sym_index])*(freqs[sym_index]-1); 
+	for(index=256; index--;)
+		if(freqs[index]>1) 
+			ic+=(freqs[index])*(freqs[index]-1); 
 
 	ic/=(length)*(length-1);
 
 	return ic;
 }
 
-float Entropy(const char *string)
+float DIoC(const char* string, int length)
 {
-	int freqs[256], length, unique;
+	int index, freqs[65536];
+	float ic=0;
+	
+	memset(freqs,0,65536*sizeof(int));
+	
+	for(index=length-2; index--;)
+		freqs[(int((unsigned char)string[index])<<8)+(unsigned char)string[index+1]]++;
+
+	for(index=65536; index--;)
+		if(freqs[index]>1) 
+			ic+=(freqs[index])*(freqs[index]-1); 
+
+	ic/=(length)*(length-1);
+
+	return ic;
+}
+
+float Entropy(const char *string, int length)
+{
+	int freqs[256], unique;
 	float entropy=0, prob_mass, log2;
 
-	if(!string) return 0;
-
-	length=(int)strlen(string);
-
-	if(length<0) return 0;
+	//if(!string) return 0;
 
 	unique=GetUniques(string,NULL,freqs);
 
@@ -214,7 +225,7 @@ float Entropy(const char *string)
 	return (-1*entropy);
 }
 
-float ChiSquare(const char *string)
+/*float ChiSquare(const char *string)
 {
 	int freqs[256], length, unique;
 	float chi2=0, prob_mass, cur_calc;
@@ -231,6 +242,29 @@ float ChiSquare(const char *string)
 	for(int sym_index=0; sym_index<unique; sym_index++)
 	{
 		prob_mass=length*(1.0/unique);
+		cur_calc=freqs[sym_index]-prob_mass;
+		cur_calc*=cur_calc;
+		cur_calc/=prob_mass;
+
+		chi2+=cur_calc;
+	}
+
+	return chi2/length;
+}*/
+
+float ChiSquare(const char *string, int length)
+{
+	int freqs[256], unique;
+	float chi2=0, prob_mass, cur_calc;
+
+	//if(!string) return 0;
+
+	unique=GetUniques(string,NULL,freqs);
+
+	//calculate chi2
+	for(int sym_index=0; sym_index<unique; sym_index++)
+	{
+		prob_mass=(float)(length*(1.0/unique));
 		cur_calc=freqs[sym_index]-prob_mass;
 		cur_calc*=cur_calc;
 		cur_calc/=prob_mass;
