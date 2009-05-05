@@ -23,6 +23,9 @@
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 
+#pragma warning( disable : 4267)
+#pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
+
 #include "headers/z340.h"
 #include "headers/z340Globals.h"
 #include "headers/strarray.h"

@@ -199,11 +199,11 @@ int RemoveFONT()
 }
 
 //read crips text file
-int LoadCribs()
+void LoadCribs()
 {
 	FILE *ini_file;
 	char filename[1024], crib[32];
-	char *comment;
+//	char *comment;
 	int read;
 
 	sprintf(filename,"%s\\cribs.txt",szExeDir);
@@ -216,7 +216,7 @@ int LoadCribs()
 	{
 		ini_file=fopen(filename,"w");
 		if(ini_file) fclose(ini_file);
-		return 0;
+		return;
 	}
 
 	while((read=fscanf(ini_file,"%s",crib))!=EOF)
@@ -262,9 +262,9 @@ int LoadINI()
 		else if(!stricmp(option,"lang")) iLang=atoi(value);
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
 		else if(!stricmp(option,"maxword")) iWordMax=atoi(value);
-		else if(!stricmp(option,"extra")) strcpy(szExtraLtr,value);
 		else if(!stricmp(option,"solve")) iSolveType=atoi(value);
 		else if(!stricmp(option,"key_len")) iKeyLength=atoi(value);
+		else if(!stricmp(option,"extra")) strcpy(szExtraLtr,value);
 	}
 
 	fclose(ini_file);
@@ -296,9 +296,9 @@ int SaveINI()
 	fprintf(ini_file,"lang = %i\n",iLang);
 	fprintf(ini_file,"minword = %i\n",iWordMin);
 	fprintf(ini_file,"maxword = %i\n",iWordMax);
-	fprintf(ini_file,"extra = %s\n",szExtraLtr);
 	fprintf(ini_file,"solve = %i\n",iSolveType);
 	fprintf(ini_file,"key_len = %i\n",iKeyLength);
+	fprintf(ini_file,"extra = %s\n",szExtraLtr);
 
 	fclose(ini_file);
 

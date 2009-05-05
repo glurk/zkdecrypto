@@ -901,7 +901,7 @@ long Message::PolyKeySize(wchar *dest, int max_len, float lang_ic)
 		{
 			//add this column's IoC to average
 			GetColumn(key_index,key_len,ma);
-			avg_ic+=IoC(ma,msg_len);
+			avg_ic+=IoC(ma,(int)strlen(ma));
 		}
 		
 		//average
@@ -989,7 +989,7 @@ long Message::RowColIoC(wchar *dest, int cols)
 	//rows
 	for(row=0; GetRow(row,cols,rc_string); row++)
 	{
-		row_avg+=row_ic[row]=IoC(rc_string,msg_len);
+		row_avg+=row_ic[row]=IoC(rc_string,(int)strlen(rc_string));
 		if(row_ic[row]>max_ic) max_ic=row_ic[row];
 	}
 	
@@ -999,7 +999,7 @@ long Message::RowColIoC(wchar *dest, int cols)
 	//columns
 	for(col=0; GetColumn(col,cols,rc_string); col++)
 	{
-		col_avg+=col_ic[col]=IoC(rc_string,msg_len);
+		col_avg+=col_ic[col]=IoC(rc_string,(int)strlen(rc_string));
 		if(col_ic[col]>max_ic) max_ic=col_ic[col];
 	}
 	

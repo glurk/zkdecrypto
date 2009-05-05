@@ -544,7 +544,7 @@ inline int MatchStringTemplate(std::string sTemp, std::string sWord)
 //Trifid Decoding
 LRESULT CALLBACK WordFindProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	int iWordLen;
+//	int iWordLen;
 	long lfHeight;
 	std::string word_str;
 	DICTMAP::iterator iter;
