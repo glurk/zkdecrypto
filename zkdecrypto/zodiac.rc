@@ -249,12 +249,12 @@ BEGIN
     LTEXT           "Chi^2 [X2]: ",IDC_STATS_CHI2,75,52,115,11
     LTEXT           "Entropy [H]: ",IDC_STATS_ENTRO,71,67,115,11
     LTEXT           "Multiplicity [M]: ",IDC_STATS_MULTI,51,82,115,11
-    LTEXT           "Index of Coincidence [IC]: ",IDC_STATS_IOC,15,97,200,11
+    LTEXT           "Index of Coincidence [IC]: ",IDC_STATS_IOC,15,97,180,11
     GROUPBOX        "Plaintext Statistics",IDC_STATS_TITLE_P,9,117,190,60,
                     BS_CENTER
     LTEXT           "Chi^2 [X2]: ",IDC_STATS_CHI2_P,75,132,115,11
     LTEXT           "Entropy [H]: ",IDC_STATS_ENTRO_P,71,147,115,11
-    LTEXT           "Index of Coincidence [IC]: ",IDC_STATS_IOC_P,15,162,200,
+    LTEXT           "Index of Coincidence [IC]: ",IDC_STATS_IOC_P,15,162,180,
                     11
     EDITTEXT        IDC_KEY_EDIT,19,279,241,15,ES_CENTER | ES_UPPERCASE | 
                     ES_AUTOHSCROLL
@@ -538,7 +538,7 @@ END
 
 IDD_WORD_FIND DIALOG DISCARDABLE  0, 0, 126, 294
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Word FInd"
+CAPTION "Word Find"
 FONT 8, "MS Sans Serif"
 BEGIN
     LISTBOX         IDC_WORD_LIST,7,8,111,258,LBS_SORT | 

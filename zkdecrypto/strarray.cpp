@@ -170,8 +170,9 @@ float IoC(const char *string, int length)
 	float ic=0;
 	
 	memset(freqs,0,256*sizeof(int));
+	//length=(int)strlen(string);         //Leave this in - just in case.
 	
-	for(index=length-1; index--;) 
+	for(index=length; index--;) 
 		freqs[(unsigned char)string[index]]++;
 
 	for(index=256; index--;)
@@ -190,7 +191,7 @@ float DIoC(const char* string, int length)
 	
 	memset(freqs,0,65536*sizeof(int));
 	
-	for(index=length-2; index--;)
+	for(index=length-1; index--;)
 		freqs[(int((unsigned char)string[index])<<8)+(unsigned char)string[index+1]]++;
 
 	for(index=65536; index--;)

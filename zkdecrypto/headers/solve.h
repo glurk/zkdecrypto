@@ -308,7 +308,8 @@ void StopNotify()
 //solve thread proc
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
-	int num_symbols, use_key_len;
+	int num_symbols;
+//	int use_key_len;
 	char key[KEY_SIZE];
 	char *exclude=NULL;
 	SYMBOL symbol;
