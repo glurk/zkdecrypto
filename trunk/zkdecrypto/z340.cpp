@@ -286,10 +286,12 @@ inline int calcscore(Message &msg, const int length_of_cipher,const char *solv, 
     float score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-info.lang_ioc));
     score=int(score*score_mult);
 
+/*          This is ONLY valid for English, and REALLY slow, so I have commented it out
 	//DIC
 	cur_ioc=DIoC(solv,length_of_cipher);
-    score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-.0070));
+    score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-.0078));
     score=int(score*score_mult);
+*/
         
 	//Chi^2
     float cur_chi=ChiSquare(solv,length_of_cipher);

@@ -198,6 +198,7 @@ float DIoC(const char* string, int length)
 		if(freqs[index]>1) 
 			ic+=(freqs[index])*(freqs[index]-1); 
 
+	length--;
 	ic/=(length)*(length-1);
 
 	return ic;
