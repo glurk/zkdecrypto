@@ -27,6 +27,10 @@
 #define IOC_POR		.0746
 #define IOC_RUS		.0677
 
+#define DIOC		.0072
+#define CHI			.52
+#define ENT			4.1
+
 //text constants
 #define CHAR_WIDTH  7
 #define CHAR_HEIGHT 12
@@ -127,7 +131,7 @@ SOLVEINFO siSolveInfo;
 int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
 int iBruteSymbols, iBatchBestScore;
-char lprgcBatchBestKey[KEY_SIZE];
+char lprgcBatchBestKey[4096];
 
 
 //solve type

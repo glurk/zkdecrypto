@@ -217,7 +217,7 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			//hillclimber parameters
 			SetDlgItemInt(hWnd,IDC_MAXFAIL,siSolveInfo.max_fail,0);
 			SetDlgItemInt(hWnd,IDC_SWAPS,siSolveInfo.swaps,0);
-			SetDlgItemInt(hWnd,IDC_REVERT,siSolveInfo.revert,0);
+			SetDlgItemInt(hWnd,IDC_REVERT,siSolveInfo.max_try,0);
 
 			//display options
 			SetDlgItemInt(hWnd,IDC_LINECHARS,iLineChars,0);
@@ -237,7 +237,8 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Trifid");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Columar Trans");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Anagram");
-			//SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Kryptos Trans");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Running Key");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Digraphic");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_SETCURSEL,iSolveType,0);
 			SetDlgItemInt(hWnd,IDC_KEY_LEN,iKeyLength,0);
 
@@ -266,7 +267,7 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					//hillclimber parameters
 					siSolveInfo.max_fail=GetDlgItemInt(hWnd,IDC_MAXFAIL,0,0);
 					siSolveInfo.swaps=GetDlgItemInt(hWnd,IDC_SWAPS,0,0);
-					siSolveInfo.revert=GetDlgItemInt(hWnd,IDC_REVERT,0,0);
+					siSolveInfo.max_try=GetDlgItemInt(hWnd,IDC_REVERT,0,0);
 
 					//display options
 					iLineChars=GetDlgItemInt(hWnd,IDC_LINECHARS,0,0);
@@ -296,15 +297,16 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 					switch(iSolveType) //set key max length
 					{
-						case SOLVE_BIFID: iMaxKeyLen=25; break;
-						case SOLVE_TRIFID: iMaxKeyLen=27; break;
-						case SOLVE_VIG: iMaxKeyLen=iKeyLength; break;
-						case SOLVE_HOMO:
+						case SOLVE_BIFID: iMaxKeyLen=25; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.bifid_array); break;
+						case SOLVE_TRIFID: iMaxKeyLen=27; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.trifid_array); break;
+						case SOLVE_VIG: iMaxKeyLen=iKeyLength; message.SetKeyLength(iKeyLength); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.GetKey()); break;
+						case SOLVE_HOMO: 
 						case SOLVE_ANAGRAM: 
-						case SOLVE_COLTRANS: iMaxKeyLen=0; szText[0]='\0'; break;
+						case SOLVE_COLTRANS: iMaxKeyLen=0; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); break;
+						case SOLVE_RUNKEY: iMaxKeyLen=128; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); break;
 					}
 
-					SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0);
+					if(iSolveType!=SOLVE_RUNKEY) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0);
 					
 					//update display
 					if(bMsgLoaded && !siSolveInfo.running)

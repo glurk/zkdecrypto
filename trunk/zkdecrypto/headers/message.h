@@ -21,7 +21,9 @@
 #define SOLVE_TRIFID	3
 #define SOLVE_COLTRANS	4
 #define SOLVE_ANAGRAM	5
-#define SOLVE_KRYPTOS	6
+#define SOLVE_RUNKEY	6
+#define SOLVE_DISUB		7
+#define SOLVE_KRYPTOS	9
 
 struct NGRAM
 {
@@ -107,6 +109,7 @@ public:
 			case SOLVE_TRIFID:	DecodeXfid(3); break;
 			case SOLVE_ANAGRAM: DecodeHomo(); break;
 			case SOLVE_COLTRANS: DecodeHomo(); break;
+			case SOLVE_RUNKEY: DecodeVigenere(); break;
 		}
 	}
 
@@ -166,7 +169,7 @@ private:
 	
 	//for different decoding
 	int decode_type;
-	char key[1024];
+	char key[4096];
 	int key_len;
 	int block_size;
 };

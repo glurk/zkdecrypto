@@ -43,14 +43,12 @@ int Message::Read(const char *filename)
 int Message::ReadNumeric(const char *filename)
 {
 	FILE *msgfile;
-	int size;
+	int size, iNumber;
 	char number[10];
 	int unicount=33;
-	int x;
-	int uniques[10000];
+	int x, uniques[10000];
 
-	for(x=0;x<10000;x++)
-		uniques[x]=0;
+	memset(uniques,0,4*10000);
 
 	if(!(msgfile=fopen(filename,"r"))) return 0;
 
@@ -72,13 +70,23 @@ int Message::ReadNumeric(const char *filename)
 
 	while(fscanf(msgfile,"%s",number)!=EOF)
 	{
-		if(atoi(number) < 0 || atoi(number) > 9999) continue;
-		if(uniques[atoi(number)]==0) {
-			uniques[atoi(number)]=unicount;
+		iNumber=atoi(number);
+
+		/*if(number[0]=='[') iNumber=0;
+		if(number[0]==']') iNumber=600;
+		iNumber+=number[1];*/
+
+		if(iNumber < 0 || iNumber > 9999) continue;
+		
+		if(uniques[iNumber]==0) 
+		{
+			uniques[iNumber]=unicount;
 			cipher[msg_len++]=unicount;
 			unicount++;
 		}
-		else cipher[msg_len++]=uniques[atoi(number)];
+
+		else cipher[msg_len++]=uniques[iNumber];
+		
 		if(unicount>254) break;
 	}
 
@@ -254,6 +262,9 @@ void Message::DecodeVigenere()
 {
 	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
 	char *lpcCipherInKeyRow;
+
+//key_len=strlen(key);
+if(!key_len) return;
 
 	for(iCipherIndex=0; iCipherIndex<msg_len; iCipherIndex++)
 	{

@@ -153,16 +153,20 @@ void StopSolve()
 
 	switch(iSolveType)
 	{
-		case SOLVE_HOMO: break;
+		case SOLVE_HOMO: message.cur_map.FromKey(siSolveInfo.best_key); break;
 		case SOLVE_VIG: message.SetKey(siSolveInfo.best_key); break;
 		case SOLVE_BIFID: strcpy(message.bifid_array,siSolveInfo.best_key); break;
 		case SOLVE_TRIFID: strcpy(message.trifid_array,siSolveInfo.best_key); break;
 		case SOLVE_ANAGRAM:
 		case SOLVE_COLTRANS: if(siSolveInfo.best_trans) 	message.SetCipherTrans(siSolveInfo.best_trans);	break;
+		case SOLVE_RUNKEY: message.SetKey(siSolveInfo.best_key); break;
 	}
 
-	delete siSolveInfo.best_trans;
-	siSolveInfo.best_trans=NULL;
+	if(siSolveInfo.best_trans)
+	{
+		delete siSolveInfo.best_trans;
+		siSolveInfo.best_trans=NULL;
+	}
 
 	SetDlgInfo();
 }
@@ -305,14 +309,40 @@ void StopNotify()
 	}
 }
 
+#define IS_LOWER_LTR(c) ((c>='a' && c<='z')? 1:0)
+#define IS_UPPER_LTR(c) ((c>='A' && c<='Z')? 1:0)
+
+int FormatKey(char *key)
+{
+	int length=strlen(key), temp_index=0;
+	char cur_char, *temp=new char[length+1];
+
+	for(int index=0; index<length; index++)
+	{
+		cur_char=key[index];
+
+		if(IS_LOWER_LTR(cur_char)) cur_char-=32;
+		if(!IS_UPPER_LTR(cur_char)) continue;
+		temp[temp_index++]=cur_char;
+	}
+
+	temp[temp_index]='\0';
+	strcpy(key,temp);
+	delete temp;
+
+	return temp_index;
+}
+
 //solve thread proc
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
 	int num_symbols;
 //	int use_key_len;
-	char key[KEY_SIZE];
-	char *exclude=NULL;
+	char key[4096];
+	char *exclude=NULL, *key_text;
 	SYMBOL symbol;
+	FILE *key_file;
+	int key_text_size;
 	
 	if(!bMsgLoaded) return 0;
 	
@@ -341,7 +371,25 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		siSolveInfo.locked=(char*)message.cur_map.GetLocked();
 		siSolveInfo.exclude=exclude;
 		
-		hillclimb(message,szCipher,message.GetLength(),key,siSolveInfo,false);
+		hillclimb(message,szCipher,message.GetLength(),key,false);
+	}
+
+	else if(iSolveType==SOLVE_RUNKEY)
+	{
+		sprintf(szText,"%s\%s",szExeDir,"keytext.txt");
+		key_file=fopen(szText,"r");
+		fseek(key_file,0,SEEK_END);
+		key_text_size=ftell(key_file);
+		fseek(key_file,0,SEEK_SET);
+		key_text=new char[key_text_size+1];
+		fread(key_text,1,key_text_size,key_file);
+		fclose(key_file);
+		key_text[key_text_size]='\0';
+		key_text_size=FormatKey(key_text);
+
+		running_key(message,key_text);
+		
+		delete key_text;
 	}
 
 	else 
@@ -354,14 +402,14 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 			case SOLVE_ANAGRAM:	break;
 			case SOLVE_COLTRANS: break;
 			case SOLVE_KRYPTOS: break;
+			case SOLVE_DISUB: strcpy(key,"ABCDEFGHIJKLMNOPQRSTUVWXYZ"); for(int i=0; i<51; i++) strcat(key,"ABCDEFGHIJKLMNOPQRSTUVWXYZ"); break;
 		}
 
-		hillclimb2(message,siSolveInfo,iSolveType,key,iLineChars);
+		hillclimb2(message,iSolveType,key,iLineChars);
 	}
 
 	//reset window state
 	StopSolve();
-	SetDlgInfo();
 	
 	hSolveThread=NULL;
 	if(exclude) delete[] exclude;
@@ -381,7 +429,7 @@ void StartSolve()
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Stop");
 	MsgEnable(false);
 	MapEnable(false);
-	hSolveThread=CreateThread(0,1024,FindSolution,0,0,0);
+	hSolveThread=CreateThread(0,4096,FindSolution,0,0,0);
 	hTimerThread=CreateThread(0,128,Timer,0,0,0);
 }
 
@@ -478,6 +526,10 @@ void SetLanguage()
 		case 3: strcpy(szLanguage,"Italian"); strcpy(szLang,LANG_ITA); siSolveInfo.lang_ioc=(float)IOC_ITA; break;
 		case 4: strcpy(szLanguage,"French"); strcpy(szLang,LANG_FRE); siSolveInfo.lang_ioc=(float)IOC_FRE; break;
 	}
+
+	siSolveInfo.lang_dioc=DIOC;
+	siSolveInfo.lang_chi=CHI;
+	siSolveInfo.lang_ent=ENT;
 	
 	for(int n=1; n<=5; n++)
 	{
