@@ -150,7 +150,7 @@ int GetUniques(const char *string, char *unique_str, int *unique_freq)
 	for(index=0; index<length; index++)
 		ascii_index[(unsigned char)string[index]]++;
 
-	for(index=0; index<256; index++)
+	for(index=32; index<256; index++)
 		if(ascii_index[index])
 		{
 			if(unique_str) unique_str[unique]=index;
@@ -169,13 +169,13 @@ float IoC(const char *string, int length)
 	int index, freqs[256];
 	float ic=0;
 	
-	memset(freqs,0,256*sizeof(int));
+	memset(freqs,0,1024);
 	//length=(int)strlen(string);         //Leave this in - just in case.
 	
-	for(index=length; index--;) 
+	for(index=0; index<length; index++) 
 		freqs[(unsigned char)string[index]]++;
 
-	for(index=256; index--;)
+	for(index=32; index<256; index++)
 		if(freqs[index]>1) 
 			ic+=(freqs[index])*(freqs[index]-1); 
 
@@ -184,19 +184,22 @@ float IoC(const char *string, int length)
 	return ic;
 }
 
-float DIoC(const char* string, int length)
+float DIoC(const char* string, int length, int step)
 {
 	int index, freqs[65536];
 	float ic=0;
 	
-	memset(freqs,0,65536*sizeof(int));
+	memset(freqs,0,65536*4);
 	
-	for(index=length-1; index--;)
+	for(index=0; index<length-1; index+=step)
 		freqs[(int((unsigned char)string[index])<<8)+(unsigned char)string[index+1]]++;
 
-	for(index=65536; index--;)
+	for(index=0; index<65536; index++)
 		if(freqs[index]>1) 
 			ic+=(freqs[index])*(freqs[index]-1); 
+	
+	if(step==1) length--;
+	if(step==2) length>>=1;
 
 	length--;
 	ic/=(length)*(length-1);
@@ -204,70 +207,50 @@ float DIoC(const char* string, int length)
 	return ic;
 }
 
+#define LOG2 .693147
+
 float Entropy(const char *string, int length)
 {
-	int freqs[256], unique;
-	float entropy=0, prob_mass, log2;
-
-	//if(!string) return 0;
-
-	unique=GetUniques(string,NULL,freqs);
-
-	//for log base conversion
-	log2=log((float)2);
+	int freqs[256], index;
+	float entropy=0, prob_mass;
+	
+	memset(freqs,0,1024);
+	
+	for(index=0; index<length; index++) 
+		freqs[(unsigned char)string[index]]++;
 
 	//calculate entropy
-	for(int sym_index=0; sym_index<unique; sym_index++)
+	for(index=32; index<256; index++)
 	{
-		prob_mass=float(freqs[sym_index])/length;
-		entropy+=prob_mass*(log(prob_mass)/log2);
+		if(!freqs[index]) continue;
+		prob_mass=float(freqs[index])/length;
+		entropy+=prob_mass*(log(prob_mass)/LOG2);
 	}
 
-	if((-1*entropy) == -0.0) return 0;
+	if(entropy==0.0) return entropy;
 	return (-1*entropy);
 }
 
-/*float ChiSquare(const char *string)
-{
-	int freqs[256], length, unique;
-	float chi2=0, prob_mass, cur_calc;
-
-	if(!string) return 0;
-
-	length=(int)strlen(string);
-
-	if(length<0) return 0;
-
-	unique=GetUniques(string,NULL,freqs);
-
-	//calculate chi2
-	for(int sym_index=0; sym_index<unique; sym_index++)
-	{
-		prob_mass=length*(1.0/unique);
-		cur_calc=freqs[sym_index]-prob_mass;
-		cur_calc*=cur_calc;
-		cur_calc/=prob_mass;
-
-		chi2+=cur_calc;
-	}
-
-	return chi2/length;
-}*/
 
 float ChiSquare(const char *string, int length)
 {
-	int freqs[256], unique;
+	int freqs[256], index, unique=0;
 	float chi2=0, prob_mass, cur_calc;
 
-	//if(!string) return 0;
-
-	unique=GetUniques(string,NULL,freqs);
+	memset(freqs,0,1024);
+	
+	for(index=0; index<length; index++) 
+	{
+		if(!freqs[(unsigned char)string[index]]) unique++;
+		freqs[(unsigned char)string[index]]++;
+	}
 
 	//calculate chi2
-	for(int sym_index=0; sym_index<unique; sym_index++)
+	for(index=32; index<256; index++)
 	{
+		if(!freqs[index]) continue;
 		prob_mass=(float)(length*(1.0/unique));
-		cur_calc=freqs[sym_index]-prob_mass;
+		cur_calc=freqs[index]-prob_mass;
 		cur_calc*=cur_calc;
 		cur_calc/=prob_mass;
 
@@ -275,6 +258,27 @@ float ChiSquare(const char *string, int length)
 	}
 
 	return chi2/length;
+}
+
+float avg_lsoc(const char *string, int length)
+{
+	int total_clusters=0, cur_length=0, total_length=0;
+	
+	for(int index=0; index<length; index++)
+	{
+		//end of cluster
+		if(string[index]=='A' || string[index]=='E'  || string[index]=='I' || string[index]=='O'  || string[index]=='U')
+		{
+			if(index) total_clusters++;
+			total_length+=cur_length;
+			cur_length=0;
+			continue;
+		}
+
+		cur_length++;
+	}
+
+	return float(total_length)/total_clusters;
 }
 
 void Reverse(char *string)

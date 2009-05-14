@@ -27,20 +27,27 @@ struct SOLVEINFO
 	//parameters
 	long max_fail;
 	int swaps;
-	int revert;
+	int max_try;
 	char *locked;
 	char *exclude;
-	char cribs[100][64];
+	char cribs[512][128];
 	int num_cribs;
+	//int tabu[KEY_SIZE][26];
+	char tabu[4096][KEY_SIZE];
+	int num_tabu;
+	char log_name[2048];
 
 	float lang_ioc;
-	int freq_weight;
+	float lang_dioc;
+	float lang_ent;
+	float lang_chi;
 	int ioc_weight;
+	int dioc_weight;
 	int ent_weight;
 	int chi_weight;
 	
 	//feedback
-	char best_key[KEY_SIZE];
+	char best_key[4096];
 	int best_key4[14];
 	char *best_trans;
 	int cur_try;
@@ -51,24 +58,30 @@ struct SOLVEINFO
 
 	//control
 	int running;
+	int num_words;
+	int max_words;
 	
 	//callback functions
 	void (*disp_all)(void);
 	void (*disp_info)(void);
 	unsigned long (*time_func)(void);
+	void (*get_words)(const char*,int);
+	void (*disp_tabu)(void);
 };
 
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
 
-inline int		calcscore(Message&,const int,const char *,SOLVEINFO&);
-inline void		shufflekey(char *,const int,const int,SOLVEINFO&);
+inline int		calcscore(Message&,const int,const char *);
+inline void		shufflekey(char *,const int,const int);
 
 void			printcipher(int,const char *,char *,int,char *);
 void			printfrequency(int,int *,char *,int);
-int				hillclimb(Message&,const char *,int,char *,SOLVEINFO&,int);
-int				hillclimb2(Message&,SOLVEINFO&,int,char*,int);
-int				hillclimb4(Message&,SOLVEINFO&);
+int				hillclimb(Message&,const char *,int,char *,int);
+int				hillclimb2(Message&,int,char*,int);
+void			running_key(Message&,char*);
 
 void 			GetUnigraphs(double*);
 int 			ReadNGraphs(const char*,int);
-int 			WordPlug(Message&,const char*,SOLVEINFO&);
+int 			WordPlug(Message&,const char*);
+
+void			SetInfo(SOLVEINFO*);

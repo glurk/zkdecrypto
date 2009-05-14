@@ -191,9 +191,9 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					siSolveInfo.chi_weight=GetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,false,false);
 					return 0;
 
-				case IDC_FREQ_WEIGHT_EDIT:
+				case IDC_DIOC_WEIGHT_EDIT:
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
-					siSolveInfo.freq_weight=GetDlgItemInt(hMainWnd,IDC_FREQ_WEIGHT_EDIT,false,false);
+					siSolveInfo.dioc_weight=GetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,false,false);
 					return 0;
 
 				case IDC_BLOCK_EDIT:
@@ -214,7 +214,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					
 					switch(iSolveType)
 					{
-						case SOLVE_VIG: message.SetKey(szText); break;
+						case SOLVE_VIG: message.SetKeyLength(strlen(szText)); message.SetKey(szText); break;
 						case SOLVE_BIFID: memcpy(message.bifid_array,szText,25); break;
 						case SOLVE_TRIFID: memcpy(message.trifid_array,szText,27); break;
 					}
@@ -226,6 +226,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_WORD_MIN:
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					iWordMin=GetDlgItemInt(hMainWnd,IDC_WORD_MIN,false,false);
+					if(iWordMin<0 || iWordMin>30) iWordMin=0;
 					SetWordListTabInfo();
                     return 0;
                      
@@ -233,6 +234,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					iWordMax=GetDlgItemInt(hMainWnd,IDC_WORD_MAX,false,false);
 					SetWordListTabInfo();
+					if(iWordMax<0 || iWordMax>30) iWordMax=20;
                     return 0;
                      
                 case UDM_DISPALL:
@@ -363,7 +365,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hMainTab=GetDlgItem(hMainWnd,IDC_MAIN_TAB);
 
 	tciTabItem.mask=TCIF_TEXT;
-	tciTabItem.cchTextMax=32;
+	tciTabItem.cchTextMax=15;
 
 	tciTabItem.pszText="Solve";
 	SendMessage(hMainTab,TCM_INSERTITEM,0,(LPARAM)&tciTabItem);
@@ -373,6 +375,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hMainTab,TCM_INSERTITEM,2,(LPARAM)&tciTabItem);
 	tciTabItem.pszText="Statistics";
 	SendMessage(hMainTab,TCM_INSERTITEM,3,(LPARAM)&tciTabItem);
+	tciTabItem.pszText="Tabu";
+	SendMessage(hMainTab,TCM_INSERTITEM,4,(LPARAM)&tciTabItem);
 	ShowTab(0);
 
 	/*create text window*/
@@ -422,12 +426,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendDlgItemMessage(hMainWnd,IDC_IOC_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SendDlgItemMessage(hMainWnd,IDC_ENT_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SendDlgItemMessage(hMainWnd,IDC_CHI_WEIGHT_SPIN,UDM_SETRANGE,0,10);
-	SendDlgItemMessage(hMainWnd,IDC_FREQ_WEIGHT_SPIN,UDM_SETRANGE,0,10);
+	SendDlgItemMessage(hMainWnd,IDC_DIOC_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,1);
 	SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,5,false);
 	SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,5,false);
 	SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,5,false);
-	SetDlgItemInt(hMainWnd,IDC_FREQ_WEIGHT_EDIT,5,false);
+	SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,0,false);
 	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,1,false);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_ASC,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_NUM,MF_BYCOMMAND | MF_ENABLED);
@@ -443,14 +447,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	
 	/*init solve info*/
 	memset(&siSolveInfo,0,sizeof(SOLVEINFO));
-	siSolveInfo.ioc_weight=siSolveInfo.ent_weight=siSolveInfo.chi_weight=siSolveInfo.freq_weight=5;
-	siSolveInfo.max_fail=2000;
+	siSolveInfo.ioc_weight=siSolveInfo.ent_weight=siSolveInfo.chi_weight=5;
+	siSolveInfo.dioc_weight=0;
+	siSolveInfo.max_fail=400;
 	siSolveInfo.swaps=5;
-	siSolveInfo.revert=400;
+	siSolveInfo.max_try=2000;
 	siSolveInfo.disp_all=disp_all;
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;
+	siSolveInfo.get_words=GetNumWords;
+	siSolveInfo.disp_tabu=SetTabuTabInfo;
 	siSolveInfo.best_trans=NULL;
+	sprintf(siSolveInfo.log_name,"%s\\%s",szExeDir,"log.txt");
+	SetInfo(&siSolveInfo);
 	Reset();
 
 	//language

@@ -202,7 +202,7 @@ int RemoveFONT()
 void LoadCribs()
 {
 	FILE *ini_file;
-	char filename[1024], crib[32];
+	char filename[1024], crib[128];
 //	char *comment;
 	int read;
 
@@ -257,11 +257,12 @@ int LoadINI()
 		else if(!stricmp(option,"plain")) strcpy(szPlainName,value);
 		else if(!stricmp(option,"fail")) siSolveInfo.max_fail=atoi(value);
 		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
-		else if(!stricmp(option,"revert")) siSolveInfo.revert=atoi(value);
+		else if(!stricmp(option,"revert")) siSolveInfo.max_try=atoi(value);
 		else if(!stricmp(option,"line")) iLineChars=atoi(value);
 		else if(!stricmp(option,"lang")) iLang=atoi(value);
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
 		else if(!stricmp(option,"maxword")) iWordMax=atoi(value);
+		else if(!stricmp(option,"extra")) {if(value[0]=='*') value[0]='\0'; strcpy(szExtraLtr,value);}
 		else if(!stricmp(option,"solve")) iSolveType=atoi(value);
 		else if(!stricmp(option,"key_len")) iKeyLength=atoi(value);
 		else if(!stricmp(option,"extra")) strcpy(szExtraLtr,value);
@@ -291,11 +292,13 @@ int SaveINI()
 	fprintf(ini_file,"plain = %s\n",szPlainName);
 	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_fail);
 	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
-	fprintf(ini_file,"revert = %i\n",siSolveInfo.revert);
+	fprintf(ini_file,"revert = %i\n",siSolveInfo.max_try);
 	fprintf(ini_file,"line = %i\n",iLineChars);
 	fprintf(ini_file,"lang = %i\n",iLang);
 	fprintf(ini_file,"minword = %i\n",iWordMin);
 	fprintf(ini_file,"maxword = %i\n",iWordMax);
+	if(szExtraLtr[0]) fprintf(ini_file,"extra = %s\n",szExtraLtr);
+	else fprintf(ini_file,"extra = %s\n","*");
 	fprintf(ini_file,"solve = %i\n",iSolveType);
 	fprintf(ini_file,"key_len = %i\n",iKeyLength);
 	fprintf(ini_file,"extra = %s\n",szExtraLtr);

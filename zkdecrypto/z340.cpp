@@ -30,7 +30,52 @@
 #include "headers/z340Globals.h"
 #include "headers/strarray.h"
 
-int hillclimb(Message &msg, const char cipher[],int clength,char key[],SOLVEINFO &info, int print)
+//pointer to info struct in main module
+SOLVEINFO *info;
+void SetInfo(SOLVEINFO *main_info) {info=main_info;}
+
+FILE *log_file;
+
+//after a certain number of reverts without the best key improving, blacklist that best key
+/*
+inline float tabu_match(char key[], int key_len)
+{
+	int match=0; key_len=6;//>>=4;	
+
+	for(int sym=0; sym<key_len; sym++) match+=info->tabu[sym][key[sym]-'A'];
+		//if(info->tabu[sym][key[sym]-'A']) match++;
+
+	//if(match==(10*key_len)) return 0.0;
+	//else return 1.0;
+	return 1.0 - (match*match)/(5*(key_len*key_len));
+	//return 1.0 - .0001*float(match*match*match)/(key_len*key_len*key_len);
+}
+*/
+
+inline float tabu_match(char key[], int key_len)
+{
+	int match=0;
+
+	key_len>>=3;
+
+	for(int cur_tabu=0; cur_tabu<info->num_tabu; cur_tabu++)
+	{
+		match=0; 
+
+		for(int sym=0; sym<key_len; sym++)
+		{
+
+			if(info->tabu[cur_tabu][sym]!=key[sym]) break;
+			else match++;
+		}
+
+		if(match==key_len) return 0.0;
+	}
+
+	return 1.0;
+}
+
+int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print)
 {
 	#define	DO_SWAP	{ unsigned char temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
 	#define DECODE {for(y=clength;y--;) solved[y]=*decoder[(unsigned char)cipher[y]];}
@@ -67,86 +112,127 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],SOLVEINFO
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
-	int score = 0, last_score=0, iterations = 0, improve = 0;
+	int score = 0, norm_best = 0, last_score=0, improve=0, tolerance;
 	long start_time=0, end_time=0;
-	info.cur_try=0;
-	info.cur_fail=0;
+
+	info->cur_try=0;
+	info->cur_fail=0;
+	info->disp_tabu();
+	//memset(info->tabu,0,sizeof(info->tabu));
+	info->num_tabu=0;
+
+	info->max_words=30;
 
 	//initial score & feedback
-	last_score=calcscore(msg,clength,solved,info);
-	info.best_score=last_score;
-	memcpy(info.best_key,key,keylength);
-	if(info.disp_all) info.disp_all();
+	last_score=calcscore(msg,clength,solved);
+	info->best_score=norm_best=last_score;
+	memcpy(info->best_key,key,keylength);
+	if(info->disp_all) info->disp_all();
+	info->disp_tabu();
+	log_file=fopen(info->log_name,"w");
 
 	//go until max number of iterations or stop is pressed
-	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
-		
+	while(info->running) {
 		/*feedback info*/
-		info.cur_try=iterations;
-		info.last_time=float(end_time-start_time)/1000;
-		if(info.time_func) start_time=info.time_func();
-		if(info.disp_info) info.disp_info();
-		
+		info->last_time=float(end_time-start_time)/1000;
+		if(info->time_func) start_time=info->time_func();
+		if(info->disp_info) info->disp_info();
+
 		improve=0;
 		
-		for(int p1=0; p1<keylength; p1++) {
+		for(int p1=0; p1<keylength; p1++) { //do an iteration
 
-			if(info.locked[p1]) continue; //skip if symbol is locked
+			if(info->locked[p1]) continue; //skip if symbol is locked
 
 			for(int p2=0; p2<keylength; p2++) {
 			
-				if(!info.running) return 0; //stop
+				if(!info->running) goto EXIT; //stop
 
 				if(p1>=cuniq && p2>=cuniq) continue; //don't bother swapping if both symbols are in the extra letters area
-				if(info.locked[p2] || key[p1]==key[p2]) continue; //skip if symbol is locked or identical 
+				if(info->locked[p2] || key[p1]==key[p2]) continue; //skip if symbol is locked or identical 
 				
-				if(info.exclude) //exclusions
+				if(info->exclude) //exclusions
 				{
-					if(p1<cuniq && strchr(info.exclude+(27*p1),key[p2])) continue; 
-					if(p2<cuniq && strchr(info.exclude+(27*p2),key[p1])) continue;
+					if(p1<cuniq && strchr(info->exclude+(27*p1),key[p2])) continue; 
+					if(p2<cuniq && strchr(info->exclude+(27*p2),key[p1])) continue;
 				}
 
-				//swap & decode
-				DO_SWAP; 
-				DECODE;
-			
-				score=calcscore(msg,clength,solved,info); 
+				//swap, decode, score
+				DO_SWAP; DECODE;
+				score=calcscore(msg,clength,solved);
+				score*=tabu_match(key,cuniq);
 
-				//undo if change made it worse than last score
-				if(score<last_score) {DO_SWAP;} 
-				else //change is better or same as last score
-				{
-					last_score=score;
+				//tolerance of going downhill starts out at max, and decreases with each iteration without improve
+				if(!info->max_try) tolerance=0;
+				else tolerance=rand()%(info->max_try-info->cur_try+1);
 
-					if(score>info.best_score) //this is the new best, save & display
-					{
-						//if (print) printcipher(clength,cipher,solved,score,key);
-						
-						//feedback info
-						info.best_score=score;
-						improve=1;
-						info.cur_fail=0;
-						memcpy(info.best_key,key,keylength);
-						if(info.disp_all) info.disp_all();	
-					}
-				}
+				if(score < (last_score-tolerance)) {DO_SWAP;}
+				else last_score=score; //change is better or same as last score
+
+				if(score>info->best_score) //this is the new best, save & display
+				{						
+					//if (print) printcipher(clength,cipher,solved,score,key);
+					improve=1;
+					info->best_score=score;
+					memcpy(info->best_key,key,keylength);
+					if(info->disp_all) info->disp_all();	
+				}				
 			}
 		}
 
-		// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
-		for(i=info.swaps;i--;) shufflekey(key,keylength,cuniq,info);    
+		if(!improve) 
+		{
+			//reset downhill score tolerance
+			if(++info->cur_try>=info->max_try)
+			{
+				info->cur_try=0;
+			}
 
-		if(++iterations>info.revert) { memcpy(key,info.best_key,keylength); iterations=0; }
+			//blacklist peak key and reset best score
+			if(++info->cur_fail>=info->max_fail)
+			{
+				//if(info->num_words>=info->max_words) goto EXIT;
+				
+				memcpy(key,info->best_key,keylength); 
+				DECODE;
+				score=calcscore(msg,clength,solved);
+
+				//for(int i=0; i<cuniq; i++) info->tabu[i][key[i]-'A']++;
+				memcpy(info->tabu[info->num_tabu],key,cuniq);
+				info->tabu[info->num_tabu][cuniq]='\0';
+				info->num_tabu++;
+				info->best_score*=tabu_match(info->best_key,cuniq);
+
+				info->get_words(solved,clength);
+
+				fprintf(log_file,"%i\t%i\t%s\t%s\n",score,info->num_words,info->tabu[info->num_tabu-1],solved);
+				fflush(log_file);
+		
+
+				info->disp_tabu();
+				info->cur_fail=0;
+			}
+		}
+
+		else
+		{
+			info->cur_try=0;
+			info->cur_fail=0;
+		}
+
+		// info->swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
+		for(i=info->swaps;i--;) shufflekey(key,keylength,cuniq);  
 		DECODE;
-		last_score=calcscore(msg,clength,solved,info); 
-		
-		if(!improve) info.cur_fail++;
-		
-		if(info.time_func) end_time=info.time_func();
+		last_score=calcscore(msg,clength,solved);
+		score=int(score*tabu_match(key,cuniq));
 
+		if(info->time_func) end_time=info->time_func();
 	}
 
+EXIT:
 	delete solved;
+	info->running=0;
+	fclose(log_file);
 
 	return 0;
 }
@@ -159,84 +245,44 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],SOLVEINFO
 
 #define IS_LETTER(L) ((L<0 || L>25)? 0:1)
 
-/*inline float FastIoC(const char *string, int length)
+float FastDIoC(const char* string, int length, int step=1)
 {
-	int index, freqs[256];
+	int index, freqs[676], char1, char2;
 	float ic=0;
 	
-	memset(freqs,0,256*sizeof(int));
+	memset(freqs,0,2704);
 	
-	for(index=length; index--;) 
-		freqs[(unsigned char)string[index]]++;
-
-	for(index=256; index--;)
-		if(freqs[index]>1) 
-			ic+=(freqs[index])*(freqs[index]-1); 
-
-	ic/=(length)*(length-1);
-
-	return ic;
-}
-
-inline float FastDIoC(const char* string, int length)
-{
-	int index, freqs[65536];
-	float ic=0;
-	
-	memset(freqs,0,65536*sizeof(int));
-	
-	for(index=length-1; index--;)
-		freqs[(unsigned char)string[index]*(unsigned char)string[index+1]]++;
-
-	for(index=65536; index--;)
-		if(freqs[index]>1) 
-			ic+=(freqs[index])*(freqs[index]-1); 
-
-	ic/=(length)*(length-1);
-
-	return ic;
-}
-
-inline float FastChiSquare(const char *string)
-{
-	int freqs[256], length, unique;
-	float chi2=0, prob_mass, cur_calc;
-
-	if(!string) return 0;
-
-	length=(int)strlen(string);
-	
-	if(length<0) return 0;
-
-	unique=GetUniques(string,NULL,freqs);
-
-	//calculate chi2
-	for(int sym_index=0; sym_index<unique; sym_index++)
+	for(index=0; index<length-1; index+=step)
 	{
-		prob_mass=(float)(length*(1.0/unique));
-		cur_calc=freqs[sym_index]-prob_mass;
-		cur_calc*=cur_calc;
-		cur_calc/=prob_mass;
-
-		chi2+=cur_calc;
+		char1=(unsigned char)string[index]-'A';
+		char2=(unsigned char)string[index+1]-'A';
+		if(!IS_LETTER(char1) || !IS_LETTER(char2)) continue;
+		freqs[(char1*26)+char2]++;
 	}
 
-	return chi2/length;
-}
-*/
-inline int calcscore(Message &msg, const int length_of_cipher,const char *solv, SOLVEINFO &info) {
+	for(index=0; index<676; index++)
+		if(freqs[index]>1) 
+			ic+=(freqs[index])*(freqs[index]-1); 
 
+	length/=step;
+	ic/=(length)*(length-1);
+
+	return ic;
+}
+
+
+int calcscore(Message &msg, const int length_of_cipher,const char *solv) 
+{
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
-	int score, remaining;
+	int score, remaining, score_len=MIN(length_of_cipher,500);
+	float cur_stat, cur_mult, score_mult=1.0;
 
 	//get inital characters in for ngrams
 	t1=solv[0]-'A'; t2=solv[1]-'A'; t3=solv[2]-'A'; t4=solv[3]-'A'; t5=solv[4]-'A';
+	remaining=score_len; //letters in text left for ngrams
 
-	//letters in text left for ngrams
-	remaining=length_of_cipher;
-
-	for(int c=0; c<length_of_cipher-1; c++) 
+	for(int c=0; c<score_len-1; c++) 
 	{
 		//only score an ngram which is all letters,
 		//enough characters remain in the text (i.e. not close to the end)
@@ -264,75 +310,49 @@ inline int calcscore(Message &msg, const int length_of_cipher,const char *solv, 
 
 	score=pentascore+tetrascore+triscore+biscore;
 
-	
-	//Letter Frequencies
-	if(info.freq_weight)
-	{
-
-		int lprgiActFreq[26], lprgiExpFreq[26], letter;
-		float freq_diff=0;
+	if(info->ioc_weight) score_mult*=1.05-(info->ioc_weight*ABS(IoC(solv,score_len)-info->lang_ioc));
 		
-		memset(lprgiActFreq,0,26*sizeof(int));
-		for(letter=0; letter<length_of_cipher; letter++) lprgiActFreq[solv[letter]-'A']++;
-		msg.GetExpFreq(lprgiExpFreq);
-		for(letter=0; letter<26; letter++) freq_diff+=ABS(lprgiExpFreq[letter]-lprgiActFreq[letter]);
-
-		score*=(float)1.05-((info.freq_weight/500)*freq_diff);
+	if(info->dioc_weight) //DIC, EDIC
+	{
+		score_mult*=1.05-((info->dioc_weight>>1)*ABS(FastDIoC(solv,score_len,1)-info->lang_dioc));
+		score_mult*=1.05-((info->dioc_weight>>1)*ABS(FastDIoC(solv,score_len,2)-info->lang_dioc));
 	}
-	
-
-	//IC
-	float cur_ioc=IoC(solv,length_of_cipher);
-    float score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-info.lang_ioc));
-    score=int(score*score_mult);
-
-/*          This is ONLY valid for English, and REALLY slow, so I have commented it out
-	//DIC
-	cur_ioc=DIoC(solv,length_of_cipher);
-    score_mult=(float)1.05-(info.ioc_weight*ABS(cur_ioc-.0078));
-    score=int(score*score_mult);
-*/
-        
-	//Chi^2
-    float cur_chi=ChiSquare(solv,length_of_cipher);
-    score_mult=(float)(1.05-(((float)info.chi_weight/100.0)*ABS(cur_chi-(float).52)));
-    score=int(score*score_mult);
-
-	//Entropy
-	float cur_ent=Entropy(solv,length_of_cipher);
-    score_mult=(float)(1.05-(((float)info.ent_weight/100.0)*ABS(cur_ent-(float)4.1)));
-    score=int(score*score_mult);
+    	
+	if(info->chi_weight) score_mult*=1.05-(info->chi_weight*ABS(ChiSquare(solv,score_len)-info->lang_chi))/60.0;
+	if(info->ent_weight) score_mult*=1.05-(info->ent_weight*ABS(Entropy(solv,score_len)-info->lang_ent))/150.0;
 
 	//Cribs
-	for(int cur_crib=0; cur_crib<info.num_cribs; cur_crib++)
-		if(strstr(solv,info.cribs[cur_crib])) score*=1.025;
+	for(int cur_crib=0; cur_crib<info->num_cribs; cur_crib++)
+		if(strstr(solv,info->cribs[cur_crib])) score_mult*=1.025;
 
-//	printf("2graph: %d - 3graph: %d - 4graph: %d 5graph: %d\n",biscore,triscore,tetrascore,pentascore);	//FOR VALUE TESTING PURPOSES
-	
-	return(score);
+	//info->get_words(solv,length_of_cipher);
+	//score_mult*=1.0 + .001*info->num_words;
+
+	score=int(score*score_mult);
+	return score;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //        Mutate the char array "key[]" by swapping two unlocked, unexcluded letters            //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline void shufflekey(char *key,const int keylength,const int cuniq,SOLVEINFO &info) {
+inline void shufflekey(char *key,const int keylength,const int cuniq) {
 
 	int x,y,z,canswap=0;
 
 	//check if all characters are locked to avoid infinite loop
-	for(int symbol=keylength; symbol--;) if(!info.locked[symbol]) { canswap=1; break; }
+	for(int symbol=keylength; symbol--;) if(!info->locked[symbol]) { canswap=1; break; }
 
 	if(canswap)
 	{
-		do {x=rand()%keylength;} while(info.locked[x]);
-		do {y=rand()%keylength;} while(info.locked[y]);
+		do {x=rand()%keylength;} while(info->locked[x]);
+		do {y=rand()%keylength;} while(info->locked[y]);
 
 		/*exclusions*/
-		if(info.exclude)
+		if(info->exclude)
 		{
-			if(x<cuniq && strchr(info.exclude+(27*x),key[y])) return; 
-			if(y<cuniq && strchr(info.exclude+(27*y),key[x])) return;
+			if(x<cuniq && strchr(info->exclude+(27*x),key[y])) return; 
+			if(y<cuniq && strchr(info->exclude+(27*y),key[x])) return;
 		}
 		
 		z=key[x]; key[x]=key[y]; key[y]=z;
@@ -477,7 +497,7 @@ int ReadNGraphs(const char *filename, int n)
 //  Find position where the word string inserted into the plain text produces the highest score //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
+int WordPlug(Message &msg, const char *word)
 {
  	const char *cipher, *plain;
 	int word_len, msg_len, cur_score=0, best_score=0;
@@ -497,9 +517,9 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 	memset(&symbol,0,sizeof(SYMBOL));
 
 	//backup lang_ioc, and set to 0
-	old_ioc_weight=info.ioc_weight;
-	info.ioc_weight=0;
-	info.exclude=NULL;
+	old_ioc_weight=info->ioc_weight;
+	info->ioc_weight=0;
+	info->exclude=NULL;
 
 	for(int position=0; position<=msg_len-word_len; position++)
 	{		
@@ -536,7 +556,7 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 		if(fail) continue;
 		
 		//compare score
-		cur_score=calcscore(msg,msg_len,plain,info);
+		cur_score=calcscore(msg,msg_len,plain);
 		
 		if(cur_score>best_score)
 		{
@@ -548,7 +568,7 @@ int WordPlug(Message &msg, const char *word, SOLVEINFO &info)
 	msg.cur_map=best_map;
 
 	//restore old ioc weight
-	info.ioc_weight=old_ioc_weight;
+	info->ioc_weight=old_ioc_weight;
 	
 	return best_score;
 }
@@ -641,17 +661,17 @@ void KryptosMatrix4(char *cipher, char *solved, int *key, int iLineChars, int en
 					case SOLVE_COLTRANS:	msg.DecodeHomo(); break; \
 					case SOLVE_KRYPTOS:		KryptosMatrix4(cipher,solved,(int*)key,iLineChars,1); strcpy(cipher,solved); msg.DecodeHomo(); break;}
 		
-int hillclimb2(Message &msg, SOLVEINFO &info, int solve_type, char *key , int iLineChars)
+int hillclimb2(Message &msg, int solve_type, char *key , int iLineChars)
 {
 	int i, p1, p2, clength, temp;
-	int score=0, last_score=0, iterations=0, improve=0;
+	int score=0, last_score=0, iterations=0, improve=0, tolerance;
 	long start_time=0, end_time=0;
 	char *cipher, *solved;
 	int use_key_len=msg.GetKeyLength();
 	int full_key_len=strlen(key);
 
-	info.cur_try=0;
-	info.cur_fail=0;
+	info->cur_try=0;
+	info->cur_fail=0;
 
 	clength=msg.GetLength();
 	cipher=msg.GetCipher();
@@ -662,62 +682,66 @@ int hillclimb2(Message &msg, SOLVEINFO &info, int solve_type, char *key , int iL
 	switch(solve_type)
 	{
 		case SOLVE_BIFID: use_key_len=full_key_len; break;
-		case SOLVE_TRIFID: use_key_len=full_key_len; break;
+		case SOLVE_TRIFID: use_key_len=full_key_len=27; break;
 		case SOLVE_ANAGRAM: use_key_len=full_key_len=clength; break;
 		case SOLVE_COLTRANS: use_key_len=full_key_len=iLineChars<<1; break;
 		case SOLVE_KRYPTOS: use_key_len=full_key_len=14; break;
 	}
  
-	info.best_trans=new char[clength+1];
+	info->best_trans=new char[clength+1];
 
 	key[full_key_len]='\0';
 
 	//initial score, save best, & feedback
 	MSG_DECODE;
-	last_score=calcscore(msg,clength,solved,info);
-	info.best_score=last_score;
-	strcpy(info.best_key,key);
-	strcpy(info.best_trans,cipher);
-	if(info.disp_all) info.disp_all();
+	last_score=calcscore(msg,clength,solved);
+	info->best_score=last_score;
+	strcpy(info->best_key,key);
+	strcpy(info->best_trans,cipher);
+	if(info->disp_all) info->disp_all();
 
 	//go until max number of iterations or stop is pressed
-	for(info.cur_try=0; info.cur_fail<info.max_fail; info.cur_try++) {
+	for(info->cur_try=0; info->cur_fail<info->max_fail; info->cur_try++) {
 		
 		//feedback info
-		info.cur_try=iterations;
-		info.last_time=float(end_time-start_time)/1000;
-		if(info.time_func) start_time=info.time_func();
-		if(info.disp_info) info.disp_info();
+		info->cur_try=iterations;
+		info->last_time=float(end_time-start_time)/1000;
+		if(info->time_func) start_time=info->time_func();
+		if(info->disp_info) info->disp_info();
 		
 		improve=0;
 		
 		for(p1=0; p1<full_key_len; p1++) {
 			for(p2=0; p2<full_key_len; p2++) {
 			
-				if(!info.running) return 0;	
+				if(!info->running) return 0;	
 				if(p1==p2) continue;
 				if(p1>use_key_len && p2>use_key_len) continue;
 			
 				//swap, decode, score
 				MSG_SWAP;
 				MSG_DECODE; 
-				score=calcscore(msg,clength,solved,info);
+				score=calcscore(msg,clength,solved);
 
-				if(score<last_score) {MSG_SWAP;} //undo if change made it worse than last score
+				//tolerance of going downhill starts out at max, and decreases with each iteration without improve
+				if(!info->max_try) tolerance=0;
+				else tolerance=rand()%(info->max_try-info->cur_try+1);
+
+				if(score < (last_score-tolerance)) {DO_SWAP;} //undo if change made it worse than last score
 	
 				else //change is better or same as last score
 				{
 					last_score=score;
 
-					if(score>info.best_score) //this is the new best, save & display
+					if(score>info->best_score) //this is the new best, save & display
 					{
 						//save best, & feedback info
 						improve=1;
-						info.cur_fail=0;
-						info.best_score=score;
-						strcpy(info.best_key,key);
-						strcpy(info.best_trans,cipher);
-						if(info.disp_all) info.disp_all();	
+						info->cur_fail=0;
+						info->best_score=score;
+						strcpy(info->best_key,key);
+						strcpy(info->best_trans,cipher);
+						if(info->disp_all) info->disp_all();	
 					}
 				}
 
@@ -725,16 +749,25 @@ int hillclimb2(Message &msg, SOLVEINFO &info, int solve_type, char *key , int iL
 			}
 		}
 
-		// info.swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
-		for(i=info.swaps;i--;) 	{p1=rand()%full_key_len; p2=rand()%full_key_len; MSG_SWAP;}    
+		if(!improve)
+		{
+			//reset downhill score tolerance
+			if(++info->cur_try>=info->max_try)
+			{
+				info->cur_try=0;
+			}
+		}
 
-		if(++iterations>info.revert) { strcpy(key,info.best_key); /*strcpy(cipher,info.best_trans);*/ iterations=0; }
+		// info->swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
+		for(i=info->swaps;i--;) 	{p1=rand()%full_key_len; p2=rand()%full_key_len; MSG_SWAP;}    
+
+		if(++iterations>info->max_try) { strcpy(key,info->best_key); strcpy(cipher,info->best_trans); iterations=0; }
 		MSG_DECODE;
-		last_score=calcscore(msg,clength,solved,info);
+		last_score=calcscore(msg,clength,solved);
+
+		if(!improve) info->cur_fail++;
 		
-		if(!improve) info.cur_fail++;
-		
-		if(info.time_func) end_time=info.time_func();
+		if(info->time_func) end_time=info->time_func();
 	}	
 	
 	return 0;
@@ -770,3 +803,39 @@ void KryptosMatrix4(char *cipher, char *solved, char *key, int enc_dec)
 	solved[cipher_len]='\0';
 }
 */
+
+void running_key(Message &msg, char *key_text)
+{
+	int key_text_len=strlen(key_text);
+	int msg_len=msg.GetLength();
+	int cur_score=0;
+	//long start_time=0, end_time=0;
+
+	info->best_score=-10000;
+
+	msg.SetKeyLength(msg_len);
+	info->cur_fail=key_text_len-msg_len;
+
+	for(info->cur_try=0; info->cur_try<info->cur_fail; info->cur_try++)
+	{
+		//info->last_time=float(end_time-start_time)/1000;
+		//if(info->time_func) start_time=info->time_func();
+		if(info->disp_info) info->disp_info();
+
+		if(!info->running) break;
+
+		msg.SetKey(key_text+info->cur_try);
+		cur_score=calcscore(msg,msg_len,msg.GetPlain());
+		if(cur_score>info->best_score)
+		{
+			info->best_score=cur_score;
+			strcpy(info->best_key,msg.GetKey());
+			//memcpy(info->best_key,key_text+index,32);
+			//info->best_key[32]='\0';
+
+			if(info->disp_all) info->disp_all();
+		}
+
+		//if(info->time_func) end_time=info->time_func();
+	}
+}

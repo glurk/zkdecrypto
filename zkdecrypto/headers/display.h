@@ -373,6 +373,12 @@ void SetPlain()
 {
 	if(siSolveInfo.running) return;
 	szPlain=message.GetPlain();
+	//best score
+	if(!siSolveInfo.running) 
+	{
+		iBestScore=calcscore(message,message.GetLength(),szPlain);
+		SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,true);
+	}
 }
 
 /*Solve Tab Display*/
@@ -473,7 +479,7 @@ void UpdateSymbol(int index)
 //refresh solver info
 inline void SetSolve()
 {
-	if(iCurTab!=0 && iCurTab!=2 && iCurTab!=3) return;
+	if(iCurTab!=0 && iCurTab!=2 && iCurTab!=3 && iCurTab!=4) return;
 	
 	//iteration & time
 	sprintf(szText,"%i (%.2fs)",siSolveInfo.cur_try,siSolveInfo.last_time);
@@ -563,26 +569,39 @@ void SetFreq()
 
 /*Word List Display*/
 
-int GetWordList(const char *text, StringArray &word_list)
+void GetNumWords(const char *text, int msg_len)
 {
-	int msg_len=message.GetLength();
-	char word[64];
 	std::string word_str;
-	DICTMAP::iterator iter;
+	DICTMAP::iterator iter, end;
+
+	siSolveInfo.num_words=0;
+	end=dictionary.end();
 	   
 	for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
 		{
 			if((msg_len-index)<word_len) break;
 
-			//get string of word
-			memcpy(word,text+index,word_len);
-			word[word_len]='\0';
-			word_str=word;
+			word_str.assign(text+index,word_len); //set word & serach dictionary
+			if(dictionary.find(word_str)!=end) siSolveInfo.num_words++;
+		}  
+}
 
-			//find word
-			if(dictionary.find(word_str)!=dictionary.end()) //is in dictionary
-				word_list.AddString(word);
+int GetWordList(const char *text, StringArray &word_list)
+{
+	int msg_len=message.GetLength();
+	std::string word_str;
+	DICTMAP::iterator iter, end;
+
+	end=dictionary.end();
+	   
+	for(int index=0; index<msg_len; index++)
+		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
+		{
+			if((msg_len-index)<word_len) break;
+
+			word_str.assign(text+index,word_len); //set word & serach dictionary
+			if(dictionary.find(word_str)!=end) word_list.AddString(word_str.c_str());
 		}
 		   
 	word_list.RemoveDups();
@@ -592,27 +611,26 @@ int GetWordList(const char *text, StringArray &word_list)
 void SetWordList()
 {
 	int cur_sel, rows=0, col=0;
-	int num_words;
 	char word[64];
 	StringArray word_list;
 	   
+	//set list
+	siSolveInfo.num_words=GetWordList(szPlain,word_list);
+
 	if(iCurTab!=2) return;
 	   
 	//clear list
 	cur_sel=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
 	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
 
-	//set list
-	num_words=GetWordList(szPlain,word_list);
-	   
-	for(int cur_word=0; cur_word<num_words; cur_word++)
+	for(int cur_word=0; cur_word<siSolveInfo.num_words; cur_word++)
 	{
 		word_list.GetString(cur_word,word);
 		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_ADDSTRING,0,(LPARAM)word);
 	}
 		   
 	//title
-	sprintf(szText,"Word List (%i words)",num_words);
+	sprintf(szText,"Word List (%i words)",siSolveInfo.num_words);
 	SetDlgItemText(hMainWnd,IDC_WORD_TITLE,szText);
 }
 
@@ -651,21 +669,59 @@ inline void SetStatsTabInfo()
 	sprintf(szText,"Multiplicity [M]: %.5f",message.Multiplicity());
 	SetDlgItemText(hMainWnd,IDC_STATS_MULTI,szText);
 
-	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetCipher(),message.GetLength()));
+	sprintf(szText,"Entropy [H]: %.5f %.5f",Entropy(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),2));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO,szText);
 
-	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength()));
+	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),1));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC,szText);
 
 	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetCipher(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2,szText);
 
-	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetPlain(),message.GetLength()));
+	sprintf(szText,"Entropy [H]: %.5f %.5f",Entropy(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),2));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO_P,szText);
-	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength()));
+	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),1));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC_P,szText);
 	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetPlain(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
+}
+
+inline void SetTabuTabInfo()
+{
+	char line[128], tabu_num[8], disp_sym;
+	szText[26]='\0';
+	SYMBOL symbol;
+
+	if(iCurTab!=4) return;
+
+	szText[0]='\0';
+
+	disp_sym=MIN(message.cur_map.GetNumSymbols(),20);
+
+	for(int cur_symbol=0; cur_symbol<disp_sym; cur_symbol++)
+	{
+		message.cur_map.GetSymbol(cur_symbol,&symbol);
+		sprintf(tabu_num,"  %c",symbol.cipher);
+		strcat(szText,tabu_num);
+	}
+
+	strcat(szText,"\r\n\r\n");
+
+	for(int cur_letter=0; cur_letter<26; cur_letter++)
+	{
+		sprintf(line,"%c",cur_letter+'A');
+
+		for(int cur_symbol=0; cur_symbol<disp_sym; cur_symbol++)
+		{
+			sprintf(tabu_num," %02i",siSolveInfo.tabu[cur_symbol][cur_letter]);
+			strcat(line,tabu_num);
+		}
+
+		strcat(szText,line);
+		strcat(szText,"\r\n");
+	}
+	
+	SetDlgItemText(hMainWnd,IDC_TABU,szText);
 }
 
 void SetKeyEdit()
@@ -678,6 +734,7 @@ void SetKeyEdit()
 		case SOLVE_HOMO:
 		case SOLVE_ANAGRAM: 
 		case SOLVE_COLTRANS: szText[0]='\0'; break;
+		case SOLVE_RUNKEY: memcpy(szText,siSolveInfo.best_key,32); szText[32]='\0'; break;
 			case SOLVE_KRYPTOS: break;
 			{
 				szText[0]='\0';
@@ -700,20 +757,22 @@ inline void SetDlgInfo()
 	//set key to hillclimber best if running
 	if(siSolveInfo.running)
 	{
-		strcpy(szText,message.GetKey());
+		
 
 		if(iSolveType==SOLVE_HOMO) message.cur_map.FromKey(siSolveInfo.best_key);
-		else SetKeyEdit();
+		if(iSolveType==SOLVE_RUNKEY) {strcpy(szText,siSolveInfo.best_key); SetKeyEdit();}
+		else {strcpy(szText,message.GetKey());	SetKeyEdit();}
 	}
 		
 	else SetPlain();
 	
 	//info on tabs
-	SetSolveTabInfo();
-	SetAnalysisTabInfo();
-	SetWordListTabInfo();
-	SetStatsTabInfo();
 	
+	SetSolveTabInfo(); 
+	SetAnalysisTabInfo(); 
+	SetWordListTabInfo(); 
+	SetStatsTabInfo(); 
+		
 	if(hLetter) SetGraph();
 }
 
@@ -772,6 +831,7 @@ void ShowTab(int iTab)
 	int iShowAnalysis=SW_HIDE;
 	int iShowWord=SW_HIDE;
 	int iShowStats=SW_HIDE;
+	int iShowTabu=SW_HIDE;
 	
 	iCurTab=iTab;
 
@@ -781,6 +841,7 @@ void ShowTab(int iTab)
 		case 1: iShowAnalysis=SW_SHOW; SetAnalysisTabInfo(); break;
 		case 2: iShowWord=SW_SHOW; SetWordListTabInfo(); break;
 		case 3: iShowStats=SW_SHOW; SetStatsTabInfo(); break;
+		case 4: iShowTabu=SW_SHOW; SetTabuTabInfo(); break;
 	}
 
 	//solve
@@ -790,15 +851,15 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_VALUE),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_CHANGE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE_TITLE),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME_TITLE),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY_TITLE),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL_TITLE),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve | iShowStats | iShowWord);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve | iShowStats | iShowWord);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve | iShowStats | iShowWord | iShowTabu);
 
 	//analysis
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TABLE_TITLE),iShowAnalysis);
@@ -850,12 +911,16 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_TITLE),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_EDIT),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_CHI_WEIGHT_SPIN),iShowStats);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FREQ_WEIGHT_TITLE),iShowStats);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FREQ_WEIGHT_EDIT),iShowStats);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FREQ_WEIGHT_SPIN),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_DIOC_WEIGHT_TITLE),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_DIOC_WEIGHT_EDIT),iShowStats);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_DIOC_WEIGHT_SPIN),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_TITLE),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_EDIT),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_SPIN),iShowStats);
+
+	//Tabu Tab
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TABU),iShowTabu);
+
 }
 
 void CreateTextMenu()

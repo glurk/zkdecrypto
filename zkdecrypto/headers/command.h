@@ -80,6 +80,7 @@ inline int CommandEdit(int cmd_id)
 		case IDM_EDIT_MAP: if(bMsgLoaded) OpenWith(szKeyName); return 0;
 		case IDM_EDIT_CRIBS: if(bMsgLoaded) {sprintf(szText,"%s%s",szExeDir,"cribs.txt"); OpenWith(szText);} return 0;
 		case IDM_EDIT_CRIBS_RELOAD: LoadCribs(); return 0;
+		case IDM_EDIT_CRIBS_CLEAR: siSolveInfo.num_cribs=0; return 0;
 	}
 
 	return 0;
@@ -138,6 +139,7 @@ inline int CommandCipher(int cmd_id)
 			message.FindPatterns(1);
 			SetText();
 			SetPatterns();
+			SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_COL_RIGHT:
@@ -147,6 +149,7 @@ inline int CommandCipher(int cmd_id)
 			message.FindPatterns(1);
 			SetText();
 			SetPatterns();
+			SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_UP:
@@ -157,6 +160,7 @@ inline int CommandCipher(int cmd_id)
 			message.FindPatterns(1);
 			SetText();
 			SetPatterns();
+			SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_DOWN:
@@ -166,6 +170,7 @@ inline int CommandCipher(int cmd_id)
 			message.FindPatterns(1);
 			SetText();
 			SetPatterns();
+			SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_UPPER:
@@ -356,7 +361,7 @@ inline int CommandSolve(int cmd_id)
 			{
 				SetUndo();
 
-				iBestScore=WordPlug(message,szString,siSolveInfo);
+				iBestScore=WordPlug(message,szString);
 				SetDlgInfo();
 			}
 			return 0;
@@ -462,6 +467,8 @@ inline int CommandView(int cmd_id)
 			if(lRowCol) DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS_R),hMainWnd,(DLGPROC)Graphs_R_Proc);
 			else MessageBox(hMainWnd,"No letters have yet been excluded.","Letter Exclusion Status",MB_ICONINFORMATION);
 			return 0;
+
+		case IDM_VIEW_LOG: OpenWith(siSolveInfo.log_name); return 0;
 
 		case IDM_VIEW_BYSTRING: SetSort(0); return 0;
 		case IDM_VIEW_BYFREQ: SetSort(1); return 0;

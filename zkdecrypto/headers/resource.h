@@ -194,9 +194,10 @@
 #define IDC_BLOCK_TITLE					1154
 #define IDC_KEY_EDIT					1155
 #define IDC_WORD_FIND					1156
-#define IDC_FREQ_WEIGHT_TITLE			1157
-#define IDC_FREQ_WEIGHT_EDIT			1158
-#define IDC_FREQ_WEIGHT_SPIN			1159
+#define IDC_DIOC_WEIGHT_TITLE			1157
+#define IDC_DIOC_WEIGHT_EDIT			1158
+#define IDC_DIOC_WEIGHT_SPIN			1159
+#define IDC_TABU						1160
 
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002
@@ -279,6 +280,8 @@
 #define IDM_EDIT_CRIBS_RELOAD			40116
 #define IDM_KEY_CT						40117
 #define IDM_CIPHER_UPPER				40118
+#define IDM_EDIT_CRIBS_CLEAR			40119
+#define IDM_VIEW_LOG					40120
 
 // Next default values for new objects
 // 

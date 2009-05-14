@@ -24,8 +24,8 @@
 
 struct SYMBOL
 {
-	char cipher;
-	char plain;
+	char cipher; //char cipher2;
+	char plain; //char plain2;
 	int freq;
 	char exclude[27];
 };
@@ -94,6 +94,7 @@ public:
 	
 private:	
 	SYMBOL symbols[MAX_SYM];
+	//SYMBOL digraphs[MAX_SYM*MAX_SYM];
 	char locked[MAX_SYM], merge_log[512];
 	int num_symbols;
 	float unigraphs[26];
