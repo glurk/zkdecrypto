@@ -201,7 +201,6 @@ float DIoC(const char* string, int length, int step)
 	if(step==1) length--;
 	if(step==2) length>>=1;
 
-	length--;
 	ic/=(length)*(length-1);
 
 	return ic;

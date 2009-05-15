@@ -771,7 +771,8 @@ inline void SetDlgInfo()
 	SetSolveTabInfo(); 
 	SetAnalysisTabInfo(); 
 	SetWordListTabInfo(); 
-	SetStatsTabInfo(); 
+	SetStatsTabInfo();
+	SetTabuTabInfo();
 		
 	if(hLetter) SetGraph();
 }
