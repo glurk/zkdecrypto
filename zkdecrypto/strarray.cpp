@@ -33,7 +33,7 @@ int StringArray::GetString(int string, char *dest_string)
 int StringArray::SortString(int string)
 {
 	int str_len=(int)strlen(strings[string]);
-	char temp, swap;
+	char swap;
 	
 	if(string<0 || string>=num_strings) return 0;
 	
@@ -45,9 +45,7 @@ int StringArray::SortString(int string)
 			for(int index_b=index_a+1; index_b<str_len; index_b++)
 				if(strings[string][index_b]<strings[string][index_a])
 				{
-					temp=strings[string][index_b];
-					strings[string][index_b]=strings[string][index_a];
-					strings[string][index_a]=temp;
+					std::swap(strings[string][index_a],strings[string][index_b]);
 					swap=true;
 				}
 	} while(swap);
@@ -57,8 +55,7 @@ int StringArray::SortString(int string)
 
 void StringArray::SortStrings(int order)
 {
-	char *temp, swap;
-	int cmp;
+	char swap;
 	
 	do
 	{
@@ -67,13 +64,11 @@ void StringArray::SortStrings(int order)
 		for(int index_a=0; index_a<num_strings-1; index_a++)
 			for(int index_b=index_a+1; index_b<num_strings; index_b++)
 			{
-				cmp=strcmp(strings[index_b],strings[index_a]);
+				int cmp=strcmp(strings[index_b],strings[index_a]);
 				
 				if((cmp<0 && !order) || (cmp>0 && order))
 				{
-					temp=strings[index_b];
-					strings[index_b]=strings[index_a];
-					strings[index_a]=temp;
+					std::swap(strings[index_a],strings[index_b]);
 					swap=true;
 				}
 			}
@@ -137,6 +132,58 @@ void StringArray::Clear()
 	num_strings=0;
 }
 
+void Reverse(char *string)
+{
+	int i, j, size=(int)strlen(string);
+
+	if(size<= 1) return;
+	for(i=0, j=size-1; i<size/2; i++, j--)
+		std::swap(string[i],string[j]);
+}
+
+void Transform(char *string, unsigned long *xfm, int num_xfm)
+{
+	for(int cur_xfm=0; cur_xfm<num_xfm; cur_xfm++)
+		std::swap(string[xfm[cur_xfm]>>16],string[xfm[cur_xfm]&0xFFFF]);
+}
+
+void SwapRows(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int row_a, int row_b)
+{
+	for(int cur_col=0; cur_col<row_len; cur_col++)
+	{
+		int index1=(row_a*row_len)+cur_col;
+		int index2=(row_b*row_len)+cur_col;
+		if(index1>=str_len || index2>=str_len) continue;
+		xfm[num_xfm++]=index1<<16 | index2;
+	}
+}
+
+void SwapCols(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int col_a, int col_b)
+{
+	int num_rows=NUM_ROWS(str_len,row_len);
+
+	for(int cur_row=0; cur_row<num_rows; cur_row++)
+	{
+		int index1=(cur_row*row_len)+col_a;
+		int index2=(cur_row*row_len)+col_b;
+		if(index1>=str_len || index2>=str_len) continue;
+		xfm[num_xfm++]=index1<<16 | index2;
+	}
+}
+
+void FlipHorz(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
+{
+	for(int cur_col=0; cur_col<(row_len>>1); cur_col++)
+		SwapCols(xfm,num_xfm,str_len,row_len,cur_col,row_len-cur_col-1);
+}
+
+void FlipVert(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
+{
+	int num_rows=NUM_ROWS(str_len,row_len);
+	
+	for(int cur_row=0; cur_row<(num_rows>>1); cur_row++)
+		SwapRows(xfm,num_xfm,str_len,row_len,cur_row,num_rows-cur_row-1);
+}
 
 //count frequencies of chars in a string
 int GetUniques(const char *string, char *unique_str, int *unique_freq)
@@ -170,14 +217,12 @@ float IoC(const char *string, int length)
 	float ic=0;
 	
 	memset(freqs,0,1024);
-	//length=(int)strlen(string);         //Leave this in - just in case.
 	
-	for(index=0; index<length; index++) 
+	for(index=0; index<length; index++) //frequency table
 		freqs[(unsigned char)string[index]]++;
 
-	for(index=32; index<256; index++)
-		if(freqs[index]>1) 
-			ic+=(freqs[index])*(freqs[index]-1); 
+	for(index=32; index<256; index++) //calculate ioc
+		if(freqs[index]>1) ic+=(freqs[index])*(freqs[index]-1); 
 
 	ic/=(length)*(length-1);
 
@@ -191,12 +236,11 @@ float DIoC(const char* string, int length, int step)
 	
 	memset(freqs,0,65536*4);
 	
-	for(index=0; index<length-1; index+=step)
+	for(index=0; index<length-1; index+=step) //frequency table
 		freqs[(int((unsigned char)string[index])<<8)+(unsigned char)string[index+1]]++;
 
-	for(index=0; index<65536; index++)
-		if(freqs[index]>1) 
-			ic+=(freqs[index])*(freqs[index]-1); 
+	for(index=0; index<65536; index++) //calculate dioc
+		if(freqs[index]>1) ic+=(freqs[index])*(freqs[index]-1); 
 	
 	if(step==1) length--;
 	if(step==2) length>>=1;
@@ -215,11 +259,10 @@ float Entropy(const char *string, int length)
 	
 	memset(freqs,0,1024);
 	
-	for(index=0; index<length; index++) 
+	for(index=0; index<length; index++) //frequency table
 		freqs[(unsigned char)string[index]]++;
 
-	//calculate entropy
-	for(index=32; index<256; index++)
+	for(index=32; index<256; index++) //calculate entropy
 	{
 		if(!freqs[index]) continue;
 		prob_mass=float(freqs[index])/length;
@@ -238,21 +281,19 @@ float ChiSquare(const char *string, int length)
 
 	memset(freqs,0,1024);
 	
-	for(index=0; index<length; index++) 
+	for(index=0; index<length; index++) //frequency table, and uniques
 	{
 		if(!freqs[(unsigned char)string[index]]) unique++;
 		freqs[(unsigned char)string[index]]++;
 	}
 
-	//calculate chi2
-	for(index=32; index<256; index++)
+	for(index=32; index<256; index++) //calculate chi2
 	{
 		if(!freqs[index]) continue;
 		prob_mass=(float)(length*(1.0/unique));
 		cur_calc=freqs[index]-prob_mass;
 		cur_calc*=cur_calc;
 		cur_calc/=prob_mass;
-
 		chi2+=cur_calc;
 	}
 
@@ -271,84 +312,13 @@ float avg_lsoc(const char *string, int length)
 			if(index) total_clusters++;
 			total_length+=cur_length;
 			cur_length=0;
-			continue;
 		}
 
-		cur_length++;
+		else cur_length++;
 	}
+
+	if(!total_clusters) return 0.0;
 
 	return float(total_length)/total_clusters;
 }
 
-void Reverse(char *string)
-{
-	unsigned char temp;
-	int i, j, size;
-	size = (int)strlen(string);
-	if(size <= 1) return;
-	else
-	{
-		for(i = 0, j = size-1; i < size/2; i++, j--)
-		{
-			temp = string[j];
-			string[j] = string[i];
-			string[i] = temp;
-		}
-	}
-}
-
-void Transform(char *string, unsigned long *xfm, int num_xfm)
-{
-	unsigned short xfm_a, xfm_b;
-	unsigned char temp;
-	
-	for(int cur_xfm=0; cur_xfm<num_xfm; cur_xfm++)
-	{
-		xfm_a=xfm[cur_xfm]>>16;
-		xfm_b=xfm[cur_xfm]&0xFFFF;
-		
-		temp=string[xfm_a];
-		string[xfm_a]=string[xfm_b];
-		string[xfm_b]=temp;
-	}
-}
-
-void SwapRows(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int row_a, int row_b)
-{
-	int index1, index2;
-
-	for(int cur_col=0; cur_col<row_len; cur_col++)
-	{
-		index1=(row_a*row_len)+cur_col;
-		index2=(row_b*row_len)+cur_col;
-		if(index1>=str_len || index2>=str_len) continue;
-		xfm[num_xfm++]=index1<<16 | index2;
-	}
-}
-
-void SwapCols(unsigned long *xfm, int &num_xfm, int str_len, int row_len, int col_a, int col_b)
-{
-	int index1, index2, num_rows=NUM_ROWS(str_len,row_len);
-
-	for(int cur_row=0; cur_row<num_rows; cur_row++)
-	{
-		index1=(cur_row*row_len)+col_a;
-		index2=(cur_row*row_len)+col_b;
-		if(index1>=str_len || index2>=str_len) continue;
-		xfm[num_xfm++]=index1<<16 | index2;
-	}
-}
-
-void FlipHorz(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
-{
-	for(int cur_col=0; cur_col<(row_len>>1); cur_col++)
-		SwapCols(xfm,num_xfm,str_len,row_len,cur_col,row_len-cur_col-1);
-}
-
-void FlipVert(unsigned long *xfm, int &num_xfm, int str_len, int row_len)
-{
-	int num_rows=NUM_ROWS(str_len,row_len);
-	
-	for(int cur_row=0; cur_row<(num_rows>>1); cur_row++)
-		SwapRows(xfm,num_xfm,str_len,row_len,cur_row,num_rows-cur_row-1);
-}

@@ -15,7 +15,7 @@ int ustrcpy(wchar *unicode, char *ascii)
 	return length;
 }
 
-int ustrlen(wchar *string)
+int ustrlen(wchar *string) 
 {
 	int index=0;
 

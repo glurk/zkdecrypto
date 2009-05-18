@@ -188,10 +188,7 @@ void Map::SwapSymbols(int swap1, int swap2)
 	if(locked[swap1] || locked[swap2]) return;
 	if(strchr(symbols[swap1].exclude,symbols[swap2].plain)) return; 
 	if(strchr(symbols[swap2].exclude,symbols[swap1].plain)) return;
-	
-	char temp=symbols[swap1].plain;
-	symbols[swap1].plain=symbols[swap2].plain;
-	symbols[swap2].plain=temp;
+	std::swap(symbols[swap1].plain,symbols[swap2].plain);
 }
 
 //replace all instances of symbol2 with symbol1, reset info
@@ -220,7 +217,7 @@ void Map::SortByFreq()
 {
 	SYMBOL temp_sym;
 	int freq1, freq2;
-	unsigned char cipher1, cipher2, temp_lock;
+	unsigned char cipher1, cipher2;
 	int next, swap;
 
 	do //buble sort
@@ -243,11 +240,7 @@ void Map::SortByFreq()
 				memcpy(&temp_sym,&symbols[cur_symbol],sizeof(SYMBOL));
 				memcpy(&symbols[cur_symbol],&symbols[cur_symbol+1],sizeof(SYMBOL));
 				memcpy(&symbols[cur_symbol+1],&temp_sym,sizeof(SYMBOL));
-
-				temp_lock=locked[cur_symbol];
-				locked[cur_symbol]=locked[cur_symbol+1];
-				locked[cur_symbol+1]=temp_lock;
-
+				std::swap(locked[cur_symbol],locked[cur_symbol+1]);
 				next=true;
 			}
 		}
@@ -383,4 +376,176 @@ void Map::FromKey(char *key)
 {
 	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
 		symbols[cur_symbol].plain=key[cur_symbol];
+}
+
+
+
+
+
+
+//clear map data, you can | together mode values, or use CLR_ALL
+void DiMap::Clear(int mode)
+{
+	if(mode==CLR_ALL) 
+	{
+		num_digraphs=0;
+		memset(digraphs,0,MAX_DI*sizeof(DIGRAPH));
+		memset(locked,0,MAX_DI);
+		return;
+	}
+	
+	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++) 
+	{
+		if(locked[cur_digraph]) continue;
+
+		if(mode & CLR_CIPHER) digraphs[cur_digraph].cipher1=digraphs[cur_digraph].cipher2=0;
+		if(mode & CLR_PLAIN) digraphs[cur_digraph].plain1=digraphs[cur_digraph].plain2=0;
+		if(mode & CLR_FREQ) digraphs[cur_digraph].freq=0;
+	}
+}
+
+void DiMap::Init(int num)
+{
+	int cur_letter=0;
+
+	memset(locked,0,num_digraphs);
+
+	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++)
+	{
+		if(cur_digraph<num)
+		{
+			digraphs[cur_digraph].plain1=((cur_letter++)%26)+'A';
+			digraphs[cur_digraph].plain2=((cur_letter++)%26)+'A';
+		}
+
+		else locked[cur_digraph]=true;
+	}
+}
+
+void DiMap::AsCipher()
+{
+	memset(locked,0,num_digraphs);
+
+	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++)
+	{
+		digraphs[cur_digraph].plain1=digraphs[cur_digraph].cipher1;
+		digraphs[cur_digraph].plain2=digraphs[cur_digraph].cipher2;
+	}
+}
+
+//add/update a digraph; if inc_freq is true, 
+//when an existing symbol is updated its frequency is incremented
+int DiMap::AddDigraph(DIGRAPH &digraph, int inc_freq)
+{
+	if(num_digraphs>=MAX_DI) return 0;
+
+	//search for digraph, and update if it exists
+	int index=FindByCipher(digraph.cipher1,digraph.cipher2);
+	
+	if(index>-1) //existing symbol
+	{
+		if(locked[index]) return num_digraphs;
+
+		digraphs[index].plain1=digraph.plain1;
+		digraphs[index].plain2=digraph.plain2;
+		if(inc_freq) digraphs[index].freq++;
+		return num_digraphs;
+	}
+
+	digraphs[num_digraphs].cipher1=digraph.cipher1;
+	digraphs[num_digraphs].cipher2=digraph.cipher2;
+	digraphs[num_digraphs].plain1=digraph.plain1;
+	digraphs[num_digraphs].plain2=digraph.plain2;
+	digraphs[num_digraphs].freq=1;
+	num_digraphs++;
+
+	return 1;
+}
+
+//return index of symbol with specified cipher character
+int DiMap::FindByCipher(char cipher1, char cipher2)
+{
+	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++)
+		if(digraphs[cur_digraph].cipher1==cipher1 && digraphs[cur_digraph].cipher2==cipher2)
+			return cur_digraph;
+
+	return -1;
+}
+
+//get digraph at index
+int DiMap::GetDigraph(int index, DIGRAPH *digraph)
+{
+	if(index<0 || index>num_digraphs) return 0;
+	memcpy(digraph,&digraphs[index],sizeof(DIGRAPH));
+	return 1;
+}
+
+//swap the plain text letters for two digraphs
+void DiMap::SwapSymbols(int swap1, int swap2)
+{
+	if(locked[swap1] || locked[swap2]) return;
+
+	std::swap(digraphs[swap1].plain1,digraphs[swap2].plain1);
+	std::swap(digraphs[swap1].plain2,digraphs[swap2].plain2);
+}
+
+//hillclimb key <-> Map class conversion
+void DiMap::ToKey(char *key, char *extra)
+{
+	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++)
+	{
+		if(digraphs[cur_digraph].plain1) key[cur_digraph<<1]=digraphs[cur_digraph].plain1;
+		else key[cur_digraph<<1]=BLANK;
+		if(digraphs[cur_digraph].plain2) key[(cur_digraph<<1)+1]=digraphs[cur_digraph].plain2;
+		else key[(cur_digraph<<1)+1]=BLANK;
+	}
+	
+	key[num_digraphs<<1]='\0';
+
+	strcat(key,extra);
+}
+
+void DiMap::FromKey(char *key)
+{
+	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++)
+	{
+		digraphs[cur_digraph].plain1=key[cur_digraph<<1];
+		digraphs[cur_digraph].plain2=key[(cur_digraph<<1)+1];
+	}
+}
+
+//sort the symbols in the same order that hillclimber expects
+void DiMap::SortByFreq()
+{
+	DIGRAPH temp_di;
+	int freq1, freq2;
+	unsigned short cipher_val1, cipher_val2;
+	int next, swap;
+
+	do //buble sort
+	{
+		next=false;
+
+		for(int cur_digraph=0; cur_digraph<num_digraphs-1; cur_digraph++)
+		{
+			cipher_val1=digraphs[cur_digraph].cipher1<<8 | digraphs[cur_digraph].cipher2;
+			cipher_val2=digraphs[cur_digraph+1].cipher1<<8 | digraphs[cur_digraph+1].cipher2;
+			freq1=digraphs[cur_digraph].freq;
+			freq2=digraphs[cur_digraph+1].freq;
+			
+			if(freq1<freq2) swap=true;
+			else if(freq1==freq2 && cipher_val1<cipher_val2) swap=true;
+			else swap=false;
+			
+			if(swap)
+			{
+				memcpy(&temp_di,&digraphs[cur_digraph],sizeof(DIGRAPH));
+				memcpy(&digraphs[cur_digraph],&digraphs[cur_digraph+1],sizeof(DIGRAPH));
+				memcpy(&digraphs[cur_digraph+1],&temp_di,sizeof(DIGRAPH));
+				std::swap(locked[cur_digraph],locked[cur_digraph+1]);
+				next=true;
+			}
+		}
+	} 
+	while(next);
 }

@@ -44,25 +44,33 @@ void Redo()
 void ChangePlain()
 {
 	SYMBOL symbol;
+	DIGRAPH digraph;
 
 	if(iCurSymbol<0) return;
+	
+	GetDlgItemText(hMainWnd,IDC_MAP_VALUE,szText,10); //get new letter
 
-	//SetUndo();
-	
-	//get new letter
-	GetDlgItemText(hMainWnd,IDC_MAP_VALUE,szText,10);
-	
 	//get and update symbol
-	message.cur_map.GetSymbol(iCurSymbol,&symbol);
-	symbol.plain=szText[0];
-	message.cur_map.AddSymbol(symbol,0);
-	
-	//update info		
-	UpdateSymbol(iCurSymbol);
-	SetPlain();
-	SetText();
-	SetTable();
-	SetFreq();
+	if(DIGRAPH_MODE) 
+	{
+		message.digraph_map.GetDigraph(iCurSymbol,&digraph);
+		digraph.plain1=szText[0];
+		digraph.plain2=szText[1];
+		message.digraph_map.AddDigraph(digraph,0);
+		UpdateDigraph(iCurSymbol);
+	}
+
+	else 
+	{
+		message.cur_map.GetSymbol(iCurSymbol,&symbol);
+		symbol.plain=szText[0];
+		message.cur_map.AddSymbol(symbol,0);
+		UpdateSymbol(iCurSymbol);
+	}
+
+	//update info
+	SetPlain(); SetText();
+	SetTable(); SetFreq();
 	SetWordList();
 }
 
@@ -155,11 +163,12 @@ void StopSolve()
 	{
 		case SOLVE_HOMO: message.cur_map.FromKey(siSolveInfo.best_key); break;
 		case SOLVE_VIG: message.SetKey(siSolveInfo.best_key); break;
-		case SOLVE_BIFID: strcpy(message.bifid_array,siSolveInfo.best_key); break;
+		case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(message.bifid_array,siSolveInfo.best_key); break;
 		case SOLVE_TRIFID: strcpy(message.trifid_array,siSolveInfo.best_key); break;
 		case SOLVE_ANAGRAM:
 		case SOLVE_COLTRANS: if(siSolveInfo.best_trans) 	message.SetCipherTrans(siSolveInfo.best_trans);	break;
 		case SOLVE_RUNKEY: message.SetKey(siSolveInfo.best_key); break;
+		case SOLVE_DISUB: message.digraph_map.FromKey(siSolveInfo.best_key); break;
 	}
 
 	if(siSolveInfo.best_trans)
@@ -186,8 +195,7 @@ DWORD WINAPI Timer(LPVOID lpVoid)
 		if(++sec==60) {min++; sec=0;}
 		if(min==60) {hr++; min=0;}
 		
-		//wait 1 second
-		Sleep(1000);
+		Sleep(1000); //wait 1 second
 	}
 
 	hTimerThread=NULL;
@@ -220,7 +228,7 @@ void BatchBest()
 	
 	delete[] szPlainText;
 }
-
+/*
 //begin brute force
 void BruteStart()
 {
@@ -287,7 +295,7 @@ void BruteNext(int iSymbol)
 		SendMessage(hMainWnd,WM_COMMAND,IDC_SOLVE,0);
 	}
 }
-
+*/
 //on press stop, or failure of hillclimber
 void StopNotify()
 {
@@ -298,7 +306,7 @@ void StopNotify()
 		strcpy(lprgcBatchBestKey,siSolveInfo.best_key);
 	}
 	
-	if(iBruteSymbols>0) BruteNext(iBruteSymbols-1); //in brute
+	/*if(iBruteSymbols>0) BruteNext(iBruteSymbols-1); //in brute
 	if(iBruteSymbols<0) //brute finished, display best
 	{
 		MessageBox(hMainWnd,"Brute Force Done","Alert",MB_OK);
@@ -306,12 +314,10 @@ void StopNotify()
 		SetDlgInfo();
 		SetDlgItemInt(hMainWnd,IDC_SCORE,iBatchBestScore,false);
 		iBruteSymbols=0;
-	}
+	}*/
 }
 
-#define IS_LOWER_LTR(c) ((c>='a' && c<='z')? 1:0)
-#define IS_UPPER_LTR(c) ((c>='A' && c<='Z')? 1:0)
-
+//only include letters, and convert to upper case
 int FormatKey(char *key)
 {
 	int length=strlen(key), temp_index=0;
@@ -337,7 +343,6 @@ int FormatKey(char *key)
 DWORD WINAPI FindSolution(LPVOID lpVoid) 
 {
 	int num_symbols;
-//	int use_key_len;
 	char key[4096];
 	char *exclude=NULL, *key_text;
 	SYMBOL symbol;
@@ -374,7 +379,7 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		hillclimb(message,szCipher,message.GetLength(),key,false);
 	}
 
-	else if(iSolveType==SOLVE_RUNKEY)
+	else if(iSolveType==SOLVE_RUNKEY) //read running key text file
 	{
 		sprintf(szText,"%s\%s",szExeDir,"keytext.txt");
 		key_file=fopen(szText,"r");
@@ -394,28 +399,28 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 
 	else 
 	{
+		message.InitArrays();
+
 		switch(iSolveType)
 		{
 			case SOLVE_VIG: strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
-			case SOLVE_BIFID: strcpy(key,message.bifid_array); break;
+			case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(key,message.bifid_array); break;
 			case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
 			case SOLVE_ANAGRAM:	break;
 			case SOLVE_COLTRANS: break;
 			case SOLVE_KRYPTOS: break;
-			case SOLVE_DISUB: strcpy(key,"ABCDEFGHIJKLMNOPQRSTUVWXYZ"); for(int i=0; i<51; i++) strcat(key,"ABCDEFGHIJKLMNOPQRSTUVWXYZ"); break;
+			case SOLVE_DISUB: message.digraph_map.ToKey(key,szExtraLtr); break;
 		}
 
 		hillclimb2(message,iSolveType,key,iLineChars);
 	}
 
-	//reset window state
-	StopSolve();
+	StopSolve(); //reset window state
 	
 	hSolveThread=NULL;
 	if(exclude) delete[] exclude;
 	
 	StopNotify();
-	
 	ExitThread(0);
 	return 0;
 }
@@ -429,7 +434,7 @@ void StartSolve()
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Stop");
 	MsgEnable(false);
 	MapEnable(false);
-	hSolveThread=CreateThread(0,4096,FindSolution,0,0,0);
+	hSolveThread=CreateThread(0,2048,FindSolution,0,0,0);
 	hTimerThread=CreateThread(0,128,Timer,0,0,0);
 }
 
@@ -498,13 +503,13 @@ int LoadDictionary(char *filename, int show_error)
 				 MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
 				 return 0; }
 	}
-	int x, i = 1;
+	int i=1;
 	while(!feof(dictionary_file)) 
 	{
 		fscanf(dictionary_file,"%s",word);
-		for(x=0; x<(int)strlen(word); x++) word[x]=toupper(word[x]);
+		for(int x=0; x<(int)strlen(word); x++) word[x]=toupper(word[x]);
 		word_str=word;
-		dictionary[word_str] = i;
+		dictionary[word_str]=i;
 		i++;
 	}
 
@@ -565,8 +570,18 @@ int ToggleLock()
 	iCurSymbol=SendDlgItemMessage(hMainWnd,IDC_MAP,LB_GETCURSEL,0,0);
 	if(iCurSymbol<0) return -1;
 	
-	message.cur_map.ToggleLock(iCurSymbol);
-	UpdateSymbol(iCurSymbol);
+	if(DIGRAPH_MODE)
+	{
+		message.digraph_map.ToggleLock(iCurSymbol);
+		UpdateDigraph(iCurSymbol);
+	}
+	
+	else
+	{
+		message.cur_map.ToggleLock(iCurSymbol);
+		UpdateSymbol(iCurSymbol);
+	}
+
 	SetText();
 
 	return iCurSymbol;
@@ -597,74 +612,3 @@ void LockWord(int lock)
 		word_ptr+=word_len;
 	}
 }
-
-/*
-
-void KryptosMatrix(int *key, int enc_dec)
-{
-	int cipher_len=message.GetLength();
-	char *new_cipher=new char[cipher_len+1];
-	const char *cipher=message.GetCipher();
-	int iKeyIndex=0, iNewIndex;
-	int iLines;
-	int cur_row, cur_col=-1;
-
-	memset(new_cipher,1,cipher_len);
-	
-	if(cipher_len==336) {iLineChars=42;}
-	if(cipher_len==98) {iLineChars=7;}
-
-	iLines=cipher_len/iLineChars;
-
-	cur_col=key[iKeyIndex] & 0x000000FF;
-	cur_row=key[iKeyIndex]>>8 & 0x000000FF;
-	if(++iKeyIndex==14) iKeyIndex=0;
-	
-	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
-	{
-		//set cipher//plain character
-		iNewIndex=iLineChars*cur_row+cur_col;
-
-		if(enc_dec) {if(new_cipher[iNewIndex]!=1) continue; new_cipher[iNewIndex]=cipher[iCipherIndex];}
-		else new_cipher[iCipherIndex]=cipher[iNewIndex];
-
-		if(iLines>8) //K4 7 cols
-		{
-			cur_col--;
-			cur_row-=8;
-			if(cur_row<0) cur_row+=iLines;
-		}
-
-		else
-		{
-	
-			cur_row-=2; cur_col-=2; //move to next hole
-
-			if(cur_row<0) 
-			{
-				cur_row+=iLines;
-				
-				if((iLines%2)) //odd # lines 
-				{
-					if(cur_row==iLines-1) {cur_row--; cur_col--;} //on the last line, go up & left
-					else if(cur_row==iLines-2) {cur_row++; cur_col++;} //on next to last, down & right
-				}
-				
-				else cur_col++;	//just go right on even # rows
-			}
-		}
-
-		if(cur_col<0) //start next shift position
-		{
-			cur_col=key[iKeyIndex] & 0x000000FF;
-			cur_row=key[iKeyIndex]>>8 & 0x000000FF;
-			if(++iKeyIndex==14) iKeyIndex=0;
-		} 
-	}
-
-	new_cipher[cipher_len]='\0';
-
-	message.SetCipherTrans(new_cipher);
-	delete new_cipher;
-}
-*/

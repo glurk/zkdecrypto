@@ -7,8 +7,9 @@
 #include 		<stdlib.h>
 #include 		<time.h>
 #include		<math.h>
+#include		<map>
+#include		<string>
 #include		"message.h"
-
 
 //////////////////////////////////////////////////////////////////////// DEFINES //////////////////////////////////////////////////////////////////
 
@@ -32,10 +33,9 @@ struct SOLVEINFO
 	char *exclude;
 	char cribs[512][128];
 	int num_cribs;
-	//int tabu[KEY_SIZE][26];
-	char tabu[4096][KEY_SIZE];
-	int num_tabu;
 	char log_name[2048];
+	std::map<std::string,int> *tabu;
+	int tabu_syms;
 
 	float lang_ioc;
 	float lang_dioc;

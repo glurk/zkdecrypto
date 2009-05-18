@@ -55,10 +55,7 @@ LRESULT CALLBACK MergeProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					EndDialog(hWnd,0);
 					return 1;
 
-				case IDCANCEL:
-					DeleteObject(hTempFont);
-					EndDialog(hWnd,0);
-					return 0;
+				case IDCANCEL: DeleteObject(hTempFont); EndDialog(hWnd,0); return 0;
 			}
 	}
 	return 0;
@@ -79,10 +76,7 @@ LRESULT CALLBACK Graphs_R_Proc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 			switch(LOWORD(wParam))
 			{
 				case IDOK:
-				case IDCANCEL:
-					EndDialog(hWnd,0);
-					if(hLetter) hLetter=NULL;
-					return 0;
+				case IDCANCEL: EndDialog(hWnd,0); if(hLetter) hLetter=NULL; return 0;
 			}
 	}
 
@@ -110,10 +104,7 @@ LRESULT CALLBACK GraphsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			switch(LOWORD(wParam))
 			{
 				case IDOK:
-				case IDCANCEL:
-					EndDialog(hWnd,0);
-					if(hLetter) hLetter=NULL;
-					return 0;
+				case IDCANCEL: EndDialog(hWnd,0); 	if(hLetter) hLetter=NULL; return 0;
 			}
 	}
 
@@ -140,9 +131,7 @@ LRESULT CALLBACK NumberProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					EndDialog(hWnd,1);
 					return 1;
 
-				case IDCANCEL:
-					EndDialog(hWnd,0);
-					return 0;
+				case IDCANCEL: EndDialog(hWnd,0); return 0;
 			}
 	}
 
@@ -197,9 +186,7 @@ LRESULT CALLBACK StringProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					EndDialog(hWnd,1);
 					return 1;
 
-				case IDCANCEL:
-					EndDialog(hWnd,0);
-					return 0;
+				case IDCANCEL: EndDialog(hWnd,0); return 0;
 			}
 	}
 
@@ -231,20 +218,24 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_SETCURSEL,iLang,0);
 
 			//solve type		
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Substition");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Vigenere");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Monographic Substitution");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Digraphic Substitution");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Playfair");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Vigenere/Quagmire3");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Running Key");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Bifid");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Trifid");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Columar Trans");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Anagram");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Running Key");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Digraphic");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Columar Transposition");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Anagramming");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_SETCURSEL,iSolveType,0);
-			SetDlgItemInt(hWnd,IDC_KEY_LEN,iKeyLength,0);
 
 			//word length
 			SetDlgItemInt(hWnd,IDC_WORD_MIN,iWordMin,false);
 			SetDlgItemInt(hWnd,IDC_WORD_MAX,iWordMax,false);
+
+			//tableu alphabet
+			SendDlgItemMessage(hWnd,IDC_TABLEU_EDIT,EM_LIMITTEXT,26,0);
+			SetDlgItemText(hWnd,IDC_TABLEU_EDIT,message.GetTableuAlphabet());	
 
 			//extra letters
 			SendDlgItemMessage(hWnd,IDC_EXTRA_LTR,EM_LIMITTEXT,MAX_EXTRA,0);
@@ -255,13 +246,8 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDC_EXTRA_ALPHABET:
-					SetDlgItemText(hWnd,IDC_EXTRA_LTR,"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-					return 0;
-
-				case IDC_EXTRA_ALPHABET_C:
-					SetDlgItemText(hWnd,IDC_EXTRA_LTR,"");
-					return 0;
+				case IDC_EXTRA_ALPHABET: SetDlgItemText(hWnd,IDC_EXTRA_LTR,"ABCDEFGHIJKLMNOPQRSTUVWXYZ"); return 0;
+				case IDC_EXTRA_ALPHABET_C: 	SetDlgItemText(hWnd,IDC_EXTRA_LTR,""); return 0;
 					
 				case IDOK: //get new values
 					//hillclimber parameters
@@ -277,8 +263,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					iLang=SendDlgItemMessage(hWnd,IDC_LANG,CB_GETCURSEL,0,0);
 					if(iLang!=iPrevLang) SetLanguage();
 
-					//extra letters
-					GetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr,MAX_EXTRA);
+					GetDlgItemText(hWnd,IDC_TABLEU_EDIT,szText,30); //tableu alphabet	
+					message.SetTableuAlphabet(szText);
+
+					GetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr,MAX_EXTRA); //extra letters
 					
 					//0 chars per line
 					if(!iLineChars)
@@ -290,24 +278,12 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					//solve type
 					iSolveType=SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_GETCURSEL,0,0);
 					message.SetDecodeType(iSolveType);
-
-					iKeyLength=GetDlgItemInt(hWnd,IDC_KEY_LEN,0,0);
-					message.SetKeyLength(iKeyLength);
-
-
-					switch(iSolveType) //set key max length
-					{
-						case SOLVE_BIFID: iMaxKeyLen=25; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.bifid_array); break;
-						case SOLVE_TRIFID: iMaxKeyLen=27; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.trifid_array); break;
-						case SOLVE_VIG: iMaxKeyLen=iKeyLength; message.SetKeyLength(iKeyLength); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.GetKey()); break;
-						case SOLVE_HOMO: 
-						case SOLVE_ANAGRAM: 
-						case SOLVE_COLTRANS: iMaxKeyLen=0; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); break;
-						case SOLVE_RUNKEY: iMaxKeyLen=128; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); break;
-					}
-
-					if(iSolveType!=SOLVE_RUNKEY) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0);
+					SetKeyEdit();
 					
+					//key update length
+					if(DIGRAPH_MODE) SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,2,0);
+					else SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
+
 					//update display
 					if(bMsgLoaded && !siSolveInfo.running)
 					{
@@ -317,11 +293,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						SetPlain();
 						SetText();
 						SetKeyEdit();
+						SetSolveTypeFeatures();
 					}
 
-				case IDCANCEL:
-					EndDialog(hWnd,0);
-					return 0;
+				case IDCANCEL: EndDialog(hWnd,0); return 0;
 			}
 	}
 
@@ -512,9 +487,7 @@ LRESULT CALLBACK HomoProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			}				
 			return 0;
 
-		case WM_DESTROY:
-			DeleteObject(hTempFont);
-			return 0;
+		case WM_DESTROY: DeleteObject(hTempFont); return 0;
 	}
 	return 0;
 }
@@ -549,15 +522,13 @@ LRESULT CALLBACK WordFindProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 //	int iWordLen;
 	long lfHeight;
 	std::string word_str;
-	DICTMAP::iterator iter;
+	STRMAP::iterator iter;
 
-	HDC hdc;
-
-	hdc = GetDC(NULL);
-    lfHeight = -MulDiv(10, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+	HDC hdc=GetDC(NULL);
+    lfHeight=-MulDiv(10, GetDeviceCaps(hdc, LOGPIXELSY), 72);
     ReleaseDC(NULL, hdc);
 
-    hTempFont = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
+    hTempFont=CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "ZKDfont");
 
 	switch(iMsg)
 	{
@@ -573,7 +544,7 @@ LRESULT CALLBACK WordFindProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 			strupr(szText);
 			word_str=szText;
 
-			for( iter = dictionary.begin(); iter != dictionary.end(); ++iter ) 
+			for(iter=dictionary.begin(); iter!=dictionary.end(); ++iter) 
 			{
 				if(MatchStringTemplate(word_str,iter->first))
 					SendDlgItemMessage(hWnd,IDC_WORD_LIST,LB_ADDSTRING,0, (WPARAM)std::string(iter->first).data() );
@@ -584,15 +555,12 @@ LRESULT CALLBACK WordFindProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDC_WORD_FIND: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;
-							
+				case IDC_WORD_FIND: SendMessage(hWnd,UDM_HOMO_UPDATE,0,0); return 0;				
 				case IDCANCEL: EndDialog(hWnd,0); hWordWnd=NULL; return 0;
 			}				
 			return 0;
 
-		case WM_DESTROY:
-			DeleteObject(hTempFont);
-			return 0;
+		case WM_DESTROY: DeleteObject(hTempFont); return 0;
 	}
 	
 	return 0;
@@ -614,9 +582,7 @@ LRESULT CALLBACK AboutProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hWnd,IDC_ABOUT,szText);
 			return 0;
 
-		case WM_LBUTTONDOWN:
-			EndDialog(hWnd,0);
-			return 0;
+		case WM_LBUTTONDOWN: EndDialog(hWnd,0); return 0;
 	}
 
 	return 0;
@@ -629,25 +595,10 @@ LRESULT CALLBACK TextProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	switch(iMsg)
 	{
 		//click on text
-		case WM_LBUTTONDOWN:
-			TextClick(LOWORD(lParam),HIWORD(lParam));
-			return 0;
-
-		case WM_MBUTTONDOWN:
-			TextClick(LOWORD(lParam),HIWORD(lParam));
-			ToggleLock();
-			return 0;
-
-		case WM_RBUTTONDOWN:
-			TextClick(LOWORD(lParam),HIWORD(lParam));
-			CreateTextMenu();
-			return 0;
-
-		case WM_PAINT: //redraw text windows
-			BeginPaint(hWnd,&ps);
-			SetText();
-			EndPaint(hWnd,&ps);
-			return 0;
+		case WM_LBUTTONDOWN: TextClick(LOWORD(lParam),HIWORD(lParam)); return 0;
+		case WM_MBUTTONDOWN: TextClick(LOWORD(lParam),HIWORD(lParam)); ToggleLock(); return 0;
+		case WM_RBUTTONDOWN: TextClick(LOWORD(lParam),HIWORD(lParam)); CreateTextMenu(); return 0;
+		case WM_PAINT: BeginPaint(hWnd,&ps); SetText();	EndPaint(hWnd,&ps); return 0; //redraw text windows
 	}
 
 	return DefWindowProc(hWnd,iMsg,wParam,lParam);

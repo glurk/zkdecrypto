@@ -190,7 +190,7 @@
 #define IDC_RS_DOWN						1150
 #define IDC_RS_UP						1151
 #define IDC_SOLVE_TYPE					1152
-#define IDC_KEY_LEN						1153
+#define IDC_TABLEU_EDIT					1153
 #define IDC_BLOCK_TITLE					1154
 #define IDC_KEY_EDIT					1155
 #define IDC_WORD_FIND					1156
