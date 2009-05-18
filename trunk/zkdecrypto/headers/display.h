@@ -4,9 +4,9 @@
 //add line breaks to text
 void BreakText(char *dest, const char *src)
 {
-	int src_index, dest_index=0, src_len=(int)strlen(src);
+	int dest_index=0;
 	
-	for(src_index=0; src_index<src_len; src_index++)
+	for(int src_index=0; src[src_index]; src_index++)
 	{
 		dest[dest_index++]=src[src_index];
 		
@@ -37,11 +37,7 @@ void SetClipboardText(const char *szClipText)
 }
 
 //set window title
-void SetTitle()
-{
-	sprintf(szTitle, "%s %s",PROG_NAME,PROG_VER);
-	SetWindowText(hMainWnd,szTitle);
-}
+void SetTitle() {sprintf(szTitle, "%s %s",PROG_NAME,PROG_VER); SetWindowText(hMainWnd,szTitle);}
 
 /*Text Display*/
 
@@ -83,9 +79,8 @@ void OutlineChars(HDC hDC, HPEN hPen, int iStart, int iEnd, int bOutline=false)
 		iCol=iChar%iLineChars;
 		
 		if(iRow<0) continue;
-	
-		//outline rect
-		if(bOutline)
+		
+		if(bOutline) //outline rect
 		{
 			rOutRect.left=iCol*iCharWidth+2+iShift;
 			rOutRect.top=iRow*iCharHeight+1+iShift;
@@ -93,8 +88,7 @@ void OutlineChars(HDC hDC, HPEN hPen, int iStart, int iEnd, int bOutline=false)
 			rOutRect.bottom=rOutRect.top+iCharHeight;
 		}
 		
-		//underline rect
-		else
+		else //underline rect
 		{
 			rOutRect.left=iCol*iCharWidth+2+iShift;
 			rOutRect.top=(iRow+1)*iCharHeight+iShift;
@@ -109,14 +103,14 @@ void OutlineChars(HDC hDC, HPEN hPen, int iStart, int iEnd, int bOutline=false)
 //draw all the necessary outlines/underlines
 void DrawOutlines()
 {
-	int iStart, iEnd, iFreq, cur_symbol, word_len;
+	int iStart, iEnd, iFreq, cur_symbol, word_len, iDiIndex;
 	char szPattern[32];
 	const char *word_ptr;
 	SYMBOL symbol;
+	DIGRAPH digraph;
 	NGRAM pattern;
 
-	//pattern outlines
-	if(iCurPat>-1)
+	if(iCurPat>-1) //pattern outlines
 	{
 		SendDlgItemMessage(hMainWnd,IDC_PATTERNS,LB_GETTEXT,iCurPat,(LPARAM)szPattern);
 		if(iSortBy) sscanf(szPattern," %i %s ",&iFreq,pattern.string);
@@ -136,8 +130,7 @@ void DrawOutlines()
 			}
 	}
 	
-	//word outlines
-	if(iCurWord>-1)
+	if(iCurWord>-1) //word outlines
 	{
 		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETTEXT,iCurWord,(LPARAM)szPattern);
 		
@@ -160,28 +153,48 @@ void DrawOutlines()
 			word_ptr+=word_len;
 		} 
 	}
-	
-	//symbol outlines
-	if(iCurSymbol>-1 && message.cur_map.GetSymbol(iCurSymbol,&symbol))
-		for(cur_symbol=iDispStart; cur_symbol<iDispEnd; cur_symbol++)
-			if(szCipher[cur_symbol]==symbol.cipher)
-			{
-				OutlineChars(hCipherDC,hBluePen,cur_symbol,cur_symbol+1);
-				OutlineChars(hPlainDC,hBluePen,cur_symbol,cur_symbol+1);
-			}
 
-	//selected character
+	if(DIGRAPH_MODE)
+	{
+		//symbol outlines
+		if(iCurSymbol>-1 && message.digraph_map.GetDigraph(iCurSymbol,&digraph))
+			for(cur_symbol=iDispStart; cur_symbol<iDispEnd; cur_symbol++)
+			{
+				if((cur_symbol%2)==0) iDiIndex=cur_symbol; //first symbol in digraph
+				else iDiIndex=cur_symbol-1; //second symbol in digraph 
+
+				if(szCipher[iDiIndex]==digraph.cipher1 && szCipher[iDiIndex+1]==digraph.cipher2)
+				{
+					OutlineChars(hCipherDC,hBluePen,cur_symbol,cur_symbol+1);
+					OutlineChars(hPlainDC,hBluePen,cur_symbol,cur_symbol+1);
+				}
+			}
+	}	
+
+	else
+	{
+		//symbol outlines
+		if(iCurSymbol>-1 && message.cur_map.GetSymbol(iCurSymbol,&symbol))
+			for(cur_symbol=iDispStart; cur_symbol<iDispEnd; cur_symbol++)
+				if(szCipher[cur_symbol]==symbol.cipher)
+				{
+					OutlineChars(hCipherDC,hBluePen,cur_symbol,cur_symbol+1);
+					OutlineChars(hPlainDC,hBluePen,cur_symbol,cur_symbol+1);
+				}
+	}
+
+	//selected symbol
 	if(IS_BETWEEN(iTextSel,0,message.GetLength()))
 	{
-		OutlineChars(hCipherDC,hRedPen,iTextSel,iTextSel+1);
-		OutlineChars(hPlainDC,hRedPen,iTextSel,iTextSel+1);
+		OutlineChars(hCipherDC,hRedPen,iTextSel,iTextSel+1+DIGRAPH_MODE);
+		OutlineChars(hPlainDC,hRedPen,iTextSel,iTextSel+1+DIGRAPH_MODE);
 	}
 }
 
 void OutputText(int bSection)
 {
 	const char *szString;
-	int iIndex, iLength, iXPos, iYPos;
+	int iIndex, iLength, iXPos, iYPos, iDiIndex;
 	HWND hWnd;
 	HDC hDC;
 	DWORD dwBG;
@@ -190,22 +203,34 @@ void OutputText(int bSection)
 	iLength=message.GetLength();
 		
 	//plain/cipher
-	if(bSection) {hWnd=hPlain; hDC=hPlainDC; szString=szPlain; }
+	if(bSection) {hWnd=hPlain; hDC=hPlainDC; szString=szPlain;}
 	else {hWnd=hCipher; hDC=hCipherDC; szString=szCipher;}
 
 	dwBG=GetSysColor(COLOR_WINDOW);
 	crBG=RGB(GetRValue(dwBG),GetGValue(dwBG),GetBValue(dwBG));
 	
-	for(int row=0; row<iDispLines; row++)
+	for(int row=0; row<iDispLines; row++) //output each character
 		for(int col=0; col<iLineChars; col++)
 		{
 			iIndex=(row+iScrollPos)*iLineChars+col;
 			if(iIndex>=iLength) break;
-				
-			if(message.cur_map.GetLock(message.cur_map.FindByCipher(szCipher[iIndex])))
-				SetBkColor(hDC,crYellow);
-			else SetBkColor(hDC,crBG);	
 			
+			SetBkColor(hDC,crBG); //default background
+
+			//locked highlights
+			if(DIGRAPH_MODE)
+			{
+				if((iIndex%2)==0) iDiIndex=iIndex; //first symbol in digraph
+				else iDiIndex=iIndex-1; //second symbol in digraph 
+
+				if(message.digraph_map.GetLock(message.digraph_map.FindByCipher(szCipher[iDiIndex],szCipher[iDiIndex+1])))
+						SetBkColor(hDC,crYellow);
+			}
+
+			else if(message.cur_map.GetLock(message.cur_map.FindByCipher(szCipher[iIndex])))
+					SetBkColor(hDC,crYellow);
+			
+			//window coordinates for character
 			iXPos=(col*iCharWidth)+iTextBorder;
 			iYPos=(row*iCharHeight)+iTextBorder;
 	
@@ -255,12 +280,23 @@ void SetText()
 void UpdateSelectedSymbol()
 {
 	SYMBOL symbol;
+	DIGRAPH digraph;
 	
 	iCurSymbol=SendDlgItemMessage(hMainWnd,IDC_MAP,LB_GETCURSEL,0,0);
 	if(iCurSymbol<0) return;
 
-	message.cur_map.GetSymbol(iCurSymbol,&symbol);
-	sprintf(szText,"%c",symbol.plain);
+	if(DIGRAPH_MODE)
+	{
+		message.digraph_map.GetDigraph(iCurSymbol,&digraph);
+		sprintf(szText,"%c%c",digraph.plain1,digraph.plain2);
+	}
+
+	else
+	{
+		message.cur_map.GetSymbol(iCurSymbol,&symbol);
+		sprintf(szText,"%c",symbol.plain);
+	}
+	
 	SetDlgItemText(hMainWnd,IDC_MAP_VALUE,szText);
 	SetText();
 }
@@ -269,7 +305,7 @@ void UpdateSelectedSymbol()
 int TextClick(int click_x, int click_y)
 {
 	int text_row, text_col, text_index;
-	char click_char;
+	char click_char, click_char2;
 
 	//row/column for clicked character
 	text_row=(click_y-iTextBorder)/iCharHeight;
@@ -284,10 +320,14 @@ int TextClick(int click_x, int click_y)
 	
 	//check array bounds & get cipher character
 	if(!IS_BETWEEN(text_index,0,message.GetLength())) return 0;
+
+	if(DIGRAPH_MODE && text_index%2) text_index--; //clicked on second symbol of digraph
 	click_char=szCipher[text_index];
+	click_char2=szCipher[text_index+1];
 
 	//get the symbol for this cipher character
-	iCurSymbol=message.cur_map.FindByCipher(click_char);
+	if(DIGRAPH_MODE) iCurSymbol=message.digraph_map.FindByCipher(click_char,click_char2);
+	else iCurSymbol=message.cur_map.FindByCipher(click_char);
 	if(iCurSymbol<0) return 0;
 
 	//set selected symbol and draw text
@@ -373,8 +413,8 @@ void SetPlain()
 {
 	if(siSolveInfo.running) return;
 	szPlain=message.GetPlain();
-	//best score
-	if(!siSolveInfo.running) 
+	
+	if(!siSolveInfo.running) //display new score score
 	{
 		iBestScore=calcscore(message,message.GetLength(),szPlain);
 		SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,true);
@@ -416,7 +456,7 @@ void SetSort(int iNewSort)
 }
 
 //refresh key list
-inline void SetKey()
+void SetMonoKey()
 {
 	int cur_sel, num_symbols;
 	SYMBOL symbol;
@@ -428,7 +468,7 @@ inline void SetKey()
 	num_symbols=message.cur_map.GetNumSymbols();
 
 	//title
-	sprintf(szText,"Key (%i symbols)",message.cur_map.GetNumSymbols());
+	sprintf(szText,"Key (%i symbols)",num_symbols);
 	SetDlgItemText(hMainWnd,IDC_MAP_TITLE,szText);
 
 	//clear list
@@ -455,6 +495,49 @@ inline void SetKey()
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,cur_sel,0);
 }
 
+void SetDiKey()
+{
+	int cur_sel, num_digraphs;
+	DIGRAPH digraph;
+	
+	SetText();
+	
+	if(iCurTab!=0) return;
+	
+	num_digraphs=message.digraph_map.GetNumDigraphs();
+
+	//title
+	sprintf(szText,"Key (%i digraphs)",num_digraphs);
+	SetDlgItemText(hMainWnd,IDC_MAP_TITLE,szText);
+
+	//clear list
+	cur_sel=SendDlgItemMessage(hMainWnd,IDC_MAP,LB_GETCURSEL,0,0);
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_RESETCONTENT,0,0);
+	
+	//add digraphs
+	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++)
+	{
+		message.digraph_map.GetDigraph(cur_digraph,&digraph);
+		if(!digraph.plain1) digraph.plain1=BLANK;
+		if(!digraph.plain2) digraph.plain2=BLANK;
+		
+		//symbol is locked
+		if(message.digraph_map.GetLock(cur_digraph)) sprintf(szText,"%c%c[%c%c]%5i",digraph.cipher1,digraph.cipher2,digraph.plain1,digraph.plain2,digraph.freq);
+		else sprintf(szText,"%c%c %c%c %5i",digraph.cipher1,digraph.cipher2,digraph.plain1,digraph.plain2,digraph.freq);
+		
+		SendDlgItemMessage(hMainWnd,IDC_MAP,LB_ADDSTRING,0,(LPARAM)szText);
+	}
+	
+	//reset selected symbol
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,cur_sel,0);
+}
+
+void SetKey()
+{
+	if(DIGRAPH_MODE) SetDiKey();
+	else SetMonoKey();
+}
+
 //update symbol in list
 void UpdateSymbol(int index)
 {
@@ -466,10 +549,28 @@ void UpdateSymbol(int index)
 	if(symbol.plain) plain=symbol.plain;
 	else plain=BLANK;
 	
-	if(message.cur_map.GetLock(index))
-			sprintf(szText,"%c [%c] %5i",symbol.cipher,plain,symbol.freq);
-		
+	if(message.cur_map.GetLock(index)) sprintf(szText,"%c [%c] %5i",symbol.cipher,plain,symbol.freq);
 	else sprintf(szText,"%c  %c  %5i",symbol.cipher,plain,symbol.freq);
+
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_DELETESTRING,index,0);
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_INSERTSTRING,index,(LPARAM)szText);
+	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,index,0);
+}
+
+void UpdateDigraph(int index)
+{
+	DIGRAPH digraph;
+	char plain1, plain2;
+
+	//get symbol info
+	message.digraph_map.GetDigraph(index,&digraph);
+	if(digraph.plain1) plain1=digraph.plain1;
+	else plain1=BLANK;
+	if(digraph.plain2) plain2=digraph.plain2;
+	else plain2=BLANK;
+	
+	if(message.digraph_map.GetLock(index)) sprintf(szText,"%c%c[%c%c]%5i",digraph.cipher1,digraph.cipher2,plain1,plain2,digraph.freq);
+	else sprintf(szText,"%c%c %c%c %5i",digraph.cipher1,digraph.cipher2,plain1,plain2,digraph.freq);
 
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_DELETESTRING,index,0);
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_INSERTSTRING,index,(LPARAM)szText);
@@ -572,10 +673,8 @@ void SetFreq()
 void GetNumWords(const char *text, int msg_len)
 {
 	std::string word_str;
-	DICTMAP::iterator iter, end;
 
 	siSolveInfo.num_words=0;
-	end=dictionary.end();
 	   
 	for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
@@ -583,17 +682,15 @@ void GetNumWords(const char *text, int msg_len)
 			if((msg_len-index)<word_len) break;
 
 			word_str.assign(text+index,word_len); //set word & serach dictionary
-			if(dictionary.find(word_str)!=end) siSolveInfo.num_words++;
+			if(dictionary.find(word_str)!=dictionary.end()) siSolveInfo.num_words++;
 		}  
 }
 
+//put all dictionary words in text into the StringArray
 int GetWordList(const char *text, StringArray &word_list)
 {
 	int msg_len=message.GetLength();
 	std::string word_str;
-	DICTMAP::iterator iter, end;
-
-	end=dictionary.end();
 	   
 	for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
@@ -601,13 +698,14 @@ int GetWordList(const char *text, StringArray &word_list)
 			if((msg_len-index)<word_len) break;
 
 			word_str.assign(text+index,word_len); //set word & serach dictionary
-			if(dictionary.find(word_str)!=end) word_list.AddString(word_str.c_str());
+			if(dictionary.find(word_str)!=dictionary.end()) word_list.AddString(word_str.c_str());
 		}
 		   
 	word_list.RemoveDups();
 	return word_list.GetNumStrings();	  
 }
 
+//set the word list box
 void SetWordList()
 {
 	int cur_sel, rows=0, col=0;
@@ -642,48 +740,35 @@ inline void SetGraph()
 	SendMessage(hLetter,WM_INITDIALOG,0,0);
 }
 
-inline void SetSolveTabInfo()
-{
-	SetKey();
-	SetSolve();
-}
-
-inline void SetAnalysisTabInfo()
-{
-	SetTable();
-	SetFreq();
-}
-
-inline void SetWordListTabInfo()
-{
-	SetWordList();
-}
+inline void SetSolveTabInfo()		{SetKey(); SetSolve();}
+inline void SetAnalysisTabInfo()	{SetTable(); SetFreq(); }
+inline void SetWordListTabInfo()	{SetWordList();}
 
 inline void SetStatsTabInfo()
 {
 	if(!bMsgLoaded) return;
 
+	//cipher text stats
 	sprintf(szText,"Length [N]: %7i",message.GetLength());
 	SetDlgItemText(hMainWnd,IDC_STATS_LENGTH,szText);
-
 	sprintf(szText,"Multiplicity [M]: %.5f",message.Multiplicity());
 	SetDlgItemText(hMainWnd,IDC_STATS_MULTI,szText);
 
+	sprintf(szText,"Chi^2 [X2]: %.5f %.5f",ChiSquare(message.GetCipher(),message.GetLength()),avg_lsoc(message.GetCipher(),message.GetLength()));
+	SetDlgItemText(hMainWnd,IDC_STATS_CHI2,szText);
 	sprintf(szText,"Entropy [H]: %.5f %.5f",Entropy(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),2));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO,szText);
-
 	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),1));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC,szText);
-
-	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetCipher(),message.GetLength()));
-	SetDlgItemText(hMainWnd,IDC_STATS_CHI2,szText);
-
+	
+	//plain text stats
+	sprintf(szText,"Chi^2 [X2]: %.5f %.5f",ChiSquare(message.GetPlain(),message.GetLength()),avg_lsoc(message.GetPlain(),message.GetLength()));
+	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
 	sprintf(szText,"Entropy [H]: %.5f %.5f",Entropy(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),2));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO_P,szText);
 	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),1));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC_P,szText);
-	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetPlain(),message.GetLength()));
-	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
+	
 }
 
 inline void SetTabuTabInfo()
@@ -696,83 +781,74 @@ inline void SetTabuTabInfo()
 
 	szText[0]='\0';
 
-	disp_sym=MIN(message.cur_map.GetNumSymbols(),20);
+	/*szText[message.cur_map.GetNumSymbols()]='\0';
+
+	disp_sym=message.cur_map.GetNumSymbols();
 
 	for(int cur_symbol=0; cur_symbol<disp_sym; cur_symbol++)
 	{
 		message.cur_map.GetSymbol(cur_symbol,&symbol);
-		sprintf(tabu_num,"  %c",symbol.cipher);
-		strcat(szText,tabu_num);
+		szText[cur_symbol]=symbol.cipher;
 	}
 
-	strcat(szText,"\r\n\r\n");
+	strcat(szText,"\r\n\r\n");*/
 
-	for(int cur_letter=0; cur_letter<26; cur_letter++)
+	for(STRMAP::iterator iter=tabu_map.begin(); iter!=tabu_map.end(); ++iter) 
 	{
-		sprintf(line,"%c",cur_letter+'A');
-
-		for(int cur_symbol=0; cur_symbol<disp_sym; cur_symbol++)
-		{
-			sprintf(tabu_num," %02i",siSolveInfo.tabu[cur_symbol][cur_letter]);
-			strcat(line,tabu_num);
-		}
-
-		strcat(szText,line);
+		strcat(szText,std::string(iter->first).c_str());
 		strcat(szText,"\r\n");
 	}
 	
 	SetDlgItemText(hMainWnd,IDC_TABU,szText);
 }
 
+void SetSolveTypeFeatures()
+{
+	int menu_state=MF_ENABLED;
+
+	if(DIGRAPH_MODE) menu_state=MF_GRAYED;
+	EnableMenuItem(hMainMenu,IDM_KEY_EXCLUDE,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_KEY_CLEAR_EXCLUDE,MF_BYCOMMAND | menu_state);
+}
+
 void SetKeyEdit()
 {
-	switch(iSolveType) //set key
-	{
-		case SOLVE_BIFID: strcpy(szText,message.bifid_array); break;
-		case SOLVE_TRIFID: strcpy(szText,message.trifid_array); break;
-		case SOLVE_VIG: strcpy(szText,message.GetKey()); break;
-		case SOLVE_HOMO:
-		case SOLVE_ANAGRAM: 
-		case SOLVE_COLTRANS: szText[0]='\0'; break;
-		case SOLVE_RUNKEY: memcpy(szText,siSolveInfo.best_key,32); szText[32]='\0'; break;
-			case SOLVE_KRYPTOS: break;
-			{
-				szText[0]='\0';
+	int iMaxKeyLen;
 
-				for(int iCurIndex=0; iCurIndex<14; iCurIndex++)
-				{
-					sprintf(szText+iCurIndex*8,"(%02i,%02i) ",siSolveInfo.best_key4[iCurIndex]>>8 & 0x000000FF, siSolveInfo.best_key4[iCurIndex] & 0x000000FF);
-					SetWindowText(hTextWnd,szText);
-				}
-			}
+	SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,0,0);
+
+	switch(iSolveType) //set key max length
+	{
+		case SOLVE_BIFID: case SOLVE_PLAYFAIR: iMaxKeyLen=25; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.bifid_array); break;
+		case SOLVE_TRIFID: iMaxKeyLen=27; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.trifid_array); break;
+		case SOLVE_VIG: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.GetKey()); break;
+		case SOLVE_HOMO:
+		case SOLVE_DISUB:
+		case SOLVE_ANAGRAM: 
+		case SOLVE_COLTRANS: iMaxKeyLen=0; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); break;
+		case SOLVE_RUNKEY: iMaxKeyLen=0; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,siSolveInfo.best_key); break;
 	}
 
-	SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText);
+	if(iSolveType!=SOLVE_RUNKEY && iSolveType!=SOLVE_VIG) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0);
 }
 
 inline void SetDlgInfo()
 {
 	if(!bMsgLoaded) return;
 	
-	//set key to hillclimber best if running
-	if(siSolveInfo.running)
+	if(siSolveInfo.running) //set key to hillclimber best if running
 	{
-		
-
 		if(iSolveType==SOLVE_HOMO) message.cur_map.FromKey(siSolveInfo.best_key);
-		if(iSolveType==SOLVE_RUNKEY) {strcpy(szText,siSolveInfo.best_key); SetKeyEdit();}
-		else {strcpy(szText,message.GetKey());	SetKeyEdit();}
+		else SetKeyEdit();
 	}
 		
 	else SetPlain();
 	
-	//info on tabs
-	
-	SetSolveTabInfo(); 
+	//info on tabs, tabu tab is updated only when a tabu is made
+	SetSolveTabInfo();
 	SetAnalysisTabInfo(); 
 	SetWordListTabInfo(); 
 	SetStatsTabInfo();
-	SetTabuTabInfo();
 		
 	if(hLetter) SetGraph();
 }
@@ -924,6 +1000,7 @@ void ShowTab(int iTab)
 
 }
 
+//create right click menu
 void CreateTextMenu()
 {
 	GetCursorPos(&pntClickPoint);
@@ -948,9 +1025,14 @@ void CreateTextMenu()
 		AppendMenu(hTextMenu,0,IDM_KEY_LOCK,"&Lock Symbol");
 		AppendMenu(hTextMenu,0,IDM_KEY_UNLOCK,"&Unlock Symbol");
 		AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
-		AppendMenu(hTextMenu,0,IDM_KEY_EXCLUDE,"E&xclude Letters");
-		AppendMenu(hTextMenu,0,IDM_KEY_CLEAR_EXCLUDE,"&Clear Exclude");
-		AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
+		
+		if(!DIGRAPH_MODE)
+		{
+			AppendMenu(hTextMenu,0,IDM_KEY_EXCLUDE,"E&xclude Letters");
+			AppendMenu(hTextMenu,0,IDM_KEY_CLEAR_EXCLUDE,"&Clear Exclude");
+			AppendMenu(hTextMenu,MF_SEPARATOR,0,0);
+		}
+
 		AppendMenu(hTextMenu,0,IDM_VIEW_DESELECT,"&Deselect");
 	}
 											

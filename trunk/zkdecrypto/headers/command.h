@@ -62,9 +62,7 @@ inline int CommandFile(int cmd_id)
 			SavePlain(NULL);
 			return 0;
 
-		case IDM_FILE_EXIT:
-			SendMessage(hMainWnd,WM_CLOSE,0,0);
-			return 0;
+		case IDM_FILE_EXIT: SendMessage(hMainWnd,WM_CLOSE,0,0); return 0;
 	}
 
 	return 0;
@@ -137,9 +135,7 @@ inline int CommandCipher(int cmd_id)
 			message.SwapColumns(iColSel,iColSel+1,iLineChars);
 			SetTextSel(iTextSel-1);
 			message.FindPatterns(1);
-			SetText();
-			SetPatterns();
-			SetDlgInfo();
+			SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_COL_RIGHT:
@@ -147,9 +143,7 @@ inline int CommandCipher(int cmd_id)
 			message.SwapColumns(iColSel,iColSel+1,iLineChars);
 			SetTextSel(iTextSel+1);
 			message.FindPatterns(1);
-			SetText();
-			SetPatterns();
-			SetDlgInfo();
+			SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_UP:
@@ -158,9 +152,7 @@ inline int CommandCipher(int cmd_id)
 			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
 			SetTextSel(iTextSel-iLineChars);
 			message.FindPatterns(1);
-			SetText();
-			SetPatterns();
-			SetDlgInfo();
+			SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_DOWN:
@@ -168,32 +160,20 @@ inline int CommandCipher(int cmd_id)
 			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
 			SetTextSel(iTextSel+iLineChars);
 			message.FindPatterns(1);
-			SetText();
-			SetPatterns();
-			SetDlgInfo();
+			SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_UPPER:
 			SetUndo();
 			strupr(message.GetCipher());
 			message.SetInfo();
-			SetKey();
-			SetPatterns();
-			SetDlgInfo();
+			SetKey(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_RAND_TRANS:
-			
-			//message.FindPatterns(false);
-			new_pat=message.GetNumPatterns();
-
-			for(trans=0; message.GetNumPatterns()<=new_pat && trans<100000; trans++)
-			{
+			for(trans=0; trans<1000; trans++) 
 				message.SwapColumns(rand()%iLineChars,rand()%iLineChars,iLineChars);
-				message.FindPatterns(true);
-			}
-			SetText();
-			SetPatterns();
+			SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_POLYIC:
@@ -216,11 +196,7 @@ inline int CommandCipher(int cmd_id)
 			if(lRowCol) DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			return 0;
 
-		case IDM_CIPHER_RANDOM: 
-			//message.DecodeElgar(); 
-			//KryptosMatrix(lines,1);
-			SetDlgInfo(); 
-			return 0;
+		case IDM_CIPHER_RANDOM: message.DecodeElgar(); SetDlgInfo(); return 0;
 			
 		case IDM_CIPHER_SEQHOMO:
 			if(hHomoWnd) return 0;
@@ -231,49 +207,40 @@ inline int CommandCipher(int cmd_id)
 		case IDM_CIPHER_HORZ: 
 			SetUndo();
 			message.Flip(1,iLineChars);
-			SetDlgInfo();
-			SetPatterns();
+			SetDlgInfo(); SetPatterns();
 			return 0;
 
 		case IDM_CIPHER_VERT:
 			SetUndo();
 			message.Flip(2,iLineChars);
-			SetDlgInfo();
-			SetPatterns();
+			SetDlgInfo(); SetPatterns();
 			return 0;
 
 		case IDM_CIPHER_REV:
 			SetUndo();
 			message.Flip(3,iLineChars);
-			SetDlgInfo();
-			SetPatterns();
+			SetDlgInfo(); SetPatterns();
 			return 0;
 
 		case IDM_CIPHER_ROT_LEFT:
-			SetUndo();
-			if(message.Rotate(iLineChars,0)) {
+			if(message.Rotate(iLineChars,0)) 
+			{
+				SetUndo();
 				iLines=message.GetLength()/iLineChars;
 				iLineChars=iLines;
-				SetPatterns();
-				ClearTextAreas();
-				SetScrollBar();
-				SetText();
-				SetDlgInfo();
-				SetPlain();
+				ClearTextAreas(); SetScrollBar(); SetText();
+				SetPatterns(); SetDlgInfo();
 			}
 			return 0;
 
 		case IDM_CIPHER_ROT_RIGHT:
-			SetUndo();
-			if(message.Rotate(iLineChars,1)) {
+			if(message.Rotate(iLineChars,1)) 
+			{
+				SetUndo();
 				iLines=message.GetLength()/iLineChars;
 				iLineChars=iLines;
-				SetPatterns();
-				ClearTextAreas();
-				SetScrollBar();
-				SetText();
-				SetDlgInfo();
-				SetPlain();
+				ClearTextAreas(); SetScrollBar(); SetText();
+				SetPatterns(); SetDlgInfo();
 			}
 			return 0;
 	}
@@ -289,6 +256,13 @@ inline int CommandKey(int cmd_id)
 	switch(cmd_id)
 	{
 		case IDM_KEY_INIT:
+			if(DIGRAPH_MODE) 
+			{
+				message.digraph_map.Init(74);
+				SetDlgInfo();
+				return 0;
+			}
+
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_INITKEY),hMainWnd,(DLGPROC)InitProc))
 			{
 				SetUndo();
@@ -299,33 +273,49 @@ inline int CommandKey(int cmd_id)
 			
 			return 0;
 
-		case IDM_KEY_CT:
-			message.cur_map.AsCipher();
-			SetDlgInfo();
-			return 0;
+		case IDM_KEY_CT: if(DIGRAPH_MODE) message.digraph_map.AsCipher(); else message.cur_map.AsCipher(); SetDlgInfo(); return 0;
 
 		case IDM_KEY_SCRAMBLE:
 			SetUndo();
-			num_symbols=message.cur_map.GetNumSymbols();
+
+			if(DIGRAPH_MODE) num_symbols=message.digraph_map.GetNumDigraphs();
+			else num_symbols=message.cur_map.GetNumSymbols();
+			
 			for(swap=0; swap<50000; swap++)
-				message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
+			{
+				if(DIGRAPH_MODE) message.digraph_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
+				else message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
+			}
+
 			SetDlgInfo();
 			return 0;
 
 		case IDM_KEY_CLEAR:
 			SetUndo();
-			message.cur_map.Clear(CLR_PLAIN);
+			if(DIGRAPH_MODE) message.digraph_map.Clear(CLR_PLAIN);
+			else message.cur_map.Clear(CLR_PLAIN);
 			SetDlgInfo();
 			return 0;
 
-		case IDM_KEY_LOCK: message.cur_map.SetLock(iCurSymbol,true); SetKey(); return 0;
-		case IDM_KEY_UNLOCK: message.cur_map.SetLock(iCurSymbol,false); SetKey(); return 0;
-		case IDM_KEY_LOCK_ALL: message.cur_map.SetAllLock(true); SetKey(); return 0;
-		case IDM_KEY_UNLOCK_ALL: message.cur_map.SetAllLock(false); SetKey(); return 0;
+		case IDM_KEY_LOCK: if(DIGRAPH_MODE) message.digraph_map.SetLock(iCurSymbol,true); else message.cur_map.SetLock(iCurSymbol,true); SetKey(); return 0;
+		case IDM_KEY_UNLOCK: if(DIGRAPH_MODE) message.digraph_map.SetLock(iCurSymbol,false); else message.cur_map.SetLock(iCurSymbol,false); SetKey(); return 0;
+		case IDM_KEY_LOCK_ALL: if(DIGRAPH_MODE) message.digraph_map.SetAllLock(true); else message.cur_map.SetAllLock(true); SetKey(); return 0;
+		case IDM_KEY_UNLOCK_ALL: if(DIGRAPH_MODE) message.digraph_map.SetAllLock(false); else message.cur_map.SetAllLock(false); SetKey(); return 0;
 		case IDM_KEY_INVERT_LOCK: 
-			num_symbols=message.cur_map.GetNumSymbols();
-			for(cur_sym=0; cur_sym<num_symbols; cur_sym++)
-				message.cur_map.SetLock(cur_sym,!message.cur_map.GetLock(cur_sym));
+			if(DIGRAPH_MODE) 
+			{
+				num_symbols=message.digraph_map.GetNumDigraphs();
+				for(cur_sym=0; cur_sym<num_symbols; cur_sym++)
+					message.digraph_map.SetLock(cur_sym,!message.digraph_map.GetLock(cur_sym));
+			}
+
+			else
+			{
+				num_symbols=message.cur_map.GetNumSymbols();
+				for(cur_sym=0; cur_sym<num_symbols; cur_sym++)
+					message.cur_map.SetLock(cur_sym,!message.cur_map.GetLock(cur_sym));
+			}
+
 			SetDlgInfo();
 			return 0;
 
@@ -360,7 +350,6 @@ inline int CommandSolve(int cmd_id)
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
 			{
 				SetUndo();
-
 				iBestScore=WordPlug(message,szString);
 				SetDlgInfo();
 			}
@@ -374,18 +363,14 @@ inline int CommandSolve(int cmd_id)
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
 			{
 				SetUndo();
-
 				message.Insert(iTextSel,szString);
 				SetDlgInfo();
 			}
 			return 0;
 			
-		case IDM_SOLVE_RESET:
-			//blank best key, so that additional chars are renewed
-			siSolveInfo.best_key[0]='\0';
-			return 0;
+		case IDM_SOLVE_RESET: siSolveInfo.best_key[0]='\0'; return 0; //blank best key, so that additional chars are renewed
 			
-		case IDM_SOLVE_BRUTE:
+		/*case IDM_SOLVE_BRUTE:
 			if(iBruteSymbols) return 0;
 			
 			strcpy(szNumberTitle,"# of Symbols");
@@ -396,7 +381,7 @@ inline int CommandSolve(int cmd_id)
 				iBruteSymbols=iNumber;
 				BruteStart();
 			}
-			return 0;
+			return 0;*/
 			
 		case IDM_SOLVE_COPY_BEST: BatchBest(); return 0;
 
@@ -424,12 +409,7 @@ inline int CommandView(int cmd_id)
 	switch(cmd_id)
 	{
 		case IDM_VIEW_DESELECT:
-			iCurPat=-1;
-			iCurSymbol=-1;
-			iCurWord=-1;
-			iTextSel=-1;
-			iRowSel=-1;
-			iColSel=-1;
+			iCurPat=iCurSymbol=iCurWord=iTextSel=iRowSel=iColSel=-1;
 			SendDlgItemMessage(hMainWnd,IDC_PATTERNS,LB_SETCURSEL,iCurPat,0);
 			SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
 			SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_SETCURSEL,iCurWord,0);

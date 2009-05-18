@@ -27,8 +27,8 @@
 #define IOC_POR		.0746
 #define IOC_RUS		.0677
 
-#define DIOC		.0072
-#define CHI			.52
+#define DIOC		.0075
+#define CHI			.55
 #define ENT			4.1
 
 //text constants
@@ -40,6 +40,7 @@
 
 //macros
 #define IN_RECT(X,Y,R) (IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
+#define DIGRAPH_MODE ((iSolveType==SOLVE_DISUB || iSolveType==SOLVE_PLAYFAIR)? 1:0)
 
 //cipher/key data & files
 Message message; //cipher & main key
@@ -52,8 +53,8 @@ int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 const char *szCipher=NULL, *szPlain=NULL; //strings for display
 int iNumber, iCurTab;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
-typedef std::map<std::string,int> DICTMAP;
-DICTMAP dictionary;
+typedef std::map<std::string,int> STRMAP;
+STRMAP dictionary, tabu_map;
 
 //GUI data
 char szTitle[64], szText[4096], szExeDir[1024]; 
@@ -62,7 +63,7 @@ int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
 int iSortBy=0, iWordMin=4, iWordMax=20;
 RECT rPatRect, rKeyRect, rWordRect, rListRect;
 int lprgiInitKey[26];
-int lprgiInitID[26]=
+int lprgiInitID[26]= //homophonic init key
 {
 IDC_INIT_A_EDIT,IDC_INIT_B_EDIT,IDC_INIT_C_EDIT,IDC_INIT_D_EDIT,
 IDC_INIT_E_EDIT,IDC_INIT_F_EDIT,IDC_INIT_G_EDIT,IDC_INIT_H_EDIT,
@@ -93,38 +94,6 @@ long lRowCol;
 
 //Column  Shift
 int iCurColumn=0, iCurCycle=0;
-/*
-char trifid_array[4][4][4]=
-{
-	{
-		{'A', 'B', 'C', 'D'},
-		{'E', 'F', 'G', 'H'},
-		{'I', 'J', 'K', 'L'},
-		{'M', 'N', 'O', 'P'},
-	},
-
-	{
-		{'Q', 'R', 'S', 'T'},
-		{'V', 'W', 'X', 'Z'},
-		{'u', 'y', 'Â', 'Ã'},
-		{'Ä', 'Æ', 'Ê', 'ƒ'},
-	},
-
-	{
-		{'Ë', 'Ì', 'Ð', 'ˆ'},
-		{'Ñ', 'Ô', 'Ÿ', '„'},
-		{'+', '-', '/', '•'},
-		{'^', '<', '>', '¤'},
-	},
-
-	{
-		{'µ', '±', '´', '²'},
-		{'³', '°', '¢', '£'},
-		{'¾', '¼', '½', '·'},
-		{'¸', '¹', '»', 'º'},
-	}
-};
-*/
 
 //solver data
 SOLVEINFO siSolveInfo;
@@ -133,9 +102,8 @@ char szExtraLtr[MAX_EXTRA+1]="";
 int iBruteSymbols, iBatchBestScore;
 char lprgcBatchBestKey[4096];
 
-
-//solve type
-int iSolveType=0, iKeyLength=0, iBlockSize=0;
+//solve settings
+int iSolveType=0, iBlockSize=0;
 
 //Win32 object handles
 HWND		hMainWnd, hPat, hKey, hWord, hMainTab, hTextWnd, hHomoWnd=NULL, hWordWnd=NULL, hCipher=NULL, hPlain=NULL, hLetter=NULL, hScroll;
@@ -149,7 +117,7 @@ HINSTANCE	hInst;
 HANDLE		hSolveThread=NULL, hTimerThread=NULL;
 
 //open/save file filter
-char szFileFilter[]=
+char szFileFilter[]= 
 	{"Text Files (*.txt)\0" "*.txt;\0"
 	 "All Files (*.*)\0" "*.*\0\0"};
 

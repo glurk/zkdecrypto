@@ -16,13 +16,14 @@
 #pragma warning( disable : 4996)  //STOP MSVS2005 WARNINGS
 
 #define SOLVE_HOMO		0
-#define SOLVE_VIG		1
-#define SOLVE_BIFID		2
-#define SOLVE_TRIFID	3
-#define SOLVE_COLTRANS	4
-#define SOLVE_ANAGRAM	5
-#define SOLVE_RUNKEY	6
-#define SOLVE_DISUB		7
+#define SOLVE_DISUB		1
+#define SOLVE_PLAYFAIR	2
+#define SOLVE_VIG		3
+#define SOLVE_RUNKEY	4
+#define SOLVE_BIFID		5
+#define SOLVE_TRIFID	6
+#define SOLVE_COLTRANS	7
+#define SOLVE_ANAGRAM	8
 #define SOLVE_KRYPTOS	9
 
 struct NGRAM
@@ -41,7 +42,7 @@ struct NGRAM
 class Message
 {
 public:
-	Message() {msg_len=0; patterns=NULL; num_patterns=0; good_pat=0; min_pat_len=2; cipher=NULL; plain=NULL; InitArrays(9); bifid_array[25]=trifid_array[27]='\0';}
+	Message() {msg_len=0; patterns=NULL; num_patterns=0; good_pat=0; min_pat_len=2; cipher=NULL; plain=NULL; bifid_array[0]=trifid_array[0]='\0'; InitArrays(); }
 	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(patterns) ClearPatterns(patterns);}
 
 	int Read(const char*);
@@ -93,10 +94,14 @@ public:
 	void SetBlockSize(int new_block_size) {block_size=new_block_size;}
 	int GetBlockSize() {return block_size;} 
 
-	
+	//decoding
 	void DecodeHomo();
 	void DecodeVigenere();
 	void DecodeXfid(int);
+	void DecodeDigraphic();
+	void DecodePlayfair();
+	void SetTableuAlphabet(char*);
+	char *GetTableuAlphabet() {return vigenere_array[0];}
 	
 	void Decode()
 	{
@@ -109,7 +114,9 @@ public:
 			case SOLVE_TRIFID:	DecodeXfid(3); break;
 			case SOLVE_ANAGRAM: DecodeHomo(); break;
 			case SOLVE_COLTRANS: DecodeHomo(); break;
-			case SOLVE_RUNKEY: DecodeVigenere(); break;
+			case SOLVE_RUNKEY:	DecodeVigenere(); break;
+			case SOLVE_DISUB:	DecodeDigraphic(); break;
+			case SOLVE_PLAYFAIR: DecodePlayfair(); break;
 		}
 	}
 
@@ -134,7 +141,17 @@ public:
 		strcpy(plain,src_msg.plain);
 		
 		cur_map=src_msg.cur_map;
+		digraph_map=src_msg.digraph_map;
 		memcpy(exp_freq,src_msg.exp_freq,26*sizeof(int));
+
+		//decoding data
+		decode_type=src_msg.decode_type;
+		key_len=src_msg.key_len;
+		block_size=src_msg.block_size;
+		memcpy(key,src_msg.key,key_len);
+		memcpy(bifid_array,src_msg.bifid_array,sizeof(bifid_array));
+		memcpy(trifid_array,src_msg.trifid_array,sizeof(trifid_array));
+		memcpy(vigenere_array,src_msg.vigenere_array,sizeof(vigenere_array));
 	}
 	
 	void operator = (Message &src_msg)
@@ -143,13 +160,15 @@ public:
 		FindPatterns(true);
 	}
 
+	//decoding
 	Map cur_map;
-
-	//decoding arrays
+	DiMap digraph_map;
+	
 	char bifid_array[26];
 	char trifid_array[28];
 	char vigenere_array[26][27];
 
+	void InitArrays();
 	int FindBifidIndex(char,int&,int&);
 	int FindTrifidIndex(char,int&,int&,int&);
 
@@ -159,7 +178,6 @@ private:
 	int AddPattern(NGRAM&,int);
 	long ForAllPatterns(NGRAM *,int,void (*do_func)(NGRAM*));
 	void ClearPatterns(NGRAM*);
-	void InitArrays(int);
 	
 	char *cipher, *plain;
 	int msg_len, min_pat_len;

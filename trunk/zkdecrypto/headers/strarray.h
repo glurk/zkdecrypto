@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <math.h>
+#include <string>
 
 #define MAX_STRINGS 1024
 

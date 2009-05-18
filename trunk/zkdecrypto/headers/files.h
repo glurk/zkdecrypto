@@ -60,16 +60,13 @@ int LoadMessage(char *filename, int type)
 {
 	int loaderror=false;
 
-	switch(type) {
-		case 0:
-			if(!message.Read(filename)) loaderror=true;
-			break;
-		case 1:
-			if(!message.ReadNumeric(filename)) loaderror=true;
-			break;
+	switch(type) 
+	{
+		case 0: if(!message.Read(filename)) loaderror=true; break; //read as ascii
+		case 1: if(!message.ReadNumeric(filename)) loaderror=true; break; //read as numeric
 	}
 
-	if(loaderror) 
+	if(loaderror) //error loading file
 	{
 		sprintf(szText,"Cannot open %s",(const char*)filename);
 		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
@@ -101,6 +98,7 @@ int LoadMessage(char *filename, int type)
 	
 	iCurSymbol=-1;
 	iTextSel=-1;
+	tabu_map.clear();
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
 	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,message.GetLength());
 	ClearTextAreas();
@@ -157,8 +155,7 @@ int SavePlain(char *filename)
 	szPlainText=new char[msg_len+((iLines+1)*3)+1];
 	BreakText(szPlainText,message.GetPlain());
 	
-	//save as file
-	if(filename) 
+	if(filename) //save as file
 	{
 		pfPlain=fopen(filename,"w");
 
@@ -169,8 +166,6 @@ int SavePlain(char *filename)
 	
 	else SetClipboardText(szPlainText);
 	
-	
-	
 	delete[] szPlainText;
 
 	return 1;
@@ -179,22 +174,16 @@ int SavePlain(char *filename)
 //load zodiac font zkdfont.ttf
 int LoadFONT()
 {
-	char filename[1024];
-
-	sprintf(filename,"%s\\help\\images\\zkdfont.ttf",szExeDir);
-	if(!AddFontResource(filename)) return 0;
-
+	sprintf(szText,"%s\\help\\images\\zkdfont.ttf",szExeDir);
+	if(!AddFontResource(szText)) return 0;
 	return 1;
 }
 
 //remove zodiac font zkdfont.ttf
 int RemoveFONT()
 {
-	char filename[1024];
-
-	sprintf(filename,"%s\\help\\images\\zkdfont.ttf",szExeDir);
-	if(!RemoveFontResource(filename)) return 0;
-
+	sprintf(szText,"%s\\help\\images\\zkdfont.ttf",szExeDir);
+	if(!RemoveFontResource(szText)) return 0;
 	return 1;
 }
 
@@ -202,19 +191,18 @@ int RemoveFONT()
 void LoadCribs()
 {
 	FILE *ini_file;
-	char filename[1024], crib[128];
-//	char *comment;
+	char crib[128];
 	int read;
 
-	sprintf(filename,"%s\\cribs.txt",szExeDir);
+	sprintf(szText,"%s\\cribs.txt",szExeDir);
 
-	ini_file=fopen(filename,"r");
+	ini_file=fopen(szText,"r");
 
 	siSolveInfo.num_cribs=0;
 
 	if(!ini_file) 
 	{
-		ini_file=fopen(filename,"w");
+		ini_file=fopen(szText,"w");
 		if(ini_file) fclose(ini_file);
 		return;
 	}
@@ -234,15 +222,13 @@ void LoadCribs()
 int LoadINI()
 {
 	FILE *ini_file;
-	char filename[1024], option[32], value[1024];
+	char option[32], value[1024];
 	char *comment;
 	int read;
 
-	sprintf(filename,"%s\\zodiac.ini",szExeDir);
+	sprintf(szText,"%s\\zodiac.ini",szExeDir);
 
-	ini_file=fopen(filename,"r");
-
-	if(!ini_file) return 0;
+	if(!(ini_file=fopen(szText,"r"))) return 0;
 
 	while((read=fscanf(ini_file,"%s = %[^\n]\n",option,value))!=EOF)
 	{
@@ -258,14 +244,15 @@ int LoadINI()
 		else if(!stricmp(option,"fail")) siSolveInfo.max_fail=atoi(value);
 		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
 		else if(!stricmp(option,"revert")) siSolveInfo.max_try=atoi(value);
+		else if(!stricmp(option,"tabu_syms")) siSolveInfo.tabu_syms=atoi(value);
 		else if(!stricmp(option,"line")) iLineChars=atoi(value);
 		else if(!stricmp(option,"lang")) iLang=atoi(value);
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
 		else if(!stricmp(option,"maxword")) iWordMax=atoi(value);
 		else if(!stricmp(option,"extra")) {if(value[0]=='*') value[0]='\0'; strcpy(szExtraLtr,value);}
 		else if(!stricmp(option,"solve")) iSolveType=atoi(value);
-		else if(!stricmp(option,"key_len")) iKeyLength=atoi(value);
-		else if(!stricmp(option,"extra")) strcpy(szExtraLtr,value);
+		else if(!stricmp(option,"key_len")) message.SetKeyLength(atoi(value));
+		else if(!stricmp(option,"tableu_alpha")) {message.SetTableuAlphabet(value);}
 	}
 
 	fclose(ini_file);
@@ -277,11 +264,10 @@ int LoadINI()
 int SaveINI()
 {
 	FILE *ini_file;
-	char filename[1024];
 
-	sprintf(filename,"%s\\zodiac.ini",szExeDir);
+	sprintf(szText,"%s\\zodiac.ini",szExeDir);
 
-	ini_file=fopen(filename,"w");
+	ini_file=fopen(szText,"w");
 
 	if(!ini_file) return 0;
 
@@ -293,6 +279,7 @@ int SaveINI()
 	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_fail);
 	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
 	fprintf(ini_file,"revert = %i\n",siSolveInfo.max_try);
+	fprintf(ini_file,"tabu_syms = %i\n",siSolveInfo.tabu_syms);
 	fprintf(ini_file,"line = %i\n",iLineChars);
 	fprintf(ini_file,"lang = %i\n",iLang);
 	fprintf(ini_file,"minword = %i\n",iWordMin);
@@ -300,54 +287,10 @@ int SaveINI()
 	if(szExtraLtr[0]) fprintf(ini_file,"extra = %s\n",szExtraLtr);
 	else fprintf(ini_file,"extra = %s\n","*");
 	fprintf(ini_file,"solve = %i\n",iSolveType);
-	fprintf(ini_file,"key_len = %i\n",iKeyLength);
-	fprintf(ini_file,"extra = %s\n",szExtraLtr);
+	fprintf(ini_file,"key_len = %i\n",message.GetKeyLength());
+	fprintf(ini_file,"tableu_alpha = %s\n",message.GetTableuAlphabet());
 
 	fclose(ini_file);
 
 	return 1;
-}
-
-//convert numeric cipher to ascii
-int Num2Asc(char *in_name, char *out_name)
-{
-    FILE *in_file, *out_file;
-    char *number;
-    int ascii;
-    
-    in_file=fopen(in_name,"r");
-    out_file=fopen(out_name,"w");
-    
-    fseek(in_file,0,SEEK_END);
-    number=new char[ftell(in_file)+1];
-    fseek(in_file,0,SEEK_SET);
-    
-    if(!in_file || !out_file) return 0;
-    
-    while(fscanf(in_file,"%s",number)!=EOF)
-    {
-		ascii=atoi(number);
-		
-		if(ascii>0 && ascii<224) 
-			putc(char(ascii+0x20),out_file);
-	}
-	
-	fclose(in_file);
-	fclose(out_file);
-	
-	delete number;
-    
-    return 1;
-}
-
-//generate random cipher
-void RandCipher(int length, int symbols)
-{
-	FILE *rand_cipher;
-
-	sprintf(szText,"%s%s",szExeDir,"random.txt");
-	if(!(rand_cipher=fopen(szText,"w"))) return;
-	for(int x=0; x<340; x++) putc((rand()%63)+0x21,rand_cipher);
-	fclose(rand_cipher);
-	LoadMessage(szText,0);
 }

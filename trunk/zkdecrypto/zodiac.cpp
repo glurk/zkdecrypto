@@ -48,8 +48,7 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 			}
 
-		//scroll text
-		case WM_VSCROLL:
+		case WM_VSCROLL: //scroll text
 			switch(LOWORD(wParam))
 			{
 				case SB_PAGEDOWN:	iScrollPos+=5; break;
@@ -82,14 +81,8 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			mmiInfo->ptMinTrackSize.y=300;
 			return 0;
 
-		case WM_CLOSE:
-			EndDialog(hMainWnd,0);
-			PostMessage(hMainWnd,WM_DESTROY,0,0);
-			return 0;
-
-		case WM_DESTROY: 
-			PostQuitMessage(0); 
-			return 0;
+		case WM_CLOSE: StopSolve(); EndDialog(hMainWnd,0); PostMessage(hMainWnd,WM_DESTROY,0,0); return 0;
+		case WM_DESTROY: StopSolve(); PostQuitMessage(0); return 0;
 	}
 
 	return 0;
@@ -159,10 +152,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_MAP:
 					switch(HIWORD(wParam))
 					{
-						case LBN_SELCHANGE:
-							UpdateSelectedSymbol();
-							break;
-
+						case LBN_SELCHANGE: UpdateSelectedSymbol(); break;\
 						case LBN_DBLCLK: ToggleLock(); break;
 					}
 					return 0;
@@ -170,9 +160,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_WORD_LIST:
 					switch(HIWORD(wParam))
 					{
-						case LBN_SELCHANGE:
-							iCurWord=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
-							SetText();
+						case LBN_SELCHANGE: 
+							iCurWord=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0); 
+							SetText(); 
+							break;
 					}
 					return 0;
 
@@ -215,11 +206,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					switch(iSolveType)
 					{
 						case SOLVE_VIG: message.SetKeyLength(strlen(szText)); message.SetKey(szText); break;
-						case SOLVE_BIFID: memcpy(message.bifid_array,szText,25); break;
+						case SOLVE_BIFID: case SOLVE_PLAYFAIR: memcpy(message.bifid_array,szText,25); break;
 						case SOLVE_TRIFID: memcpy(message.trifid_array,szText,27); break;
 					}
 
-					//SetPlain(); SetText(); SetStatsTabInfo(); 
 					if(strlen(szText)) SetDlgInfo();
 					return 0;
 					
@@ -237,13 +227,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(iWordMax<0 || iWordMax>30) iWordMax=20;
                     return 0;
                      
-                case UDM_DISPALL:
-					SetDlgInfo();
-					return 0;
-					
-				case UDM_DISPINFO:
-					SetSolve();
-					return 0;
+                case UDM_DISPALL: SetDlgInfo(); return 0;
+				case UDM_DISPINFO: SetSolve(); return 0;
 			}
 
 			return 0;
@@ -303,14 +288,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			return 0;
 			
-		case WM_CLOSE:
-			EndDialog(hMainWnd,0);
-			PostMessage(hMainWnd,WM_DESTROY,0,0);
-			return 0;
-
-		case WM_DESTROY:
-			PostQuitMessage(0); 
-			return 0;
+		case WM_CLOSE: StopSolve(); EndDialog(hMainWnd,0); PostMessage(hMainWnd,WM_DESTROY,0,0); return 0;
+		case WM_DESTROY: StopSolve(); PostQuitMessage(0); return 0;
 	}
 
 	return 0;
@@ -439,7 +418,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	EnableMenuItem(hMainMenu,IDM_FILE_COPY_PLAIN,MF_BYCOMMAND | MF_GRAYED);
 	EnableMenuItem(hMainMenu,IDM_SOLVE_COPY_BEST,MF_BYCOMMAND | MF_GRAYED);
 	Button_Enable(GetDlgItem(hMainWnd,IDC_SOLVE),false);
-	SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
 	SetScrollBar();
 	SetPriority(1);
 	StopSolve();
@@ -459,6 +437,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.disp_tabu=SetTabuTabInfo;
 	siSolveInfo.best_trans=NULL;
 	sprintf(siSolveInfo.log_name,"%s\\%s",szExeDir,"log.txt");
+	siSolveInfo.tabu=&tabu_map;
+	siSolveInfo.tabu_syms=10;
 	SetInfo(&siSolveInfo);
 	Reset();
 
@@ -468,9 +448,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LoadINI();
 	SetLanguage();
 
-	//sovle types
+	if(DIGRAPH_MODE) SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,2,0);
+	else SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
+
+	//sovle parameters
 	message.SetDecodeType(iSolveType);
-	message.SetKeyLength(iKeyLength);
+	message.SetKeyLength(5);
 	message.SetKey(szExtraLtr);
 	message.SetBlockSize(1);
 
@@ -492,7 +475,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
 
 	SetKeyEdit();
-
+	SetSolveTypeFeatures();
 
 	//message loop
 	while(GetMessage(&Msg,NULL,0,0))
