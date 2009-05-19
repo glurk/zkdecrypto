@@ -381,7 +381,7 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 
 	else if(iSolveType==SOLVE_RUNKEY) //read running key text file
 	{
-		sprintf(szText,"%s\%s",szExeDir,"keytext.txt");
+		sprintf(szText,"%s\\%s",szExeDir,"keytext.txt");
 		key_file=fopen(szText,"r");
 		fseek(key_file,0,SEEK_END);
 		key_text_size=ftell(key_file);
@@ -532,9 +532,9 @@ void SetLanguage()
 		case 4: strcpy(szLanguage,"French"); strcpy(szLang,LANG_FRE); siSolveInfo.lang_ioc=(float)IOC_FRE; break;
 	}
 
-	siSolveInfo.lang_dioc=DIOC;
-	siSolveInfo.lang_chi=CHI;
-	siSolveInfo.lang_ent=ENT;
+	siSolveInfo.lang_dioc=(float)DIOC;
+	siSolveInfo.lang_chi=(float)CHI;
+	siSolveInfo.lang_ent=(float)ENT;
 	
 	for(int n=1; n<=5; n++)
 	{

@@ -45,7 +45,7 @@ int Message::ReadNumeric(const char *filename)
 	FILE *msgfile;
 	int size, iNumber;
 	char number[10];
-	int x, unicount=33, uniques[10000];
+	int unicount=33, uniques[10000];
 
 	memset(uniques,0,4*10000);
 
