@@ -196,7 +196,8 @@ LRESULT CALLBACK StringProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //options dialog
 LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	int iPrevLang, iMaxKeyLen;
+	int iPrevLang;
+//	int iMaxKeyLen;
 
 	switch(iMsg)
 	{

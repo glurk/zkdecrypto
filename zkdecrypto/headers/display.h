@@ -773,9 +773,9 @@ inline void SetStatsTabInfo()
 
 inline void SetTabuTabInfo()
 {
-	char line[128], tabu_num[8], disp_sym;
+//	char line[128], tabu_num[8], disp_sym;
 	szText[26]='\0';
-	SYMBOL symbol;
+//	SYMBOL symbol;
 
 	if(iCurTab!=4) return;
 

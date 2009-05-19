@@ -1,4 +1,29 @@
+#include <math.h>
 /*File Functions*/
+
+int CalcBestWidth(int msg_len)
+{
+	int s, r, d, l;
+	
+	int in=0, jn=0;				// lowest difference dimensions for non-primes
+	int ip=0, jp=0, rp=0;		// lowest difference dimensions and remainder for primes
+
+	s = l = (int)sqrt((double)msg_len);
+
+	for(int i=1;i<2*s;i++) {
+		for(int j=2*s;j>0;j--) {
+			r = abs(msg_len - i*j);
+			d = abs(i - j);
+			// non-primes: minimize diffs. between factors
+			if((i*j == msg_len)&&(d < l)) { l = d; in = i; jn = j; }	
+			// primes: minimize diffs. keeping remainder < sqrt(msg_len) 
+			if((msg_len == i*j + r)&&(r < s)&&(d < l)) { l = d; ip = i; jp = j; rp = r; }
+		}
+	}
+//	printf("Length:%i - Width1:%i - Width2:%i\n",msg_len,in,ip);
+	if(in*jn == msg_len) return in; 
+	else return ip;
+}
 
 void GetBaseName(const char *filename, char *&basename) 
 {
@@ -108,6 +133,7 @@ int LoadMessage(char *filename, int type)
 	SetPatterns();
 	SetDlgInfo();
 	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,message.GetLength(),false);
+	iLineChars=CalcBestWidth(message.GetLength());
 
 	return 1;
 }
@@ -187,7 +213,7 @@ int RemoveFONT()
 	return 1;
 }
 
-//read crips text file
+//read cribs text file
 void LoadCribs()
 {
 	FILE *ini_file;
@@ -245,7 +271,6 @@ int LoadINI()
 		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
 		else if(!stricmp(option,"revert")) siSolveInfo.max_try=atoi(value);
 		else if(!stricmp(option,"tabu_syms")) siSolveInfo.tabu_syms=atoi(value);
-		else if(!stricmp(option,"line")) iLineChars=atoi(value);
 		else if(!stricmp(option,"lang")) iLang=atoi(value);
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
 		else if(!stricmp(option,"maxword")) iWordMax=atoi(value);
@@ -280,7 +305,6 @@ int SaveINI()
 	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
 	fprintf(ini_file,"revert = %i\n",siSolveInfo.max_try);
 	fprintf(ini_file,"tabu_syms = %i\n",siSolveInfo.tabu_syms);
-	fprintf(ini_file,"line = %i\n",iLineChars);
 	fprintf(ini_file,"lang = %i\n",iLang);
 	fprintf(ini_file,"minword = %i\n",iWordMin);
 	fprintf(ini_file,"maxword = %i\n",iWordMax);
@@ -294,3 +318,4 @@ int SaveINI()
 
 	return 1;
 }
+

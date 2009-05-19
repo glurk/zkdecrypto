@@ -230,7 +230,8 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 	int t1,t2,t3,t4,t5;
 	int biscore=0,triscore=0,tetrascore=0,pentascore=0;
 	int score, remaining, score_len=length_of_cipher;//MIN(length_of_cipher,500);
-	float cur_stat, cur_mult, score_mult=1.0;
+//	float cur_stat, cur_mult;
+	float score_mult=1.0;
 
 	//get inital characters in for ngrams
 	t1=solv[0]-'A'; t2=solv[1]-'A'; t3=solv[2]-'A'; t4=solv[3]-'A'; t5=solv[4]-'A';
@@ -277,7 +278,7 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 
 	//Cribs
 	for(int cur_crib=0; cur_crib<info->num_cribs; cur_crib++)
-		if(strstr(solv,info->cribs[cur_crib])) score_mult*=1.025;
+		if(strstr(solv,info->cribs[cur_crib])) score_mult*=(float)1.025;
 
 	return int(score*score_mult);
 }
