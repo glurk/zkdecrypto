@@ -18,8 +18,10 @@ int Message::Read(const char *filename)
 	//allocate text arrays
 	if(cipher) delete[] cipher;
 	if(plain) delete[] plain;
+	if(msg_temp) delete[] msg_temp;
 	cipher=new char[size];
 	plain=new char[size];
+	msg_temp=new char[size];
 
 	if(!cipher || !plain) return 0;
 
@@ -59,8 +61,10 @@ int Message::ReadNumeric(const char *filename)
 	//allocate text arrays
 	if(cipher) delete[] cipher;
 	if(plain) delete[] plain;
+	if(msg_temp) delete[] msg_temp;
 	cipher=new char[size];
 	plain=new char[size];
+	msg_temp=new char[size];
 
 	if(!cipher || !plain) return 0;
 
@@ -223,12 +227,6 @@ int Message::GetColumn(int col, int line_len, char *dest)
 	return row;
 }
 
-void Message::InitArrays()
-{
-	if(strlen(bifid_array)!=25) strcpy(bifid_array,"ABCDEFGHIKLMNOPQRSTUVWXYZ");
-	if(strlen(trifid_array)!=27) strcpy(trifid_array,"ABCDEFGHIJKLMNOPQRSTUVWXYZ.");
-}
-
 void Message::SetTableuAlphabet(char *key_alpha)
 {
 	if(strlen(key_alpha)<26) strcpy(key_alpha,"ABCDEFGHIJKLMNOPQRSTUVWXYZ"); 
@@ -284,15 +282,9 @@ void Message::Flip(int flip_dir, int row_len)
 	FindPatterns(true);
 }
 
-int Message::Rotate(int row_len, int direction)
+void Message::RotateString(char *string, int row_len, int direction)
 {
-	char *rot=new char[msg_len+1];
 	int row, col, lines;
-
-	if(msg_len % row_len) {
-		delete rot;
-		return 0;
-	}
 
 	if(msg_len<row_len) row_len=msg_len;
 
@@ -300,12 +292,18 @@ int Message::Rotate(int row_len, int direction)
 
 	for(row=0; row<lines; row++)
 		for(col=0; col<row_len; col++)
-			if(direction) rot[col*lines+(lines-row-1)]=cipher[row*row_len+col];
-			else rot[(row_len-col-1)*lines+row]=cipher[row*row_len+col];
+			if(direction) msg_temp[col*lines+(lines-row-1)]=string[row*row_len+col]; //right
+			else msg_temp[(row_len-col-1)*lines+row]=string[row*row_len+col]; //left
 
-	memcpy(cipher,rot,msg_len);
-	delete rot;
-	FindPatterns(true);
+	memcpy(string,msg_temp,msg_len);
+}
+
+Message::Rotate(int row_len, int direction)
+{
+	if(msg_len % row_len) return 0;
+
+	RotateString(cipher,row_len,direction);
+	FindPatterns(true); 
 	return 1;
 }
 
@@ -1116,12 +1114,12 @@ void Message::DecodePlayfair()
 	{
 		digraph_map.GetDigraph(cur_digraph,&digraph);
 
-		c1=(int)strchr(bifid_array,digraph.cipher1);
-		c2=(int)strchr(bifid_array,digraph.cipher2);
+		c1=(int)strchr(polybius5,digraph.cipher1);
+		c2=(int)strchr(polybius5,digraph.cipher2);
 
 		if(!c1 || !c2) continue; //digraph contains an invalid character
 		
-		c1-=(int)bifid_array; c2-=(int)bifid_array; //cipher idexes into array
+		c1-=(int)polybius5; c2-=(int)polybius5; //cipher idexes into array
 		c1Y=c1/5; c1X=c1%5; c2Y=c2/5; c2X=c2%5; //cipher x,y in square
 		
 		if(c1Y==c2Y)		{p1Y=p2Y=c1Y; p1X=(c1X>0? c1X-1:4); p2X=(c2X>0? c2X-1:4);} //same row, one left
@@ -1129,8 +1127,8 @@ void Message::DecodePlayfair()
 		else				{p1X=c2X; p1Y=c1Y; p2X=c1X; p2Y=c2Y;} //square, opposite corners
 		
 		p1=p1Y*5+p1X; p2=p2Y*5+p2X; //set digraph plain letters
-		digraph.plain1=bifid_array[p1];
-		digraph.plain2=bifid_array[p2];
+		digraph.plain1=polybius5[p1];
+		digraph.plain2=polybius5[p2];
 		digraph_map.AddDigraph(digraph,0);
 	}
 
@@ -1139,7 +1137,7 @@ void Message::DecodePlayfair()
 
 void Message::DecodeVigenere() //any tableau can be used
 {
-	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
+	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow, iProgKey;
 	char *lpcCipherInKeyRow;
 
 	if(!key_len) return;
@@ -1173,12 +1171,20 @@ void Message::DecodeVigenere() //any tableau can be used
 	plain[msg_len]='\0';
 }
 
-int Message::FindBifidIndex(char symbol, int &x, int &y)
+int Message::FindPolybius5Index(char symbol, int &x, int &y)
 {
 	for(x=0; x<5; x++)
 		for(y=0; y<5; y++)
-			if(symbol==bifid_array[5*x+y])
-				return 1;
+			if(symbol==polybius5[5*x+y]) return 1;
+
+	return 0;
+}
+
+int Message::FindPolybius6Index(char symbol, int &x, int &y)
+{
+	for(x=0; x<6; x++)
+		for(y=0; y<6; y++)
+			if(symbol==polybius6[6*x+y]) return 1;
 
 	return 0;
 }
@@ -1188,8 +1194,7 @@ int Message::FindTrifidIndex(char symbol, int &x, int &y, int &z)
 	for(x=0; x<3; x++)
 		for(y=0; y<3; y++)
 			for(z=0; z<3; z++)
-				if(symbol==trifid_array[9*x+3*z+y])
-					return 1;
+				if(symbol==trifid_array[9*x+3*z+y]) return 1;
 
 	return 0;
 }
@@ -1211,7 +1216,7 @@ void Message::DecodeXfid(int fract_size)
 	{
 		cCurSymbol=cipher[iCipherIndex]; //find cipher symbol in array
 
-		if(fract_size==2) bFound=FindBifidIndex(cCurSymbol,x,y);
+		if(fract_size==2) bFound=FindPolybius5Index(cCurSymbol,x,y);
 		else bFound=FindTrifidIndex(cCurSymbol,x,y,z);
 
 		if(!bFound) {plain[iCipherIndex]=cipher[iCipherIndex]; continue;}
@@ -1231,7 +1236,7 @@ void Message::DecodeXfid(int fract_size)
 				if(iPlainIndex>=msg_len) break;
 
 				x=index_string[iBlockIndex]; y=index_string[iBlockIndex+block_size];
-				if(fract_size==2) plain[iPlainIndex++]=bifid_array[5*x+y];
+				if(fract_size==2) plain[iPlainIndex++]=polybius5[5*x+y];
 				else {z=index_string[iBlockIndex+(block_size<<1)]; plain[iPlainIndex++]=trifid_array[9*x+3*z+y];}
 			}
 
@@ -1242,6 +1247,101 @@ void Message::DecodeXfid(int fract_size)
 	block_size=org_block_size;
 
 	delete index_string;
+}
+
+void Message::DecodePermutation(int do_homo)
+{
+	int next, swap, key_length;
+	char temp_key[512];
+
+	if(!(key_length=strlen(coltrans_key))) return;
+	strcpy(temp_key,coltrans_key);
+
+	if(do_homo) DecodeHomo();
+
+	char array1[4096], array0[4096]; //arrays for the radix sort	
+	int num1, num0, mask=1;
+
+	for(int bit=0; bit<8; bit++) //for each bit of the temp_key type
+	{
+		num1=num0=0; //set num of 0's & 1's back to 0
+		for(int index=0; index<key_length; index++) //for each character in the number array, copy the character to the correct array according to this bit
+		{
+			if(temp_key[index] & mask) {array1[num1]=temp_key[index]; num1++;} //bit is 1
+			else {array0[num0]=temp_key[index]; num0++;} //bit is 0
+		}
+		//Copy the numbers into the number array from the 1's and 0's arrays, 1's first for decreasing; 0's array first for increasing	
+		memcpy(temp_key+num0, array1, num1); 
+		memcpy(temp_key, array0, num0); 
+		mask<<=1; //bitshift mask left for next bit for next bit
+	}
+
+	for(int index=0; index<key_length; index++) //swap where sorted key differs
+	{
+		if(coltrans_key[index]==temp_key[index]) continue;
+		int temp_index=int(strchr(temp_key+index,coltrans_key[index])-temp_key);
+		std::swap(temp_key[index],temp_key[temp_index]);
+		SwapStringColumns(plain,index,temp_index,key_length);
+	}
+
+}
+
+void Message::DecodeColumnar()
+{
+	int key_length, rot_length, num_xfm=0;
+
+	//setup swaping key
+	if(!(key_length=strlen(coltrans_key))) return;
+	rot_length=msg_len/key_length;
+
+	DecodeHomo();
+
+	//rotate right & flip horizonal to simulate the reverse reading off columns
+	unsigned long *xfm=new unsigned long[msg_len<<1];
+	RotateString(plain,rot_length,1);
+	FlipHorz(xfm,num_xfm,msg_len,key_length);
+	Transform(plain,xfm,num_xfm);
+	delete xfm;
+
+	DecodePermutation(false);
+}
+
+int ChrIndex(char *string, char chr)
+{
+	char *chr_ptr=strchr(string,chr);
+	if(!chr_ptr) return -1;
+	return int(chr_ptr-string);
+}
+
+void Message::DecodeADFGX(int square_size)
+{
+	char square_letters[10];
+		
+	switch(square_size)
+	{
+		case 5: strcpy(square_letters,"ADFGX"); break;
+		case 6: strcpy(square_letters,"ADFGVX"); break;
+		case 8: strcpy(square_letters,"CEMOPRTU");
+	}
+
+	if(trans_type) DecodeColumnar();
+	else DecodePermutation(true);
+
+	for(int index=0; index<msg_len; index+=2)
+	{
+		int x=ChrIndex(square_letters,plain[index]);
+		int y=ChrIndex(square_letters,plain[index+1]);
+		if(x==-1 || y==-1) plain[index]=plain[index+1]=BLANK;
+
+		else switch(square_size)
+		{
+			case 5: plain[index>>1]=polybius5[5*x+y]; break;
+			case 6: plain[index>>1]=polybius6[5*x+y]; break;
+			case 8: plain[index>>1]=polybius8[5*x+y]; break;
+		}
+	}
+
+	plain[(msg_len>>1)]='\0';
 }
 
 char elgar[2][25]={{"ABCDEFGHIKLMNOPQRSTUWXYZ"},{"NOPQRSTUWXYZABCDEFGHIKLM"}};

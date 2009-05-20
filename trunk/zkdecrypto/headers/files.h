@@ -84,6 +84,7 @@ int LoadMessage(char *filename, int type)
 	bMsgLoaded=true;
 	bMapLoaded=false;
 	siSolveInfo.best_key[0]='\0';
+	if(ASCIPHER_TYPE) message.cur_map.AsCipher();
 
 	//setup window
 	bUndo=false;

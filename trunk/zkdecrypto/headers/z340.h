@@ -49,7 +49,6 @@ struct SOLVEINFO
 	//feedback
 	char best_key[4096];
 	int best_key4[14];
-	char *best_trans;
 	int cur_try;
 	int cur_fail;
 	float last_time;

@@ -197,6 +197,7 @@
 #define IDC_DIOC_WEIGHT_EDIT			1158
 #define IDC_DIOC_WEIGHT_SPIN			1159
 #define IDC_TABU						1160
+#define IDC_TRANS_TYPE					1161
 
 #define IDM_FILE_SAVE                   40002
 #define IDM_FILE_SAVE_MAP               40002

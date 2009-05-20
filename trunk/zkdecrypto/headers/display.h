@@ -70,7 +70,9 @@ void OutlineChars(HDC hDC, HPEN hPen, int iStart, int iEnd, int bOutline=false)
 	RECT rOutRect;
 	int iRow, iCol;
 	int iShift=-2+iTextBorder;
-	
+
+	if(DEFRACTION_TYPE && hDC==hPlainDC) return;
+
 	SelectObject(hDC,hPen);
 	
 	for(int iChar=iStart; iChar<iEnd; iChar++)
@@ -214,6 +216,7 @@ void OutputText(int bSection)
 		{
 			iIndex=(row+iScrollPos)*iLineChars+col;
 			if(iIndex>=iLength) break;
+			if(DEFRACTION_TYPE && bSection && iIndex>iLength>>1) goto EXIT; //don't output plain past 1/2 if on a fractionated cipher
 			
 			SetBkColor(hDC,crBG); //default background
 
@@ -236,6 +239,9 @@ void OutputText(int bSection)
 	
 			TextOut(hDC,iXPos,iYPos,szString+iIndex,1);		
 		}
+
+EXIT:
+	return;
 }
 
 //refresh text display
@@ -664,8 +670,8 @@ void SetFreq()
 	sprintf(szText,"%.4f",siSolveInfo.lang_ioc);
 	SetDlgItemText(hMainWnd,IDC_IOC_EXP,szText);
 
-	sprintf(szText,"%.4f",ChiSquare(szPlain,message.GetLength()));
-	SetDlgItemText(hMainWnd,IDC_ENT_ACT,szText);
+	//sprintf(szText,"%.4f",ChiSquare(szPlain,message.GetLength()));
+	//SetDlgItemText(hMainWnd,IDC_ENT_ACT,szText);
 }
 
 /*Word List Display*/
@@ -687,7 +693,7 @@ void GetNumWords(const char *text, int msg_len)
 }
 
 //put all dictionary words in text into the StringArray
-int GetWordList(const char *text, StringArray &word_list)
+int GetWordList(const char *text, STRMAP &word_list)
 {
 	int msg_len=message.GetLength();
 	std::string word_str;
@@ -698,11 +704,10 @@ int GetWordList(const char *text, StringArray &word_list)
 			if((msg_len-index)<word_len) break;
 
 			word_str.assign(text+index,word_len); //set word & serach dictionary
-			if(dictionary.find(word_str)!=dictionary.end()) word_list.AddString(word_str.c_str());
+			if(dictionary.find(word_str)!=dictionary.end()) word_list[word_str.c_str()]=word_list.size();
 		}
 		   
-	word_list.RemoveDups();
-	return word_list.GetNumStrings();	  
+	return word_list.size();	  
 }
 
 //set the word list box
@@ -710,7 +715,7 @@ void SetWordList()
 {
 	int cur_sel, rows=0, col=0;
 	char word[64];
-	StringArray word_list;
+	STRMAP word_list;
 	   
 	//set list
 	siSolveInfo.num_words=GetWordList(szPlain,word_list);
@@ -721,15 +726,16 @@ void SetWordList()
 	cur_sel=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
 	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_RESETCONTENT,0,0);
 
-	for(int cur_word=0; cur_word<siSolveInfo.num_words; cur_word++)
+	for(STRMAP::iterator iter=word_list.begin(); iter!=word_list.end(); ++iter)
 	{
-		word_list.GetString(cur_word,word);
-		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_ADDSTRING,0,(LPARAM)word);
+		SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_ADDSTRING,0,(LPARAM)std::string(iter->first).c_str());
 	}
 		   
 	//title
 	sprintf(szText,"Word List (%i words)",siSolveInfo.num_words);
 	SetDlgItemText(hMainWnd,IDC_WORD_TITLE,szText);
+
+	word_list.clear();
 }
 
 inline void SetGraph()
@@ -754,61 +760,42 @@ inline void SetStatsTabInfo()
 	sprintf(szText,"Multiplicity [M]: %.5f",message.Multiplicity());
 	SetDlgItemText(hMainWnd,IDC_STATS_MULTI,szText);
 
-	sprintf(szText,"Chi^2 [X2]: %.5f %.5f",ChiSquare(message.GetCipher(),message.GetLength()),avg_lsoc(message.GetCipher(),message.GetLength()));
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetCipher(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2,szText);
-	sprintf(szText,"Entropy [H]: %.5f %.5f",Entropy(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),2));
+	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetCipher(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO,szText);
-	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),1));
+	sprintf(szText,"IoC [IC,DIC,EDIC]: %.5f %.5f %.5f",IoC(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),1),DIoC(message.GetCipher(),message.GetLength(),2));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC,szText);
 	
 	//plain text stats
-	sprintf(szText,"Chi^2 [X2]: %.5f %.5f",ChiSquare(message.GetPlain(),message.GetLength()),avg_lsoc(message.GetPlain(),message.GetLength()));
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetPlain(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
-	sprintf(szText,"Entropy [H]: %.5f %.5f",Entropy(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),2));
+	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetPlain(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO_P,szText);
-	sprintf(szText,"Index of Coincidence [IC]: %.5f %.5f",IoC(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),1));
+	sprintf(szText,"IoC [IC,DIC,EDIC]: %.5f %.5f %.5f",IoC(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),1),DIoC(message.GetPlain(),message.GetLength(),2));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC_P,szText);
-	
 }
 
 inline void SetTabuTabInfo()
 {
 //	char line[128], tabu_num[8], disp_sym;
+	int cur_disp, max_disp;
 	szText[26]='\0';
 //	SYMBOL symbol;
 
 	if(iCurTab!=4) return;
 
+	STRMAP::iterator iter=tabu_map.begin();
 	szText[0]='\0';
-
-	/*szText[message.cur_map.GetNumSymbols()]='\0';
-
-	disp_sym=message.cur_map.GetNumSymbols();
-
-	for(int cur_symbol=0; cur_symbol<disp_sym; cur_symbol++)
-	{
-		message.cur_map.GetSymbol(cur_symbol,&symbol);
-		szText[cur_symbol]=symbol.cipher;
-	}
-
-	strcat(szText,"\r\n\r\n");*/
-
-	for(STRMAP::iterator iter=tabu_map.begin(); iter!=tabu_map.end(); ++iter) 
-	{
-		strcat(szText,std::string(iter->first).c_str());
-		strcat(szText,"\r\n");
-	}
+	
+	if(iter!=tabu_map.end())
+		for(cur_disp=0; iter!=tabu_map.end() && cur_disp<200; ++iter, cur_disp++) 
+		{
+			strcat(szText,std::string(iter->first).c_str());
+			strcat(szText,"\r\n");
+		}
 	
 	SetDlgItemText(hMainWnd,IDC_TABU,szText);
-}
-
-void SetSolveTypeFeatures()
-{
-	int menu_state=MF_ENABLED;
-
-	if(DIGRAPH_MODE) menu_state=MF_GRAYED;
-	EnableMenuItem(hMainMenu,IDM_KEY_EXCLUDE,MF_BYCOMMAND | menu_state);
-	EnableMenuItem(hMainMenu,IDM_KEY_CLEAR_EXCLUDE,MF_BYCOMMAND | menu_state);
 }
 
 void SetKeyEdit()
@@ -817,19 +804,58 @@ void SetKeyEdit()
 
 	SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,0,0);
 
-	switch(iSolveType) //set key max length
+	switch(iSolveType) //set key text & max length
 	{
-		case SOLVE_BIFID: case SOLVE_PLAYFAIR: iMaxKeyLen=25; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.bifid_array); break;
-		case SOLVE_TRIFID: iMaxKeyLen=27; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.trifid_array); break;
-		case SOLVE_VIG: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.GetKey()); break;
 		case SOLVE_HOMO:
-		case SOLVE_DISUB:
-		case SOLVE_ANAGRAM: 
-		case SOLVE_COLTRANS: iMaxKeyLen=0; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); break;
+		case SOLVE_DISUB: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); break;
+		case SOLVE_VIG: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.GetKey()); break;
 		case SOLVE_RUNKEY: iMaxKeyLen=0; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,siSolveInfo.best_key); break;
+		case SOLVE_PLAYFAIR: 
+		case SOLVE_BIFID: iMaxKeyLen=25; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.polybius5); break;
+		case SOLVE_TRIFID: iMaxKeyLen=27; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.trifid_array); break;
+		case SOLVE_PERMUTE:
+		case SOLVE_COLTRANS: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.coltrans_key); break;
+		case SOLVE_ADFGX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius5,message.coltrans_key); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); break;
+		case SOLVE_ADFGVX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius6,message.coltrans_key); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); break;
+		case SOLVE_CEMOPRTU: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius8,message.coltrans_key); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); break;
 	}
 
-	if(iSolveType!=SOLVE_RUNKEY && iSolveType!=SOLVE_VIG) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0);
+	if(LIMITKEY_TYPE) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0); //limit key edit length
+}
+
+void SetSolveTypeFeatures()
+{
+	int menu_state;
+	
+	//disabled exclude when in digraph mode
+	if(DIGRAPH_MODE) menu_state=MF_GRAYED;
+	else menu_state=MF_ENABLED;
+	EnableMenuItem(hMainMenu,IDM_KEY_EXCLUDE,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_KEY_CLEAR_EXCLUDE,MF_BYCOMMAND | menu_state);
+
+	if(iSolveType==SOLVE_HOMO || iSolveType==SOLVE_DISUB) menu_state=MF_ENABLED;
+	else menu_state=MF_GRAYED;
+	EnableMenuItem(hMainMenu,IDM_FILE_SAVE_MAP,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_SOLVE_INSERT,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_KEY_LOCK,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_KEY_UNLOCK,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_KEY_LOCK_ALL,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_KEY_UNLOCK_ALL,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_KEY_INVERT_LOCK,MF_BYCOMMAND | menu_state);
+	EnableMenuItem(hMainMenu,IDM_SOLVE_WORD,MF_BYCOMMAND | menu_state);
+
+	if(ALLOW_LOWERCASE) SetWindowLong(hKeyEdit,GWL_STYLE,lKeyEditStyle);
+	else SetWindowLong(hKeyEdit,GWL_STYLE,lKeyEditStyle | ES_UPPERCASE);
+
+	//decoding info
+	message.SetDecodeType(iSolveType);
+	if(ASCIPHER_TYPE) message.cur_map.AsCipher();
+	message.InitArrays();
+	SetKeyEdit();
+					
+	//key update length
+	if(DIGRAPH_MODE) SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,2,0);
+	else SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
 }
 
 inline void SetDlgInfo()
