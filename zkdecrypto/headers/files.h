@@ -1,29 +1,4 @@
-#include <math.h>
 /*File Functions*/
-
-int CalcBestWidth(int msg_len)
-{
-	int s, r, d, l;
-	
-	int in=0, jn=0;				// lowest difference dimensions for non-primes
-	int ip=0, jp=0, rp=0;		// lowest difference dimensions and remainder for primes
-
-	s = l = (int)sqrt((double)msg_len);
-
-	for(int i=1;i<2*s;i++) {
-		for(int j=2*s;j>0;j--) {
-			r = abs(msg_len - i*j);
-			d = abs(i - j);
-			// non-primes: minimize diffs. between factors
-			if((i*j == msg_len)&&(d < l)) { l = d; in = i; jn = j; }	
-			// primes: minimize diffs. keeping remainder < sqrt(msg_len) 
-			if((msg_len == i*j + r)&&(r < s)&&(d < l)) { l = d; ip = i; jp = j; rp = r; }
-		}
-	}
-//	printf("Length:%i - Width1:%i - Width2:%i\n",msg_len,in,ip);
-	if(in*jn == msg_len) return in; 
-	else return ip;
-}
 
 void GetBaseName(const char *filename, char *&basename) 
 {
@@ -123,6 +98,7 @@ int LoadMessage(char *filename, int type)
 	
 	iCurSymbol=-1;
 	iTextSel=-1;
+	iLineChars=message.CalcBestWidth(message.GetLength());
 	tabu_map.clear();
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
 	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,message.GetLength());
@@ -133,7 +109,6 @@ int LoadMessage(char *filename, int type)
 	SetPatterns();
 	SetDlgInfo();
 	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,message.GetLength(),false);
-	iLineChars=CalcBestWidth(message.GetLength());
 
 	return 1;
 }

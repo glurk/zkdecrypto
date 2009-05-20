@@ -207,9 +207,6 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemInt(hWnd,IDC_SWAPS,siSolveInfo.swaps,0);
 			SetDlgItemInt(hWnd,IDC_REVERT,siSolveInfo.max_try,0);
 
-			//display options
-			SetDlgItemInt(hWnd,IDC_LINECHARS,iLineChars,0);
-
 			//language		
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_ADDSTRING,0,(LPARAM)"English");
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_ADDSTRING,0,(LPARAM)"Spanish");
@@ -255,9 +252,6 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					siSolveInfo.max_fail=GetDlgItemInt(hWnd,IDC_MAXFAIL,0,0);
 					siSolveInfo.swaps=GetDlgItemInt(hWnd,IDC_SWAPS,0,0);
 					siSolveInfo.max_try=GetDlgItemInt(hWnd,IDC_REVERT,0,0);
-
-					//display options
-					iLineChars=GetDlgItemInt(hWnd,IDC_LINECHARS,0,0);
 
 					//language
 					iPrevLang=iLang;

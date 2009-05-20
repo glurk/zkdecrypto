@@ -1256,3 +1256,31 @@ void Message::DecodeElgar()
 	SwapColumns(2,3,4); SwapColumns(0,2,4);
 	SetInfo();
 }
+int Message::CalcBestWidth(int msg_len)
+{
+	int s, r, d, l;
+	
+	int in=0, jn=0;			// lowest difference dimensions for non-primes
+	int ip=0, jp=0, rp=0;	// lowest difference dimensions and remainder for primes
+
+	//special cases
+	if(msg_len<25) return msg_len; //short
+	if((!(msg_len%17)) && msg_len<210) return 17; //zodiac partials
+	if(msg_len==32) return 17; //button cipher
+	if(msg_len==88) return 29; //dorabella
+
+	s = l = (int)sqrt((double)msg_len);
+
+	for(int i=1;i<2*s;i++) {
+		for(int j=2*s;j>0;j--) {
+			r = abs(msg_len - i*j);
+			d = abs(i - j);
+			// non-primes: minimize diffs. between factors
+			if((i*j == msg_len)&&(d < l)) { l = d; in = i; jn = j; }	
+			// primes: minimize diffs. keeping remainder < sqrt(msg_len) 
+			if((msg_len == i*j + r)&&(r < s)&&(d < l)) { l = d; ip = i; jp = j; rp = r; }
+		}
+	}
+	if(in*jn == msg_len) return in; 
+	else return ip;
+}
