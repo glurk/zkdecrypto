@@ -46,7 +46,6 @@
 #define IDC_WORD_STATIC_MAX				1016
 #define IDC_MAXFAIL                     1017
 #define IDC_TIME                        1018
-#define IDC_LINECHARS                   1018
 #define IDC_TRY                         1019
 #define IDC_EXTRA_LTR                   1019
 #define IDC_FAIL                        1020

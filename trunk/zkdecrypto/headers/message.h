@@ -60,6 +60,7 @@ public:
 	int GetLength() {return msg_len;}
 	int GetRow(int,int,char*);
 	int GetColumn(int,int,char*);
+	int CalcBestWidth(int);
 	
 	void SetExpFreq();
 	void GetExpFreq(int*);
