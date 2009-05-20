@@ -22,9 +22,12 @@
 #define SOLVE_RUNKEY	4
 #define SOLVE_BIFID		5
 #define SOLVE_TRIFID	6
-#define SOLVE_COLTRANS	7
-#define SOLVE_ANAGRAM	8
-#define SOLVE_KRYPTOS	9
+#define SOLVE_PERMUTE	7
+#define SOLVE_COLTRANS	8
+#define SOLVE_ADFGX		9
+#define SOLVE_ADFGVX	10
+#define SOLVE_CEMOPRTU	11
+#define SOLVE_KRYPTOS	50
 
 struct NGRAM
 {
@@ -42,8 +45,8 @@ struct NGRAM
 class Message
 {
 public:
-	Message() {msg_len=0; patterns=NULL; num_patterns=0; good_pat=0; min_pat_len=2; cipher=NULL; plain=NULL; bifid_array[0]=trifid_array[0]='\0'; InitArrays(); }
-	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(patterns) ClearPatterns(patterns);}
+	Message() {patterns=NULL; cipher=plain=msg_temp=NULL; msg_len=num_patterns=good_pat=0; trans_type=1; min_pat_len=2; polybius5[0]=polybius6[0]=polybius8[0]=trifid_array[0]='\0'; InitArrays(); strcpy(coltrans_key,"1");}
+	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(msg_temp) delete[] msg_temp; if(patterns) ClearPatterns(patterns);}
 
 	int Read(const char*);
 	int ReadNumeric(const char*);
@@ -97,10 +100,13 @@ public:
 
 	//decoding
 	void DecodeHomo();
-	void DecodeVigenere();
-	void DecodeXfid(int);
 	void DecodeDigraphic();
 	void DecodePlayfair();
+	void DecodeVigenere();
+	void DecodeXfid(int);
+	void DecodePermutation(int do_homo=true);
+	void DecodeColumnar();
+	void DecodeADFGX(int);
 	void SetTableuAlphabet(char*);
 	char *GetTableuAlphabet() {return vigenere_array[0];}
 	
@@ -110,14 +116,17 @@ public:
 		{
 
 			case SOLVE_HOMO:	DecodeHomo(); break;
-			case SOLVE_VIG:		DecodeVigenere(); break;
-			case SOLVE_BIFID:	DecodeXfid(2); break;
-			case SOLVE_TRIFID:	DecodeXfid(3); break;
-			case SOLVE_ANAGRAM: DecodeHomo(); break;
-			case SOLVE_COLTRANS: DecodeHomo(); break;
-			case SOLVE_RUNKEY:	DecodeVigenere(); break;
 			case SOLVE_DISUB:	DecodeDigraphic(); break;
 			case SOLVE_PLAYFAIR: DecodePlayfair(); break;
+			case SOLVE_VIG:		DecodeVigenere(); break;
+			case SOLVE_RUNKEY:	DecodeVigenere(); break;
+			case SOLVE_BIFID:	DecodeXfid(2); break;
+			case SOLVE_TRIFID:	DecodeXfid(3); break;
+			case SOLVE_PERMUTE: DecodePermutation(); break;
+			case SOLVE_COLTRANS: DecodeColumnar(); break;
+			case SOLVE_ADFGX:	DecodeADFGX(5); break;
+			case SOLVE_ADFGVX:	DecodeADFGX(6); break;
+			case SOLVE_CEMOPRTU:	DecodeADFGX(8); break;
 		}
 	}
 
@@ -131,9 +140,11 @@ public:
 		{
 			if(cipher) delete[] cipher;
 			if(plain) delete[] plain;
+			if(msg_temp) delete[] msg_temp;
 			
 			cipher=new char[src_msg.msg_len+1];
 			plain=new char[src_msg.msg_len+1];
+			msg_temp=new char[src_msg.msg_len+1];
 		}
 
 		//text
@@ -149,8 +160,11 @@ public:
 		decode_type=src_msg.decode_type;
 		key_len=src_msg.key_len;
 		block_size=src_msg.block_size;
+		strcpy(coltrans_key,src_msg.coltrans_key);
 		memcpy(key,src_msg.key,key_len);
-		memcpy(bifid_array,src_msg.bifid_array,sizeof(bifid_array));
+		memcpy(polybius5,src_msg.polybius5,sizeof(polybius5));
+		memcpy(polybius6,src_msg.polybius6,sizeof(polybius6));
+		memcpy(polybius8,src_msg.polybius8,sizeof(polybius8));
 		memcpy(trifid_array,src_msg.trifid_array,sizeof(trifid_array));
 		memcpy(vigenere_array,src_msg.vigenere_array,sizeof(vigenere_array));
 	}
@@ -164,14 +178,56 @@ public:
 	//decoding
 	Map cur_map;
 	DiMap digraph_map;
+
+	void InitArrays()
+	{
+		if(strlen(polybius5)!=25) strcpy(polybius5,"ABCDEFGHIKLMNOPQRSTUVWXYZ");
+		if(strlen(polybius6)!=36) strcpy(polybius6,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+		if(strlen(polybius8)!=64) strcpy(polybius8,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .");
+		if(strlen(trifid_array)!=27) strcpy(trifid_array,"ABCDEFGHIJKLMNOPQRSTUVWXYZ.");
+	}
 	
-	char bifid_array[26];
+	char coltrans_key[512];
+	char polybius5[26];
+	char polybius6[37];
+	char polybius8[65];
 	char trifid_array[28];
 	char vigenere_array[26][27];
 
-	void InitArrays();
-	int FindBifidIndex(char,int&,int&);
+	int FindPolybius5Index(char,int&,int&);
+	int FindPolybius6Index(char,int&,int&);
 	int FindTrifidIndex(char,int&,int&,int&);
+	void SetTransType(int new_type) {trans_type=new_type;}
+	int GetTransType() {return trans_type;}
+
+	void RotateString(char*,int,int);
+
+	void SetSplitKey(char *split_key, int poly_size)
+	{
+		char *key_split=strchr(split_key,'|'); //| separates the polybius key from transposition key
+
+		if(!key_split) 
+			switch(poly_size)
+			{
+				case 5: memcpy(polybius5,split_key,25); break;
+				case 6: memcpy(polybius6,split_key,36); break;
+				case 8: memcpy(polybius8,split_key,64); break;
+			}
+
+		else 
+		{
+			int length=int(key_split-split_key);
+			if(*(key_split+1)=='\0') strcat(split_key,"1"); 
+			strcpy(coltrans_key,key_split+1);  //get transposition key
+			
+			switch(poly_size)
+			{
+				case 5: memcpy(polybius5,split_key,MIN(length,25)); break;
+				case 6: memcpy(polybius6,split_key,MIN(length,36)); break;
+				case 8: memcpy(polybius8,split_key,MIN(length,64)); break;
+			}
+		}  
+	}
 
 private:
 	int FindPattern(const char*,NGRAM*&,NGRAM*,NGRAM*);
@@ -180,7 +236,7 @@ private:
 	long ForAllPatterns(NGRAM *,int,void (*do_func)(NGRAM*));
 	void ClearPatterns(NGRAM*);
 	
-	char *cipher, *plain;
+	char *cipher, *plain, *msg_temp;
 	int msg_len, min_pat_len;
 	int exp_freq[26];
 	NGRAM *patterns;
@@ -191,6 +247,7 @@ private:
 	char key[4096];
 	int key_len;
 	int block_size;
+	int trans_type; //0=permutation, 1=columnar for ADFGX types
 };
 
 void SwapStringColumns(char*,int,int,int);

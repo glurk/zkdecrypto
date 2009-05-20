@@ -299,7 +299,7 @@ float ChiSquare(const char *string, int length)
 
 	return chi2/length;
 }
-
+/*
 float avg_lsoc(const char *string, int length)
 {
 	int total_clusters=0, cur_length=0, total_length=0;
@@ -320,5 +320,5 @@ float avg_lsoc(const char *string, int length)
 	if(!total_clusters) return 0.0;
 
 	return float(total_length)/total_clusters;
-}
+}*/
 

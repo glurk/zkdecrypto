@@ -223,8 +223,11 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Running Key");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Bifid");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Trifid");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Permutation");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Columar Transposition");
-			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Anagramming");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"ADFGX");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"ADFGVX");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"CEMOPRTU");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_SETCURSEL,iSolveType,0);
 
 			//word length
@@ -238,6 +241,10 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			//extra letters
 			SendDlgItemMessage(hWnd,IDC_EXTRA_LTR,EM_LIMITTEXT,MAX_EXTRA,0);
 			SetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr);
+
+			//transposition type
+			if(message.GetTransType()) SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Columnar");
+			else SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Permutation");
 			
 			return 0;
 
@@ -246,6 +253,12 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			{
 				case IDC_EXTRA_ALPHABET: SetDlgItemText(hWnd,IDC_EXTRA_LTR,"ABCDEFGHIJKLMNOPQRSTUVWXYZ"); return 0;
 				case IDC_EXTRA_ALPHABET_C: 	SetDlgItemText(hWnd,IDC_EXTRA_LTR,""); return 0;
+
+				case IDC_TRANS_TYPE:
+					message.SetTransType(!message.GetTransType());
+					if(message.GetTransType()) SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Columnar");
+					else SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Permutation");
+					return 0;
 					
 				case IDOK: //get new values
 					//hillclimber parameters
@@ -262,33 +275,20 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					message.SetTableuAlphabet(szText);
 
 					GetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr,MAX_EXTRA); //extra letters
-					
-					//0 chars per line
-					if(!iLineChars)
-					{
-						MessageBox(hWnd,"Line length must be greater than 0","Notice",MB_ICONEXCLAMATION);
-						return 0;
-					}
 
-					//solve type
-					iSolveType=SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_GETCURSEL,0,0);
-					message.SetDecodeType(iSolveType);
-					SetKeyEdit();
-					
-					//key update length
-					if(DIGRAPH_MODE) SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,2,0);
-					else SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
-
-					//update display
-					if(bMsgLoaded && !siSolveInfo.running)
+					if(!siSolveInfo.running) //can't change solve time during solve
 					{
-						SetScrollBar();					
-						SetDlgInfo();
-						ClearTextAreas();
-						SetPlain();
-						SetText();
-						SetKeyEdit();
+						iSolveType=SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_GETCURSEL,0,0); //solve type
 						SetSolveTypeFeatures();
+
+						if(bMsgLoaded) //update display
+						{
+							SetScrollBar();					
+							SetDlgInfo();
+							ClearTextAreas();
+							SetPlain();
+							SetText();
+						}
 					}
 
 				case IDCANCEL: EndDialog(hWnd,0); return 0;

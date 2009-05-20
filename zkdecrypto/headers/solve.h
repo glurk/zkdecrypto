@@ -91,7 +91,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_MAP,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_MAP,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_PLAIN,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_SOLVE_INSERT,MF_BYCOMMAND | menu_state);
+		if(iSolveType==SOLVE_HOMO) EnableMenuItem(hMainMenu,IDM_SOLVE_INSERT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_MERGE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_SIMPLIFY,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_POLYIC,MF_BYCOMMAND | menu_state);
@@ -107,8 +107,8 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_KEY_CT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_SCRAMBLE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_KEY_CLEAR,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_SOLVE_WORD,MF_BYCOMMAND | menu_state);
-		EnableMenuItem(hMainMenu,IDM_SOLVE_BRUTE,MF_BYCOMMAND | menu_state);
+		if(iSolveType==SOLVE_HOMO) EnableMenuItem(hMainMenu,IDM_SOLVE_WORD,MF_BYCOMMAND | menu_state);
+		//EnableMenuItem(hMainMenu,IDM_SOLVE_BRUTE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_SOLVE_RESET,MF_BYCOMMAND | menu_state);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_CHANGE),enabled);
 		Button_Enable(GetDlgItem(hMainWnd,IDC_RESET),enabled);
@@ -162,19 +162,16 @@ void StopSolve()
 	switch(iSolveType)
 	{
 		case SOLVE_HOMO: message.cur_map.FromKey(siSolveInfo.best_key); break;
-		case SOLVE_VIG: message.SetKey(siSolveInfo.best_key); break;
-		case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(message.bifid_array,siSolveInfo.best_key); break;
-		case SOLVE_TRIFID: strcpy(message.trifid_array,siSolveInfo.best_key); break;
-		case SOLVE_ANAGRAM:
-		case SOLVE_COLTRANS: if(siSolveInfo.best_trans) 	message.SetCipherTrans(siSolveInfo.best_trans);	break;
-		case SOLVE_RUNKEY: message.SetKey(siSolveInfo.best_key); break;
 		case SOLVE_DISUB: message.digraph_map.FromKey(siSolveInfo.best_key); break;
-	}
-
-	if(siSolveInfo.best_trans)
-	{
-		delete siSolveInfo.best_trans;
-		siSolveInfo.best_trans=NULL;
+		case SOLVE_VIG: message.SetKey(siSolveInfo.best_key); break;
+		case SOLVE_RUNKEY: message.SetKey(siSolveInfo.best_key); break;
+		case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(message.polybius5,siSolveInfo.best_key); break;
+		case SOLVE_TRIFID: strcpy(message.trifid_array,siSolveInfo.best_key); break;
+		case SOLVE_PERMUTE:
+		case SOLVE_COLTRANS: strcpy(message.coltrans_key,siSolveInfo.best_key);	break;
+		case SOLVE_ADFGX: message.SetSplitKey(siSolveInfo.best_key,5); break;
+		case SOLVE_ADFGVX: message.SetSplitKey(siSolveInfo.best_key,6); break;
+		case SOLVE_CEMOPRTU: message.SetSplitKey(siSolveInfo.best_key,8); break;
 	}
 
 	SetDlgInfo();
@@ -404,12 +401,14 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		switch(iSolveType)
 		{
 			case SOLVE_VIG: strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
-			case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(key,message.bifid_array); break;
-			case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
-			case SOLVE_ANAGRAM:	break;
-			case SOLVE_COLTRANS: break;
-			case SOLVE_KRYPTOS: break;
 			case SOLVE_DISUB: message.digraph_map.ToKey(key,szExtraLtr); break;
+			case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(key,message.polybius5); break;
+			case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
+			case SOLVE_PERMUTE:
+			case SOLVE_COLTRANS: strcpy(key,message.coltrans_key); break;
+			case SOLVE_ADFGX: strcpy(key,message.polybius5); strcat(key,"|"); strcat(key,message.coltrans_key); break;
+			case SOLVE_ADFGVX: strcpy(key,message.polybius6); strcat(key,"|"); strcat(key,message.coltrans_key); break;
+			case SOLVE_CEMOPRTU: strcpy(key,message.polybius8); strcat(key,"|"); strcat(key,message.coltrans_key); break;
 		}
 
 		hillclimb2(message,iSolveType,key,iLineChars);

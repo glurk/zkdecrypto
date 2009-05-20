@@ -91,7 +91,7 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //message handler for main window
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	
+	char *key_split;
 	POINT ptClick;
 	HWND hList;
 
@@ -206,8 +206,13 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					switch(iSolveType)
 					{
 						case SOLVE_VIG: message.SetKeyLength(strlen(szText)); message.SetKey(szText); break;
-						case SOLVE_BIFID: case SOLVE_PLAYFAIR: memcpy(message.bifid_array,szText,25); break;
+						case SOLVE_BIFID: case SOLVE_PLAYFAIR: memcpy(message.polybius5,szText,25); break;
 						case SOLVE_TRIFID: memcpy(message.trifid_array,szText,27); break;
+						case SOLVE_PERMUTE: 
+						case SOLVE_COLTRANS: strcpy(message.coltrans_key,szText); break;
+						case SOLVE_ADFGX: message.SetSplitKey(szText,5); break;
+						case SOLVE_ADFGVX: message.SetSplitKey(szText,6); break;
+						case SOLVE_CEMOPRTU: message.SetSplitKey(szText,8); break;
 					}
 
 					if(strlen(szText)) SetDlgInfo();
@@ -435,7 +440,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.time_func=GetTime;
 	siSolveInfo.get_words=GetNumWords;
 	siSolveInfo.disp_tabu=SetTabuTabInfo;
-	siSolveInfo.best_trans=NULL;
 	sprintf(siSolveInfo.log_name,"%s\\%s",szExeDir,"log.txt");
 	siSolveInfo.tabu=&tabu_map;
 	siSolveInfo.tabu_syms=10;
@@ -452,7 +456,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	else SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
 
 	//sovle parameters
-	message.SetDecodeType(iSolveType);
 	message.SetKeyLength(5);
 	message.SetKey(szExtraLtr);
 	message.SetBlockSize(1);
@@ -464,6 +467,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ShowWindow(hTextWnd,SW_SHOWNORMAL);
 	ShowWindow(hCipher,SW_SHOWNORMAL);
 	ShowWindow(hPlain,SW_SHOWNORMAL);
+	hKeyEdit=GetDlgItem(hMainWnd,IDC_KEY_EDIT);
+	lKeyEditStyle=GetWindowLong(hKeyEdit,GWL_STYLE);
 
 	//create status bar with gripper
 	hStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0,
@@ -474,7 +479,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
 	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
 
-	SetKeyEdit();
 	SetSolveTypeFeatures();
 
 	//message loop

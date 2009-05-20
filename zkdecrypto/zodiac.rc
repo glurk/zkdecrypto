@@ -52,7 +52,7 @@ BEGIN
         MENUITEM "Edit &Cipher",                IDM_EDIT_MSG
         MENUITEM "Edit &Key",                   IDM_EDIT_MAP
         MENUITEM SEPARATOR
-        MENUITEM "Edit Cribs",                  IDM_EDIT_CRIBS
+        MENUITEM "Edit Cribs\tF2",                  IDM_EDIT_CRIBS
         MENUITEM "Reload Cribs",                IDM_EDIT_CRIBS_RELOAD
         MENUITEM "Clear Cribs",                 IDM_EDIT_CRIBS_CLEAR
     END
@@ -64,7 +64,7 @@ BEGIN
         MENUITEM "Se&quential Analysis",        IDM_CIPHER_SEQHOMO
         MENUITEM SEPARATOR
         MENUITEM "&Merge Symbols\tCtrl+M",      IDM_CIPHER_MERGE
-        MENUITEM "To &Uppercase",               IDM_CIPHER_UPPER
+        MENUITEM "To &Uppercase\tF4",               IDM_CIPHER_UPPER
         MENUITEM SEPARATOR
         MENUITEM "Flip &Horizontal",            IDM_CIPHER_HORZ
         MENUITEM "Flip &Vertical",              IDM_CIPHER_VERT
@@ -91,9 +91,8 @@ BEGIN
     END
     POPUP "&Solve"
     BEGIN
+		MENUITEM "&Dictionary Matching\tF6",         IDM_WORD_FIND
         MENUITEM "&Word Plug\tCtrl+W",          IDM_SOLVE_WORD
-		MENUITEM "&Word Find",                  IDM_WORD_FIND
-		//MENUITEM "&Copy Best Solution",         IDM_SOLVE_COPY_BEST
         MENUITEM "&Reset Extra Letters\tCtrl+R", IDM_SOLVE_RESET
         MENUITEM SEPARATOR
         POPUP "&Thread Priority"
@@ -113,7 +112,7 @@ BEGIN
         MENUITEM "&Letter Graph",               IDM_VIEW_LTRGRAPH
         MENUITEM "&Merge Log",                  IDM_VIEW_MERGE_LOG
         MENUITEM "&Exclusions",                 IDM_VIEW_EXCLUSIONS
-        MENUITEM "Local Optima Log",            IDM_VIEW_LOG
+        MENUITEM "Local Optima Log\tF7",            IDM_VIEW_LOG
         MENUITEM SEPARATOR
         POPUP "Sort &Patterns"
         BEGIN
@@ -247,15 +246,14 @@ BEGIN
     LTEXT           "Multiplicity [M]: ",IDC_STATS_MULTI,51,52,115,11
     LTEXT           "Chi^2 [X2]: ",IDC_STATS_CHI2,75,67,115,11
     LTEXT           "Entropy [H]: ",IDC_STATS_ENTRO,71,82,115,11
-    LTEXT           "Index of Coincidence [IC]: ",IDC_STATS_IOC,15,97,175,11
+    LTEXT           "IoC [IC,DIC,EDIC]: ",IDC_STATS_IOC,15,97,175,11
     GROUPBOX        "Plaintext Statistics",IDC_STATS_TITLE_P,9,117,190,60,
                     BS_CENTER
     LTEXT           "Chi^2 [X2]: ",IDC_STATS_CHI2_P,75,132,115,11
     LTEXT           "Entropy [H]: ",IDC_STATS_ENTRO_P,71,147,115,11
-    LTEXT           "Index of Coincidence [IC]: ",IDC_STATS_IOC_P,15,162,175,
+    LTEXT           "IoC [IC,DIC,EDIC]: ",IDC_STATS_IOC_P,15,162,175,
                     11
-    EDITTEXT        IDC_KEY_EDIT,19,279,241,15,ES_CENTER | ES_UPPERCASE | 
-                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_KEY_EDIT,5,279,270,15,ES_CENTER | ES_AUTOHSCROLL
     EDITTEXT        IDC_TABU,8,25,190,250,ES_MULTILINE | ES_READONLY | 
                     WS_VSCROLL | WS_HSCROLL
 END
@@ -274,9 +272,14 @@ BEGIN
     EDITTEXT        IDC_SWAPS,153,42,41,14,ES_RIGHT | ES_NUMBER
     EDITTEXT        IDC_REVERT,153,62,41,14,ES_RIGHT | ES_NUMBER
     GROUPBOX        "Program Options",IDC_STATIC,7,84,196,93,BS_CENTER
-    LTEXT           "Language",IDC_STATIC,12,100,33,8
-    COMBOBOX        IDC_LANG,74,99,73,59,CBS_DROPDOWNLIST | 
+    LTEXT           "Language",IDC_STATIC,12,99,33,8
+    COMBOBOX        IDC_LANG,74,98,73,59,CBS_DROPDOWNLIST | 
                     CBS_NOINTEGRALHEIGHT | WS_TABSTOP
+    LTEXT           "Solver Type",IDC_STATIC,12,119,40,8
+    COMBOBOX        IDC_SOLVE_TYPE,74,118,120,55,CBS_DROPDOWNLIST | 
+                    CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Tableau Alphabet",IDC_STATIC,12,140,57,11
+    EDITTEXT        IDC_TABLEU_EDIT,74,138,123,14,ES_CENTER | ES_UPPERCASE
     GROUPBOX        "Additional Key Letters",IDC_STATIC,7,179,196,55,
                     BS_CENTER
     EDITTEXT        IDC_EXTRA_LTR,20,194,169,14,ES_CENTER | ES_UPPERCASE | 
@@ -285,11 +288,8 @@ BEGIN
     PUSHBUTTON      "Clear All",IDC_EXTRA_ALPHABET_C,107,213,60,14
     DEFPUSHBUTTON   "Apply",IDOK,52,238,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,107,238,50,14
-    LTEXT           "Solver Type",IDC_STATIC,12,120,40,8
-    COMBOBOX        IDC_SOLVE_TYPE,74,119,100,95,CBS_DROPDOWNLIST | 
-                    CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Tableau Alphabet",IDC_STATIC,78,140,57,11
-    EDITTEXT        IDC_TABLEU_EDIT,20,157,169,14,ES_CENTER | ES_UPPERCASE
+    PUSHBUTTON      "",IDC_TRANS_TYPE,103,160,66,14
+    LTEXT           "ADFGX Transposition Type",IDC_STATIC,12,163,91,11
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 168, 102
@@ -590,8 +590,9 @@ BEGIN
     "V",            IDM_KEY_INVERT_LOCK,    VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT
+	VK_F2,          IDM_EDIT_CRIBS,      VIRTKEY, NOINVERT
     VK_F3,          IDM_FILE_SAVE_MAP,      VIRTKEY, NOINVERT
-    VK_F4,          IDM_CIPHER_RAND_TRANS,  VIRTKEY, NOINVERT
+    VK_F4,          IDM_CIPHER_UPPER,  VIRTKEY, NOINVERT
     VK_F5,          IDM_KEY_SCRAMBLE,       VIRTKEY, NOINVERT
     VK_F6,          IDM_WORD_FIND,          VIRTKEY, NOINVERT
     VK_F7,          IDM_VIEW_LOG,           VIRTKEY, NOINVERT

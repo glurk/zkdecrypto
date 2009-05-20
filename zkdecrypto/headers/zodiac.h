@@ -39,8 +39,12 @@
 #define MAX_EXTRA	104
 
 //macros
-#define IN_RECT(X,Y,R) (IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
-#define DIGRAPH_MODE ((iSolveType==SOLVE_DISUB || iSolveType==SOLVE_PLAYFAIR)? 1:0)
+#define IN_RECT(X,Y,R)	(IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
+#define DIGRAPH_MODE	((iSolveType==SOLVE_DISUB || iSolveType==SOLVE_PLAYFAIR)? 1:0) //digraph key and display
+#define DEFRACTION_TYPE (iSolveType==SOLVE_ADFGX || iSolveType==SOLVE_ADFGVX || iSolveType==SOLVE_CEMOPRTU) //plain text half as long as cipher
+#define ASCIPHER_TYPE	(iSolveType==SOLVE_ADFGX || iSolveType==SOLVE_ADFGVX || iSolveType==SOLVE_CEMOPRTU) //set key as cipher characters
+#define LIMITKEY_TYPE	(iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_BIFID || iSolveType==SOLVE_TRIFID) //key edit is limited to square size
+#define ALLOW_LOWERCASE (iSolveType==SOLVE_PERMUTE || iSolveType==SOLVE_COLTRANS || iSolveType==SOLVE_CEMOPRTU)
 
 //cipher/key data & files
 Message message; //cipher & main key
@@ -57,7 +61,7 @@ typedef std::map<std::string,int> STRMAP;
 STRMAP dictionary, tabu_map;
 
 //GUI data
-char szTitle[64], szText[4096], szExeDir[1024]; 
+char szTitle[64], szText[40960], szExeDir[1024]; 
 int iCurSymbol=-1, iCurPat=-1, iCurWord=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
 int iSortBy=0, iWordMin=4, iWordMax=20;
@@ -92,17 +96,12 @@ wchar szGraph[40960];//[20480];
 char szGraphTitle[128];
 long lRowCol;
 
-//Column  Shift
-int iCurColumn=0, iCurCycle=0;
-
 //solver data
 SOLVEINFO siSolveInfo;
 int iPriority, iLang, iBestScore=0;
 char szExtraLtr[MAX_EXTRA+1]="";
 int iBruteSymbols, iBatchBestScore;
 char lprgcBatchBestKey[4096];
-
-//solve settings
 int iSolveType=0, iBlockSize=0;
 
 //Win32 object handles
@@ -116,12 +115,15 @@ HMENU		hMainMenu, hTextMenu;
 HINSTANCE	hInst;
 HANDLE		hSolveThread=NULL, hTimerThread=NULL;
 
+HWND hKeyEdit;
+DWORD lKeyEditStyle;
+
 //open/save file filter
 char szFileFilter[]= 
 	{"Text Files (*.txt)\0" "*.txt;\0"
 	 "All Files (*.*)\0" "*.*\0\0"};
 
-int GetWordList(const char*,StringArray&);
+int GetWordList(const char*,STRMAP&);
 	 
 //callback functions for hillclimber
 inline void disp_all()  {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPALL,0);}

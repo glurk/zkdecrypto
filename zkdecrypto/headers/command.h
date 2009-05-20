@@ -134,16 +134,16 @@ inline int CommandCipher(int cmd_id)
 			if(--iColSel<0) iColSel=iLineChars-1;
 			message.SwapColumns(iColSel,iColSel+1,iLineChars);
 			SetTextSel(iTextSel-1);
-			message.FindPatterns(1);
-			SetText(); SetPatterns(); SetDlgInfo();
+			message.SetInfo();
+			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_COL_RIGHT:
 			if(!bMsgLoaded || iColSel==-1) return 0;
 			message.SwapColumns(iColSel,iColSel+1,iLineChars);
 			SetTextSel(iTextSel+1);
-			message.FindPatterns(1);
-			SetText(); SetPatterns(); SetDlgInfo();
+			message.SetInfo();
+			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_UP:
@@ -151,8 +151,8 @@ inline int CommandCipher(int cmd_id)
 			if(--iRowSel<0) iRowSel=iLines-1;
 			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
 			SetTextSel(iTextSel-iLineChars);
-			message.FindPatterns(1);
-			SetText(); SetPatterns(); SetDlgInfo();
+			message.SetInfo();
+			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_DOWN:
@@ -160,7 +160,7 @@ inline int CommandCipher(int cmd_id)
 			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
 			SetTextSel(iTextSel+iLineChars);
 			message.FindPatterns(1);
-			SetText(); SetPatterns(); SetDlgInfo();
+			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_UPPER:
