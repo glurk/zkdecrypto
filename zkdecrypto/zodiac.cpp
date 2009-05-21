@@ -91,7 +91,7 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //message handler for main window
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	char *key_split;
+//	char *key_split;
 	POINT ptClick;
 	HWND hList;
 
