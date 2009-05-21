@@ -1,4 +1,6 @@
 #pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
+#pragma warning( disable : 4311)
+#pragma warning( disable : 4267)
 
 #include "headers/message.h"
 
@@ -298,7 +300,7 @@ void Message::RotateString(char *string, int row_len, int direction)
 	memcpy(string,msg_temp,msg_len);
 }
 
-Message::Rotate(int row_len, int direction)
+int Message::Rotate(int row_len, int direction)
 {
 	if(msg_len % row_len) return 0;
 
@@ -1137,7 +1139,8 @@ void Message::DecodePlayfair()
 
 void Message::DecodeVigenere() //any tableau can be used
 {
-	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow, iProgKey;
+	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
+//	int iProgKey;
 	char *lpcCipherInKeyRow;
 
 	if(!key_len) return;
@@ -1251,7 +1254,8 @@ void Message::DecodeXfid(int fract_size)
 
 void Message::DecodePermutation(int do_homo)
 {
-	int next, swap, key_length;
+//	int next, swap;
+	int key_length;
 	char temp_key[512];
 
 	if(!(key_length=strlen(coltrans_key))) return;

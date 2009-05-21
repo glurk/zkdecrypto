@@ -1,4 +1,6 @@
 #pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
+#pragma warning( disable : 4267)
+
 /*Dialog Info Functions*/
 
 //add line breaks to text
@@ -714,7 +716,7 @@ int GetWordList(const char *text, STRMAP &word_list)
 void SetWordList()
 {
 	int cur_sel, rows=0, col=0;
-	char word[64];
+//	char word[64];
 	STRMAP word_list;
 	   
 	//set list
@@ -779,7 +781,8 @@ inline void SetStatsTabInfo()
 inline void SetTabuTabInfo()
 {
 //	char line[128], tabu_num[8], disp_sym;
-	int cur_disp, max_disp;
+	int cur_disp;
+//	int max_disp;
 	szText[26]='\0';
 //	SYMBOL symbol;
 
