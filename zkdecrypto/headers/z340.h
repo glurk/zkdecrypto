@@ -64,7 +64,7 @@ struct SOLVEINFO
 	void (*disp_all)(void);
 	void (*disp_info)(void);
 	unsigned long (*time_func)(void);
-	void (*get_words)(const char*,int);
+	int (*get_words)(const char*);
 	void (*disp_tabu)(void);
 };
 

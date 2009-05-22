@@ -159,14 +159,14 @@ inline int CommandCipher(int cmd_id)
 			if(!bMsgLoaded || iRowSel==-1) return 0;
 			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
 			SetTextSel(iTextSel+iLineChars);
-			message.FindPatterns(1);
+			message.SetInfo();
 			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_UPPER:
 			SetUndo();
 			strupr(message.GetCipher());
-			message.SetInfo();
+			message.SetInfo(true);
 			SetKey(); SetPatterns(); SetDlgInfo();
 			return 0;
 

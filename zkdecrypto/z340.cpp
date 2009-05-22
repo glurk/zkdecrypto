@@ -155,7 +155,7 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print
 				if(log_file) //log local optima
 				{
 					DECODE;
-					info->get_words(solved,clength);
+					info->get_words(solved);
 					fprintf(log_file,"%i\t%i\t%s\t%s\n",info->best_score,info->num_words,key_str.data(),solved);
 					fflush(log_file);
 				}
@@ -268,7 +268,7 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 		
 	if(info->dioc_weight) //DIC, EDIC
 	{
-		score_mult*=1.05-((info->dioc_weight>>1)*ABS(FastDIoC(solv,score_len,1)-info->lang_dioc));
+		//score_mult*=1.05-((info->dioc_weight>>1)*ABS(FastDIoC(solv,score_len,1)-info->lang_dioc));
 		score_mult*=1.05-((info->dioc_weight>>1)*ABS(FastDIoC(solv,score_len,2)-info->lang_dioc));
 	}
     	
@@ -629,25 +629,26 @@ void KryptosMatrix4(char *cipher, char *solved, int *key, int iLineChars, int en
 
 #define MSG_SWAP  {temp=key[p1]; key[p1]=key[p2]; key[p2]=temp;}
 
-#define MSG_DECODE	switch(solve_type) { \
-					case SOLVE_VIG:			msg.SetKey(key); msg.DecodeVigenere(); break; \
-					case SOLVE_BIFID:		strcpy(msg.polybius5,key); msg.DecodeXfid(2); break; \
-					case SOLVE_ADFGX:		msg.SetSplitKey(key,5); msg.DecodeADFGX(5); break; \
-					case SOLVE_ADFGVX:		msg.SetSplitKey(key,6); msg.DecodeADFGX(6); break; \
-					case SOLVE_CEMOPRTU:	msg.SetSplitKey(key,8); msg.DecodeADFGX(8); strupr(solved); break; \
-					case SOLVE_TRIFID:		strcpy(msg.trifid_array,key); msg.DecodeXfid(3); break; \
-					case SOLVE_PERMUTE:		strcpy(msg.coltrans_key,key); msg.DecodePermutation(); break; \
-					case SOLVE_COLTRANS:	strcpy(msg.coltrans_key,key); msg.DecodeColumnar(); break; \
-					case SOLVE_DISUB:		msg.digraph_map.FromKey(key); msg.DecodeDigraphic(); break; \
-					case SOLVE_PLAYFAIR:	strcpy(msg.polybius5,key); msg.DecodePlayfair(); break; \
-					case SOLVE_KRYPTOS:		KryptosMatrix4(cipher,solved,(int*)key,iLineChars,1); strcpy(cipher,solved); msg.DecodeHomo(); break;}
+#define MSG_DECODE	switch(solve_type) {	\
+					case SOLVE_DISUB:		msg.digraph_map.FromKey(key); break; \
+					case SOLVE_VIG:			msg.SetKey(key); break; \
+					case SOLVE_BIFID:		\
+					case SOLVE_PLAYFAIR:	strcpy(msg.polybius5,key); break; \
+					case SOLVE_ADFGX:		msg.SetSplitKey(key,5); break; \
+					case SOLVE_ADFGVX:		msg.SetSplitKey(key,6); break; \
+					case SOLVE_CEMOPRTU:	msg.SetSplitKey(key,8); break; \
+					case SOLVE_TRIFID:		strcpy(msg.trifid_array,key); break; \
+					case SOLVE_PERMUTE:		\
+					case SOLVE_COLTRANS:	\
+					case SOLVE_DOUBLE:		msg.SetTransKey(key); break;} \
+					msg.Decode(); //if(solve_type==SOLVE_CEMOPRTU) strupr(solved);
 
 
 
 int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 {
 	Message msg; //decoding message
-	int i, p1, p2, clength, temp, use_key_len, full_key_len;
+	int i, p1, p2, clength, temp, use_key_len, full_key_len, split_index;
 	int score=0, last_score=0, improve=0, tolerance;
 	long start_time=0, end_time=0;
 	char *cipher, *solved;
@@ -655,18 +656,15 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 	
 	msg+=main_msg;
 
-	use_key_len=full_key_len=strlen(key);
-
 	//init info
 	info->cur_try=0;
 	info->cur_fail=0;
-
 	clength=msg.GetLength();
 	cipher=msg.GetCipher();
 	solved=msg.GetPlain();
+	full_key_len=use_key_len=strlen(key);
 
-	full_key_len=strlen(key);
-	use_key_len=full_key_len;
+	split_index=ChrIndex(key,'|');
 
 	switch(solve_type)
 	{
@@ -701,12 +699,8 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 				if(key[p1]==key[p2]) continue; //same character in key
 				if(p1>use_key_len && p2>use_key_len) continue; //p1&p2 in extra letter area
 				if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
-				if(key[p1]=='|' || key[p2]=='|') continue;
 
-				if(solve_type==SOLVE_ADFGX) if((p1<25 && p2>25) || (p2<25 && p1>25)) continue;
-				if(solve_type==SOLVE_ADFGVX) if((p1<36 && p2>36) || (p2<36 && p1>36)) continue;
-				if(solve_type==SOLVE_CEMOPRTU) if((p1<64 && p2>64) || (p2<64 && p1>64)) continue;
-
+				if(p1==split_index || p2==split_index || (p1<split_index && p2>split_index) || (p2<split_index && p1>split_index)) continue; //in different split keys, or on split
 			
 				MSG_SWAP; MSG_DECODE; //swap, decode, score
 				key_str.assign(key,use_key_len); //check for tabu
@@ -753,7 +747,7 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 				if(log_file) //log local optima
 				{
 					MSG_DECODE;
-					info->get_words(solved,clength);
+					info->get_words(solved);
 					fprintf(log_file,"%i\t%i\t%s\t%s\n",info->best_score,info->num_words,key_str.data(),solved);
 					fflush(log_file);
 				}
@@ -769,10 +763,7 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 		{
 			p1=rand()%use_key_len; p2=rand()%use_key_len;
 			if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
-			if(key[p1]=='|' || key[p2]=='|') continue;
-			if(solve_type==SOLVE_ADFGX) if((p1<25 && p2>25) || (p2<25 && p1>25)) continue;
-			if(solve_type==SOLVE_ADFGVX) if((p1<36 && p2>36) || (p2<36 && p1>36)) continue;
-			if(solve_type==SOLVE_CEMOPRTU) if((p1<64 && p2>64) || (p2<64 && p1>64)) continue;
+			if(p1==split_index || p2==split_index || (p1<split_index && p2>split_index) || (p2<split_index && p1>split_index)) continue; //in different split keys, or on split
 			MSG_SWAP;
 		} 
    

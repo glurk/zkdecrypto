@@ -225,6 +225,7 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Trifid");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Permutation");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Columar Transposition");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Double Transposition");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"ADFGX");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"ADFGVX");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"CEMOPRTU");
@@ -243,9 +244,15 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hWnd,IDC_EXTRA_LTR,szExtraLtr);
 
 			//transposition type
-			if(message.GetTransType()) SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Columnar");
-			else SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Permutation");
-			
+			if(message.GetTransType()) SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Bottom Up");
+			else SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Top Down");
+
+			if(siSolveInfo.running) //disable options that should not be changed when running
+			{
+				EnableWindow(GetDlgItem(hWnd,IDC_SOLVE_TYPE),false);
+				EnableWindow(GetDlgItem(hWnd,IDC_LANG),false);
+			}
+
 			return 0;
 
 		case WM_COMMAND:
@@ -256,8 +263,8 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDC_TRANS_TYPE:
 					message.SetTransType(!message.GetTransType());
-					if(message.GetTransType()) SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Columnar");
-					else SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Permutation");
+					if(message.GetTransType()) SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Bottom Up");
+					else SetDlgItemText(hWnd,IDC_TRANS_TYPE,"Top Down");
 					return 0;
 					
 				case IDOK: //get new values

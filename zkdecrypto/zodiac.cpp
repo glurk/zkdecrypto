@@ -200,22 +200,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_KEY_EDIT:
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					if(!bMsgLoaded) return 0;
-					if(siSolveInfo.running) return 0;
-					GetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText,255);
-					
-					switch(iSolveType)
-					{
-						case SOLVE_VIG: message.SetKeyLength(strlen(szText)); message.SetKey(szText); break;
-						case SOLVE_BIFID: case SOLVE_PLAYFAIR: memcpy(message.polybius5,szText,25); break;
-						case SOLVE_TRIFID: memcpy(message.trifid_array,szText,27); break;
-						case SOLVE_PERMUTE: 
-						case SOLVE_COLTRANS: strcpy(message.coltrans_key,szText); break;
-						case SOLVE_ADFGX: message.SetSplitKey(szText,5); break;
-						case SOLVE_ADFGVX: message.SetSplitKey(szText,6); break;
-						case SOLVE_CEMOPRTU: message.SetSplitKey(szText,8); break;
-					}
-
-					if(strlen(szText)) SetDlgInfo();
+					GetKeyEdit();
 					return 0;
 					
 				case IDC_WORD_MIN:
@@ -412,10 +397,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendDlgItemMessage(hMainWnd,IDC_CHI_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SendDlgItemMessage(hMainWnd,IDC_DIOC_WEIGHT_SPIN,UDM_SETRANGE,0,10);
 	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,1);
-	SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,5,false);
-	SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,5,false);
-	SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,5,false);
-	SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,0,false);
 	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,1,false);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_ASC,MF_BYCOMMAND | MF_ENABLED);
 	EnableMenuItem(hMainMenu,IDM_FILE_OPEN_NUM,MF_BYCOMMAND | MF_ENABLED);
@@ -438,7 +419,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.disp_all=disp_all;
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;
-	siSolveInfo.get_words=GetNumWords;
+	siSolveInfo.get_words=GetWordList;
 	siSolveInfo.disp_tabu=SetTabuTabInfo;
 	sprintf(siSolveInfo.log_name,"%s\\%s",szExeDir,"log.txt");
 	siSolveInfo.tabu=&tabu_map;

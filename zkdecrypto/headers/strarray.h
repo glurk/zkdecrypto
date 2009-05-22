@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string>
 
-#define MAX_STRINGS 1024
+#define MAX_STRINGS 2048
 
 #define NUM_ROWS(C,R) (C%R? (C/R)+1:(C/R))
 
@@ -30,6 +30,8 @@ class StringArray
 		int num_strings;
 };
 
+int ChrIndex(char*,char);
+int RadixSort(char*);
 int GetUniques(const char*, char*, int*);
 float IoC(const char*,int);
 float DIoC(const char*,int,int);

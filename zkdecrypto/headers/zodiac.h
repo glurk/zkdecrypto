@@ -42,9 +42,10 @@
 #define IN_RECT(X,Y,R)	(IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
 #define DIGRAPH_MODE	((iSolveType==SOLVE_DISUB || iSolveType==SOLVE_PLAYFAIR)? 1:0) //digraph key and display
 #define DEFRACTION_TYPE (iSolveType==SOLVE_ADFGX || iSolveType==SOLVE_ADFGVX || iSolveType==SOLVE_CEMOPRTU) //plain text half as long as cipher
-#define ASCIPHER_TYPE	(iSolveType==SOLVE_ADFGX || iSolveType==SOLVE_ADFGVX || iSolveType==SOLVE_CEMOPRTU) //set key as cipher characters
+#define ASCIPHER_TYPE	(DEFRACTION_TYPE) //set key as cipher characters
 #define LIMITKEY_TYPE	(iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_BIFID || iSolveType==SOLVE_TRIFID) //key edit is limited to square size
-#define ALLOW_LOWERCASE (iSolveType==SOLVE_PERMUTE || iSolveType==SOLVE_COLTRANS || iSolveType==SOLVE_CEMOPRTU)
+#define TRANSPOSE_TYPE	(iSolveType==SOLVE_PERMUTE || iSolveType==SOLVE_COLTRANS || iSolveType==SOLVE_DOUBLE)
+#define ALLOW_LOWERCASE (TRANSPOSE_TYPE || iSolveType==SOLVE_CEMOPRTU)
 
 //cipher/key data & files
 Message message; //cipher & main key
@@ -58,7 +59,7 @@ const char *szCipher=NULL, *szPlain=NULL; //strings for display
 int iNumber, iCurTab;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
 typedef std::map<std::string,int> STRMAP;
-STRMAP dictionary, tabu_map;
+STRMAP dictionary, tabu_map, word_list;
 
 //GUI data
 char szTitle[64], szText[40960], szExeDir[1024]; 
@@ -122,8 +123,6 @@ DWORD lKeyEditStyle;
 char szFileFilter[]= 
 	{"Text Files (*.txt)\0" "*.txt;\0"
 	 "All Files (*.*)\0" "*.*\0\0"};
-
-int GetWordList(const char*,STRMAP&);
 	 
 //callback functions for hillclimber
 inline void disp_all()  {SendMessage(hMainWnd,WM_COMMAND,UDM_DISPALL,0);}

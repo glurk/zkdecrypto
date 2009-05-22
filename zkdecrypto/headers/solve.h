@@ -161,17 +161,19 @@ void StopSolve()
 
 	switch(iSolveType)
 	{
-		case SOLVE_HOMO: message.cur_map.FromKey(siSolveInfo.best_key); break;
-		case SOLVE_DISUB: message.digraph_map.FromKey(siSolveInfo.best_key); break;
-		case SOLVE_VIG: message.SetKey(siSolveInfo.best_key); break;
-		case SOLVE_RUNKEY: message.SetKey(siSolveInfo.best_key); break;
-		case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(message.polybius5,siSolveInfo.best_key); break;
-		case SOLVE_TRIFID: strcpy(message.trifid_array,siSolveInfo.best_key); break;
+		case SOLVE_HOMO:	message.cur_map.FromKey(siSolveInfo.best_key); break;
+		case SOLVE_DISUB:	message.digraph_map.FromKey(siSolveInfo.best_key); break;
+		case SOLVE_VIG:		message.SetKey(siSolveInfo.best_key); break;
+		case SOLVE_RUNKEY:	message.SetKey(siSolveInfo.best_key); break;
+		case SOLVE_BIFID: 
+		case SOLVE_PLAYFAIR:strcpy(message.polybius5,siSolveInfo.best_key); break;
+		case SOLVE_TRIFID:	strcpy(message.trifid_array,siSolveInfo.best_key); break;
 		case SOLVE_PERMUTE:
-		case SOLVE_COLTRANS: strcpy(message.coltrans_key,siSolveInfo.best_key);	break;
-		case SOLVE_ADFGX: message.SetSplitKey(siSolveInfo.best_key,5); break;
-		case SOLVE_ADFGVX: message.SetSplitKey(siSolveInfo.best_key,6); break;
-		case SOLVE_CEMOPRTU: message.SetSplitKey(siSolveInfo.best_key,8); break;
+		case SOLVE_COLTRANS: 
+		case SOLVE_DOUBLE:	message.SetTransKey(siSolveInfo.best_key);	break;
+		case SOLVE_ADFGX:	message.SetSplitKey(siSolveInfo.best_key,5); break;
+		case SOLVE_ADFGVX:	message.SetSplitKey(siSolveInfo.best_key,6); break;
+		case SOLVE_CEMOPRTU:message.SetSplitKey(siSolveInfo.best_key,8); break;
 	}
 
 	SetDlgInfo();
@@ -400,15 +402,17 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 
 		switch(iSolveType)
 		{
-			case SOLVE_VIG: strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
-			case SOLVE_DISUB: message.digraph_map.ToKey(key,szExtraLtr); break;
-			case SOLVE_BIFID: case SOLVE_PLAYFAIR: strcpy(key,message.polybius5); break;
+			case SOLVE_VIG:		strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
+			case SOLVE_DISUB:	message.digraph_map.ToKey(key,szExtraLtr); break;
+			case SOLVE_BIFID: 
+			case SOLVE_PLAYFAIR:strcpy(key,message.polybius5); break;
 			case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
 			case SOLVE_PERMUTE:
-			case SOLVE_COLTRANS: strcpy(key,message.coltrans_key); break;
-			case SOLVE_ADFGX: strcpy(key,message.polybius5); strcat(key,"|"); strcat(key,message.coltrans_key); break;
-			case SOLVE_ADFGVX: strcpy(key,message.polybius6); strcat(key,"|"); strcat(key,message.coltrans_key); break;
-			case SOLVE_CEMOPRTU: strcpy(key,message.polybius8); strcat(key,"|"); strcat(key,message.coltrans_key); break;
+			case SOLVE_COLTRANS:strcpy(key,message.coltrans_key[0]); break;
+			case SOLVE_DOUBLE:	sprintf(key,"%s|%s",message.coltrans_key[0],message.coltrans_key[1]); break;
+			case SOLVE_ADFGX:	sprintf(key,"%s|%s",message.polybius5,message.coltrans_key[0]); break;
+			case SOLVE_ADFGVX:	sprintf(key,"%s|%s",message.polybius6,message.coltrans_key[0]); break;
+			case SOLVE_CEMOPRTU:sprintf(key,"%s|%s",message.polybius8,message.coltrans_key[0]); break;
 		}
 
 		hillclimb2(message,iSolveType,key,iLineChars);
@@ -502,14 +506,15 @@ int LoadDictionary(char *filename, int show_error)
 				 MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
 				 return 0; }
 	}
-	int i=1;
-	while(!feof(dictionary_file)) 
+
+	dictionary.clear();
+
+	for(int i=0; !feof(dictionary_file); i++) 
 	{
 		fscanf(dictionary_file,"%s",word);
 		for(int x=0; x<(int)strlen(word); x++) word[x]=toupper(word[x]);
 		word_str=word;
 		dictionary[word_str]=i;
-		i++;
 	}
 
 	fclose(dictionary_file);
