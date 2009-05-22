@@ -24,9 +24,10 @@
 #define SOLVE_TRIFID	6
 #define SOLVE_PERMUTE	7
 #define SOLVE_COLTRANS	8
-#define SOLVE_ADFGX		9
-#define SOLVE_ADFGVX	10
-#define SOLVE_CEMOPRTU	11
+#define SOLVE_DOUBLE	9
+#define SOLVE_ADFGX		10
+#define SOLVE_ADFGVX	11
+#define SOLVE_CEMOPRTU	12
 #define SOLVE_KRYPTOS	50
 
 struct NGRAM
@@ -45,7 +46,27 @@ struct NGRAM
 class Message
 {
 public:
-	Message() {patterns=NULL; cipher=plain=msg_temp=NULL; msg_len=num_patterns=good_pat=0; trans_type=1; min_pat_len=2; polybius5[0]=polybius6[0]=polybius8[0]=trifid_array[0]='\0'; InitArrays(); strcpy(coltrans_key,"1");}
+	Message() 
+	{
+		patterns=NULL; cipher=plain=msg_temp=NULL; 
+		msg_len=num_patterns=good_pat=0; 
+		trans_type=0; 
+		min_pat_len=2; 
+		memset(coltrans_key,0,sizeof(coltrans_key));
+		polybius5[0]=polybius6[0]=polybius8[0]=trifid_array[0]='\0'; 
+		InitArrays();  
+		coltrans_key[0][0]=coltrans_key[1][0]='1';
+		
+		memset(POLYBIUS_INDEXS,-1,256); //adfgvx decoding
+		POLYBIUS_INDEXS['C']=POLYBIUS_INDEXS['A']=0;
+		POLYBIUS_INDEXS['E']=POLYBIUS_INDEXS['D']=1;
+		POLYBIUS_INDEXS['M']=POLYBIUS_INDEXS['F']=2;
+		POLYBIUS_INDEXS['O']=POLYBIUS_INDEXS['G']=3;
+		POLYBIUS_INDEXS['P']=POLYBIUS_INDEXS['V']=4;
+		POLYBIUS_INDEXS['R']=5;
+		POLYBIUS_INDEXS['T']=6;
+		POLYBIUS_INDEXS['U']=7;
+	}
 	~Message() {if(cipher) delete[] cipher; if(plain) delete[] plain; if(msg_temp) delete[] msg_temp; if(patterns) ClearPatterns(patterns);}
 
 	int Read(const char*);
@@ -88,7 +109,7 @@ public:
 	long PolyKeySize(wchar*,int,float);
 	long RowColIoC(wchar*,int);
 
-	void SetInfo();
+	void SetInfo(int set_maps=false);
 	void FindPatterns(int);
 
 	void SetKey(char *new_key) {memcpy(key,new_key,key_len); key[key_len]='\0';}
@@ -104,9 +125,10 @@ public:
 	void DecodePlayfair();
 	void DecodeVigenere();
 	void DecodeXfid(int);
-	void DecodePermutation(int do_homo=true);
-	void DecodeColumnar();
-	void DecodeADFGX(int);
+	void DecodePermutation(char*);
+	void ColumnarStage(char*);
+	void DecodeColumnar(int);
+	void DecodeADFGX(int,char*);
 	void SetTableuAlphabet(char*);
 	char *GetTableuAlphabet() {return vigenere_array[0];}
 	
@@ -117,16 +139,17 @@ public:
 
 			case SOLVE_HOMO:	DecodeHomo(); break;
 			case SOLVE_DISUB:	DecodeDigraphic(); break;
-			case SOLVE_PLAYFAIR: DecodePlayfair(); break;
+			case SOLVE_PLAYFAIR:DecodePlayfair(); break;
 			case SOLVE_VIG:		DecodeVigenere(); break;
 			case SOLVE_RUNKEY:	DecodeVigenere(); break;
 			case SOLVE_BIFID:	DecodeXfid(2); break;
 			case SOLVE_TRIFID:	DecodeXfid(3); break;
-			case SOLVE_PERMUTE: DecodePermutation(); break;
-			case SOLVE_COLTRANS: DecodeColumnar(); break;
-			case SOLVE_ADFGX:	DecodeADFGX(5); break;
-			case SOLVE_ADFGVX:	DecodeADFGX(6); break;
-			case SOLVE_CEMOPRTU:	DecodeADFGX(8); break;
+			case SOLVE_PERMUTE: DecodePermutation(coltrans_key[0]); break;
+			case SOLVE_COLTRANS:DecodeColumnar(1); break;
+			case SOLVE_DOUBLE:  DecodeColumnar(2); break;
+			case SOLVE_ADFGX:	DecodeADFGX(5,polybius5); break;
+			case SOLVE_ADFGVX:	DecodeADFGX(6,polybius6); break;
+			case SOLVE_CEMOPRTU:DecodeADFGX(8,polybius8); break;
 		}
 	}
 
@@ -144,7 +167,7 @@ public:
 			
 			cipher=new char[src_msg.msg_len+1];
 			plain=new char[src_msg.msg_len+1];
-			msg_temp=new char[src_msg.msg_len+1];
+			msg_temp=new char[(src_msg.msg_len<<1)+1];
 		}
 
 		//text
@@ -160,7 +183,10 @@ public:
 		decode_type=src_msg.decode_type;
 		key_len=src_msg.key_len;
 		block_size=src_msg.block_size;
-		strcpy(coltrans_key,src_msg.coltrans_key);
+		trans_type=src_msg.trans_type;
+		strcpy(coltrans_key[0],src_msg.coltrans_key[0]);
+		strcpy(coltrans_key[1],src_msg.coltrans_key[1]);
+		strcpy(coltrans_key[2],src_msg.coltrans_key[2]);
 		memcpy(key,src_msg.key,key_len);
 		memcpy(polybius5,src_msg.polybius5,sizeof(polybius5));
 		memcpy(polybius6,src_msg.polybius6,sizeof(polybius6));
@@ -187,7 +213,7 @@ public:
 		if(strlen(trifid_array)!=27) strcpy(trifid_array,"ABCDEFGHIJKLMNOPQRSTUVWXYZ.");
 	}
 	
-	char coltrans_key[512];
+	char coltrans_key[10][512];
 	char polybius5[26];
 	char polybius6[37];
 	char polybius8[65];
@@ -204,29 +230,42 @@ public:
 
 	void SetSplitKey(char *split_key, int poly_size)
 	{
-		char *key_split=strchr(split_key,'|'); //| separates the polybius key from transposition key
+		char *polybius;
 
-		if(!key_split) 
-			switch(poly_size)
-			{
-				case 5: memcpy(polybius5,split_key,25); break;
-				case 6: memcpy(polybius6,split_key,36); break;
-				case 8: memcpy(polybius8,split_key,64); break;
-			}
+		int key_length=ChrIndex(split_key,'|'); //length of polybius
+		if(key_length==-1) key_length=strlen(split_key); //no trans key
 
-		else 
+		switch(poly_size)
 		{
-			int length=int(key_split-split_key);
-			if(*(key_split+1)=='\0') strcat(split_key,"1"); 
-			strcpy(coltrans_key,key_split+1);  //get transposition key
-			
-			switch(poly_size)
-			{
-				case 5: memcpy(polybius5,split_key,MIN(length,25)); break;
-				case 6: memcpy(polybius6,split_key,MIN(length,36)); break;
-				case 8: memcpy(polybius8,split_key,MIN(length,64)); break;
-			}
-		}  
+			case 5: polybius=polybius5; break;
+			case 6: polybius=polybius6; break;
+			case 8: polybius=polybius8; break;
+			default: return;
+		}
+
+		if(key_length<=(poly_size*poly_size)) 
+		{
+			memcpy(polybius,split_key,key_length);
+			polybius[key_length]=0;
+		}
+
+		if(split_key[key_length]) strcpy(coltrans_key[0],split_key+key_length+1);  //has trans key 
+	}
+
+	void SetTransKey(char *split_key)
+	{
+		for(int cur_key=0, int key_start=0; cur_key<10; cur_key++, key_start++)
+		{
+			int key_length=ChrIndex(split_key+key_start,'|');
+			if(key_length==-1) key_length=strlen(split_key+key_start); //last key
+
+			memcpy(coltrans_key[cur_key],split_key+key_start,key_length); 
+			coltrans_key[cur_key][key_length]='\0';
+
+			key_start+=key_length;
+
+			if(!split_key[key_start]) break;
+		}
 	}
 
 private:
@@ -247,7 +286,8 @@ private:
 	char key[4096];
 	int key_len;
 	int block_size;
-	int trans_type; //0=permutation, 1=columnar for ADFGX types
+	int trans_type; //reading direction of columnar transposition
+	char POLYBIUS_INDEXS[256];
 };
 
 void SwapStringColumns(char*,int,int,int);

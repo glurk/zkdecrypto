@@ -32,31 +32,13 @@ int StringArray::GetString(int string, char *dest_string)
 
 int StringArray::SortString(int string)
 {
-	int str_len=(int)strlen(strings[string]);
-	char swap;
-	
 	if(string<0 || string>=num_strings) return 0;
-	
-	do
-	{
-		swap=false;
-		
-		for(int index_a=0; index_a<str_len-1; index_a++)
-			for(int index_b=index_a+1; index_b<str_len; index_b++)
-				if(strings[string][index_b]<strings[string][index_a])
-				{
-					std::swap(strings[string][index_a],strings[string][index_b]);
-					swap=true;
-				}
-	} while(swap);
-
-	return 1;
+	return RadixSort(strings[string]);
 }
 
 void StringArray::SortStrings(int order)
 {
 	char swap;
-	
 	do
 	{
 		swap=false;
@@ -65,12 +47,7 @@ void StringArray::SortStrings(int order)
 			for(int index_b=index_a+1; index_b<num_strings; index_b++)
 			{
 				int cmp=strcmp(strings[index_b],strings[index_a]);
-				
-				if((cmp<0 && !order) || (cmp>0 && order))
-				{
-					std::swap(strings[index_a],strings[index_b]);
-					swap=true;
-				}
+				if((cmp<0 && !order) || (cmp>0 && order)) {std::swap(strings[index_a],strings[index_b]); swap=true;}
 			}
 	} while(swap);
 }
@@ -132,11 +109,40 @@ void StringArray::Clear()
 	num_strings=0;
 }
 
+int ChrIndex(char *string, char chr)
+{
+	char *chr_ptr=strchr(string,chr);
+	if(!chr_ptr) return -1;
+	return int(chr_ptr-string);
+}
+
+int RadixSort(char *string)
+{
+	char array1[4096], array0[4096]; //arrays for the radix sort	
+	int num1, num0, mask=1, int length=strlen(string);
+
+	for(int bit=0; bit<8; bit++) //for each bit of the string type
+	{
+		num1=num0=0; //set num of 0's & 1's back to 0
+		for(int index=0; index<length; index++) //for each character in the number array, copy the character to the correct array according to this bit
+		{
+			if(string[index] & mask) {array1[num1]=string[index]; num1++;} //bit is 1
+			else {array0[num0]=string[index]; num0++;} //bit is 0
+		}
+		//Copy the numbers into the number array from the 1's and 0's arrays, 1's first for decreasing; 0's array first for increasing	
+		memcpy(string+num0, array1, num1); 
+		memcpy(string, array0, num0); 
+		mask<<=1; //bitshift mask left for next bit for next bit
+	}
+
+	return 1;
+}
+
 void Reverse(char *string)
 {
 	int i, j, size=(int)strlen(string);
 
-	if(size<= 1) return;
+	if(size<=1) return;
 	for(i=0, j=size-1; i<size/2; i++, j--)
 		std::swap(string[i],string[j]);
 }

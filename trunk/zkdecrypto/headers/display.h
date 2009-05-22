@@ -218,7 +218,7 @@ void OutputText(int bSection)
 		{
 			iIndex=(row+iScrollPos)*iLineChars+col;
 			if(iIndex>=iLength) break;
-			if(DEFRACTION_TYPE && bSection && iIndex>iLength>>1) goto EXIT; //don't output plain past 1/2 if on a fractionated cipher
+			if(DEFRACTION_TYPE && bSection && iIndex>=iLength>>1) goto EXIT; //don't output plain past 1/2 if on a fractionated cipher
 			
 			SetBkColor(hDC,crBG); //default background
 
@@ -659,13 +659,13 @@ void SetFreq()
 	exp_vowel+=message.cur_map.GetUnigraph(8);
 	exp_vowel+=message.cur_map.GetUnigraph(14);
 	exp_vowel+=message.cur_map.GetUnigraph(20);
-	
+
 	sprintf(szText,"%.2f%%",act_vowel);
 	SetDlgItemText(hMainWnd,IDC_VOWEL_ACT,szText);
 
 	sprintf(szText,"%.2f%%",exp_vowel);
 	SetDlgItemText(hMainWnd,IDC_VOWEL_EXP,szText);
-	
+		
 	sprintf(szText,"%.4f",IoC(szPlain,message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_IOC_ACT,szText);
 	
@@ -678,28 +678,21 @@ void SetFreq()
 
 /*Word List Display*/
 
-void GetNumWords(const char *text, int msg_len)
-{
-	std::string word_str;
-
-	siSolveInfo.num_words=0;
-	   
-	for(int index=0; index<msg_len; index++)
-		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
-		{
-			if((msg_len-index)<word_len) break;
-
-			word_str.assign(text+index,word_len); //set word & serach dictionary
-			if(dictionary.find(word_str)!=dictionary.end()) siSolveInfo.num_words++;
-		}  
-}
-
 //put all dictionary words in text into the StringArray
-int GetWordList(const char *text, STRMAP &word_list)
+int GetWordList(const char *src_text)
 {
-	int msg_len=message.GetLength();
+	int msg_len;
 	std::string word_str;
 	   
+	if(!src_text) return 0;
+
+	word_list.clear();
+
+	msg_len=strlen(src_text);
+	char *text=new char[msg_len+1];
+	strcpy(text,src_text);
+	strupr(text);
+
 	for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
 		{
@@ -708,7 +701,9 @@ int GetWordList(const char *text, STRMAP &word_list)
 			word_str.assign(text+index,word_len); //set word & serach dictionary
 			if(dictionary.find(word_str)!=dictionary.end()) word_list[word_str.c_str()]=word_list.size();
 		}
-		   
+		  
+	delete text;	
+
 	return word_list.size();	  
 }
 
@@ -716,11 +711,9 @@ int GetWordList(const char *text, STRMAP &word_list)
 void SetWordList()
 {
 	int cur_sel, rows=0, col=0;
-//	char word[64];
-	STRMAP word_list;
-	   
+  
 	//set list
-	siSolveInfo.num_words=GetWordList(szPlain,word_list);
+	siSolveInfo.num_words=GetWordList(szPlain);
 
 	if(iCurTab!=2) return;
 	   
@@ -736,8 +729,6 @@ void SetWordList()
 	//title
 	sprintf(szText,"Word List (%i words)",siSolveInfo.num_words);
 	SetDlgItemText(hMainWnd,IDC_WORD_TITLE,szText);
-
-	word_list.clear();
 }
 
 inline void SetGraph()
@@ -780,19 +771,18 @@ inline void SetStatsTabInfo()
 
 inline void SetTabuTabInfo()
 {
-//	char line[128], tabu_num[8], disp_sym;
 	int cur_disp;
-//	int max_disp;
 	szText[26]='\0';
-//	SYMBOL symbol;
 
 	if(iCurTab!=4) return;
+	if(tabu_map.size()>200) return;
 
 	STRMAP::iterator iter=tabu_map.begin();
+
 	szText[0]='\0';
 	
 	if(iter!=tabu_map.end())
-		for(cur_disp=0; iter!=tabu_map.end() && cur_disp<200; ++iter, cur_disp++) 
+		for(; iter!=tabu_map.end(); ++iter) 
 		{
 			strcat(szText,std::string(iter->first).c_str());
 			strcat(szText,"\r\n");
@@ -810,20 +800,63 @@ void SetKeyEdit()
 	switch(iSolveType) //set key text & max length
 	{
 		case SOLVE_HOMO:
-		case SOLVE_DISUB: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,""); SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); break;
-		case SOLVE_VIG: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.GetKey()); break;
-		case SOLVE_RUNKEY: iMaxKeyLen=0; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,siSolveInfo.best_key); break;
+		case SOLVE_DISUB: strcpy(szText,""); SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); break;
+		case SOLVE_VIG: strcpy(szText,message.GetKey()); break;
+		case SOLVE_RUNKEY: iMaxKeyLen=0; strcpy(szText,siSolveInfo.best_key); break;
 		case SOLVE_PLAYFAIR: 
-		case SOLVE_BIFID: iMaxKeyLen=25; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.polybius5); break;
-		case SOLVE_TRIFID: iMaxKeyLen=27; SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.trifid_array); break;
+		case SOLVE_BIFID: iMaxKeyLen=25; strcpy(szText,message.polybius5); break;
+		case SOLVE_TRIFID: iMaxKeyLen=27; strcpy(szText,message.trifid_array); break;
 		case SOLVE_PERMUTE:
-		case SOLVE_COLTRANS: SetDlgItemText(hMainWnd,IDC_KEY_EDIT,message.coltrans_key); break;
-		case SOLVE_ADFGX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius5,message.coltrans_key); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); break;
-		case SOLVE_ADFGVX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius6,message.coltrans_key); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); break;
-		case SOLVE_CEMOPRTU: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius8,message.coltrans_key); SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); break;
+		case SOLVE_COLTRANS: strcpy(szText,message.coltrans_key[0]); break;
+		case SOLVE_DOUBLE: sprintf(szText,"%s|%s",message.coltrans_key[0],message.coltrans_key[1]); break;
+		case SOLVE_ADFGX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius5,message.coltrans_key[0]); break;
+		case SOLVE_ADFGVX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius6,message.coltrans_key[0]);  break;
+		case SOLVE_CEMOPRTU: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius8,message.coltrans_key[0]);  break;
 	}
 
+	SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); 
 	if(LIMITKEY_TYPE) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0); //limit key edit length
+	else SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,0,0);
+}
+
+inline void SetDlgInfo()
+{
+	if(!bMsgLoaded) return;
+	
+	if(siSolveInfo.running) //set key to hillclimber best if running
+	{
+		if(iSolveType==SOLVE_HOMO) message.cur_map.FromKey(siSolveInfo.best_key);
+		else SetKeyEdit();
+	}
+		
+	else SetPlain();
+	
+	//info on tabs, tabu tab is updated only when a tabu is made
+	SetSolveTabInfo(); SetAnalysisTabInfo(); SetWordListTabInfo(); SetStatsTabInfo();
+		
+	if(hLetter) SetGraph();
+}
+
+void GetKeyEdit()
+{
+	if(siSolveInfo.running) return;
+	GetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText,255);
+					
+	switch(iSolveType)
+	{
+		case SOLVE_VIG:		message.SetKeyLength(strlen(szText)); message.SetKey(szText); break;
+		case SOLVE_BIFID: 
+		case SOLVE_PLAYFAIR:memcpy(message.polybius5,szText,25); break;
+		case SOLVE_TRIFID:	memcpy(message.trifid_array,szText,27); break;
+		case SOLVE_PERMUTE: 
+		case SOLVE_COLTRANS: 
+		case SOLVE_DOUBLE:	message.SetTransKey(szText); break;
+		case SOLVE_ADFGX:	message.SetSplitKey(szText,5); break;
+		case SOLVE_ADFGVX:	message.SetSplitKey(szText,6); break;
+		case SOLVE_CEMOPRTU:message.SetSplitKey(szText,8); break;
+	}
+
+	if(strlen(szText)) SetDlgInfo();
 }
 
 void SetSolveTypeFeatures()
@@ -859,27 +892,22 @@ void SetSolveTypeFeatures()
 	//key update length
 	if(DIGRAPH_MODE) SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,2,0);
 	else SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
-}
 
-inline void SetDlgInfo()
-{
-	if(!bMsgLoaded) return;
-	
-	if(siSolveInfo.running) //set key to hillclimber best if running
+	if(TRANSPOSE_TYPE)
 	{
-		if(iSolveType==SOLVE_HOMO) message.cur_map.FromKey(siSolveInfo.best_key);
-		else SetKeyEdit();
+		SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,0,false);
+		SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,0,false);
+		SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,0,false);
+		SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,5,false);
 	}
-		
-	else SetPlain();
 	
-	//info on tabs, tabu tab is updated only when a tabu is made
-	SetSolveTabInfo();
-	SetAnalysisTabInfo(); 
-	SetWordListTabInfo(); 
-	SetStatsTabInfo();
-		
-	if(hLetter) SetGraph();
+	else
+	{
+		SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,5,false);
+		SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,5,false);
+		SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,5,false);
+		SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,0,false);
+	}
 }
 
 //call when the cipher is changed, i.e. symbol merge
