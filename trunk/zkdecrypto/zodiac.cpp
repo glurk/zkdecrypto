@@ -413,9 +413,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	memset(&siSolveInfo,0,sizeof(SOLVEINFO));
 	siSolveInfo.ioc_weight=siSolveInfo.ent_weight=siSolveInfo.chi_weight=5;
 	siSolveInfo.dioc_weight=0;
-	siSolveInfo.max_fail=400;
+	siSolveInfo.max_tabu=300;
 	siSolveInfo.swaps=5;
-	siSolveInfo.max_try=2000;
+	siSolveInfo.max_tol=40;
 	siSolveInfo.disp_all=disp_all;
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;

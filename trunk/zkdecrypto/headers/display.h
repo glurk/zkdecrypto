@@ -419,14 +419,10 @@ void SetCharSize()
 //call when key is changed to decode and display plain text
 void SetPlain()
 {
-	if(siSolveInfo.running) return;
 	szPlain=message.GetPlain();
 	
-	if(!siSolveInfo.running) //display new score score
-	{
-		iBestScore=calcscore(message,message.GetLength(),szPlain);
-		SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,true);
-	}
+	if(!siSolveInfo.running) siSolveInfo.best_score=calcscore(message,message.GetLength(),szPlain);
+	SetDlgItemInt(hMainWnd,IDC_SCORE,siSolveInfo.best_score,true);
 }
 
 /*Solve Tab Display*/
@@ -591,16 +587,15 @@ inline void SetSolve()
 	if(iCurTab!=0 && iCurTab!=2 && iCurTab!=3 && iCurTab!=4) return;
 	
 	//iteration & time
-	sprintf(szText,"%i (%.2fs)",siSolveInfo.cur_try,siSolveInfo.last_time);
+	sprintf(szText,"%i (%.2fs)",siSolveInfo.cur_tol,siSolveInfo.last_time);
 	SetDlgItemText(hMainWnd,IDC_TRY,szText);
 	
 	//failures
-	sprintf(szText,"%i of %i",siSolveInfo.cur_fail,siSolveInfo.max_fail);
+	sprintf(szText,"%i of %i",siSolveInfo.cur_tabu,siSolveInfo.max_tabu);
 	SetDlgItemText(hMainWnd,IDC_FAIL,szText);
 	
 	//best score
-	if(siSolveInfo.running) iBestScore=siSolveInfo.best_score;
-	SetDlgItemInt(hMainWnd,IDC_SCORE,iBestScore,true);
+	SetDlgItemInt(hMainWnd,IDC_SCORE,siSolveInfo.best_score,true);
 }
 
 /*Analysis Tab Display*/
@@ -626,7 +621,7 @@ void SetFreq()
 	if(!bMsgLoaded) return;
 
 	//actual and expected frequencies
-	message.GetActFreq(lprgiActFreq);
+	message.GetActFreq(lprgiActFreq); 
 	message.GetExpFreq(lprgiExpFreq);
 	
 	//add each letter
@@ -679,12 +674,12 @@ void SetFreq()
 /*Word List Display*/
 
 //put all dictionary words in text into the StringArray
-int GetWordList(const char *src_text)
+void GetWordList(const char *src_text)
 {
-	int msg_len;
+	int msg_len, found;
 	std::string word_str;
 	   
-	if(!src_text) return 0;
+	if(!src_text) return;
 
 	word_list.clear();
 
@@ -693,18 +688,44 @@ int GetWordList(const char *src_text)
 	strcpy(text,src_text);
 	strupr(text);
 
-	for(int index=0; index<msg_len; index++)
+	/*for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
 		{
 			if((msg_len-index)<word_len) break;
 
 			word_str.assign(text+index,word_len); //set word & serach dictionary
-			if(dictionary.find(word_str)!=dictionary.end()) word_list[word_str.c_str()]=word_list.size();
+			if(dictionary.find(word_str)!=dictionary.end()) 
+				word_list[word_str.c_str()]=word_list.size();
 		}
-		  
-	delete text;	
+	*/
 
-	return word_list.size();	  
+	siSolveInfo.stray_letters=0;
+
+	//find the longest word between min & max in this position, then move past it
+	//if no word found, move to next index
+	for(int index=0; index<msg_len; index++)
+	{
+		found=false;
+
+		for(int word_len=iWordMax; !found && word_len>=iWordMin; word_len--)
+		{
+			if((msg_len-index)<word_len) continue;
+
+			word_str.assign(text+index,word_len); //set word & serach dictionary
+			if(dictionary.find(word_str)!=dictionary.end()) 
+			{
+				word_list[word_str.c_str()]=word_list.size();
+				index+=word_len-1;
+				found=true;
+			}
+		}
+
+		if(!found) siSolveInfo.stray_letters++;
+	}
+
+	siSolveInfo.num_words=word_list.size();
+
+	delete text;	  
 }
 
 //set the word list box
@@ -713,7 +734,7 @@ void SetWordList()
 	int cur_sel, rows=0, col=0;
   
 	//set list
-	siSolveInfo.num_words=GetWordList(szPlain);
+	GetWordList(szPlain);
 
 	if(iCurTab!=2) return;
 	   
@@ -812,6 +833,7 @@ void SetKeyEdit()
 		case SOLVE_ADFGX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius5,message.coltrans_key[0]); break;
 		case SOLVE_ADFGVX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius6,message.coltrans_key[0]);  break;
 		case SOLVE_CEMOPRTU: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius8,message.coltrans_key[0]);  break;
+		case SOLVE_SUBPERM: iMaxKeyLen=0; message.cur_map.ToKey(szText,""); strcat(szText,"|"); strcat(szText,message.coltrans_key[0]); break;
 	}
 
 	SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); 
@@ -829,10 +851,10 @@ inline void SetDlgInfo()
 		else SetKeyEdit();
 	}
 		
-	else SetPlain();
+	SetPlain();
 	
 	//info on tabs, tabu tab is updated only when a tabu is made
-	SetSolveTabInfo(); SetAnalysisTabInfo(); SetWordListTabInfo(); SetStatsTabInfo();
+	SetSolveTabInfo(); SetAnalysisTabInfo(); SetWordListTabInfo(); SetStatsTabInfo(); 
 		
 	if(hLetter) SetGraph();
 }
@@ -854,6 +876,7 @@ void GetKeyEdit()
 		case SOLVE_ADFGX:	message.SetSplitKey(szText,5); break;
 		case SOLVE_ADFGVX:	message.SetSplitKey(szText,6); break;
 		case SOLVE_CEMOPRTU:message.SetSplitKey(szText,8); break;
+		case SOLVE_SUBPERM: message.SetSplitKey(szText,0); break;
 	}
 
 	if(strlen(szText)) SetDlgInfo();

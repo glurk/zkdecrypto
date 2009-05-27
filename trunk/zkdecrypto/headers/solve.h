@@ -98,6 +98,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_CIPHER_RC_IOC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_SEQHOMO,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_UPPER,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_FROM_PLAIN,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_HORZ,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_VERT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_REV,MF_BYCOMMAND | menu_state);
@@ -413,6 +414,7 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 			case SOLVE_ADFGX:	sprintf(key,"%s|%s",message.polybius5,message.coltrans_key[0]); break;
 			case SOLVE_ADFGVX:	sprintf(key,"%s|%s",message.polybius6,message.coltrans_key[0]); break;
 			case SOLVE_CEMOPRTU:sprintf(key,"%s|%s",message.polybius8,message.coltrans_key[0]); break;
+			case SOLVE_SUBPERM: message.cur_map.ToKey(key,szExtraLtr); strcat(key,"|"); strcat(key,message.coltrans_key[0]); break;
 		}
 
 		hillclimb2(message,iSolveType,key,iLineChars);
@@ -443,11 +445,11 @@ void StartSolve()
 
 void Reset() //init solve info
 {
-	siSolveInfo.cur_try=0;
-	siSolveInfo.cur_fail=0;
+	siSolveInfo.cur_tol=0;
+	siSolveInfo.cur_tabu=0;
 	siSolveInfo.last_time=0;
 	SetDlgItemText(hMainWnd,IDC_TIME,"00:00:00");
-	iBestScore=0;
+	siSolveInfo.best_score=0;
 	SetDlgInfo();
 }
 
@@ -506,8 +508,6 @@ int LoadDictionary(char *filename, int show_error)
 				 MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
 				 return 0; }
 	}
-
-	dictionary.clear();
 
 	for(int i=0; !feof(dictionary_file); i++) 
 	{

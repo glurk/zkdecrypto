@@ -26,15 +26,16 @@
 struct SOLVEINFO
 {
 	//parameters
-	long max_fail;
+	long max_tabu;
 	int swaps;
-	int max_try;
+	int max_tol;
 	char *locked;
 	char *exclude;
 	char cribs[512][128];
 	int num_cribs;
 	char log_name[2048];
 	std::map<std::string,int> *tabu;
+	std::map<std::string,int>::iterator tabu_end;
 	int tabu_syms;
 
 	float lang_ioc;
@@ -49,8 +50,8 @@ struct SOLVEINFO
 	//feedback
 	char best_key[4096];
 	int best_key4[14];
-	int cur_try;
-	int cur_fail;
+	int cur_tol;
+	int cur_tabu;
 	float last_time;
 	int best_score;
 	int best_block;
@@ -58,13 +59,13 @@ struct SOLVEINFO
 	//control
 	int running;
 	int num_words;
-	int max_words;
+	int stray_letters;
 	
 	//callback functions
 	void (*disp_all)(void);
 	void (*disp_info)(void);
 	unsigned long (*time_func)(void);
-	int (*get_words)(const char*);
+	void (*get_words)(const char*);
 	void (*disp_tabu)(void);
 };
 

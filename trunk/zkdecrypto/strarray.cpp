@@ -256,8 +256,6 @@ float DIoC(const char* string, int length, int step)
 	return ic;
 }
 
-#define LOG2 .693147
-
 float Entropy(const char *string, int length)
 {
 	int freqs[256], index;
@@ -279,7 +277,6 @@ float Entropy(const char *string, int length)
 	return (-1*entropy);
 }
 
-
 float ChiSquare(const char *string, int length)
 {
 	int freqs[256], index, unique=0;
@@ -296,7 +293,7 @@ float ChiSquare(const char *string, int length)
 	for(index=32; index<256; index++) //calculate chi2
 	{
 		if(!freqs[index]) continue;
-		prob_mass=(float)(length*(1.0/unique));
+		prob_mass=float(length)/unique;
 		cur_calc=freqs[index]-prob_mass;
 		cur_calc*=cur_calc;
 		cur_calc/=prob_mass;

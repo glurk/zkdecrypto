@@ -374,7 +374,7 @@ void Map::ToKey(char *key, char *extra)
 
 void Map::FromKey(char *key)
 {
-	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	for(int cur_symbol=0; cur_symbol<num_symbols && key[cur_symbol]; cur_symbol++)
 		symbols[cur_symbol].plain=key[cur_symbol];
 }
 

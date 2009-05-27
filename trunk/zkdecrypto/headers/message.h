@@ -28,6 +28,7 @@
 #define SOLVE_ADFGX		10
 #define SOLVE_ADFGVX	11
 #define SOLVE_CEMOPRTU	12
+#define SOLVE_SUBPERM	13
 #define SOLVE_KRYPTOS	50
 
 struct NGRAM
@@ -150,6 +151,7 @@ public:
 			case SOLVE_ADFGX:	DecodeADFGX(5,polybius5); break;
 			case SOLVE_ADFGVX:	DecodeADFGX(6,polybius6); break;
 			case SOLVE_CEMOPRTU:DecodeADFGX(8,polybius8); break;
+			case SOLVE_SUBPERM: DecodeColumnar(1); break;//DecodePermutation(coltrans_key[0]); break; //
 		}
 	}
 
@@ -188,9 +190,9 @@ public:
 		strcpy(coltrans_key[1],src_msg.coltrans_key[1]);
 		strcpy(coltrans_key[2],src_msg.coltrans_key[2]);
 		memcpy(key,src_msg.key,key_len);
-		memcpy(polybius5,src_msg.polybius5,sizeof(polybius5));
-		memcpy(polybius6,src_msg.polybius6,sizeof(polybius6));
-		memcpy(polybius8,src_msg.polybius8,sizeof(polybius8));
+		strcpy(polybius5,src_msg.polybius5);
+		strcpy(polybius6,src_msg.polybius6);
+		strcpy(polybius8,src_msg.polybius8);
 		memcpy(trifid_array,src_msg.trifid_array,sizeof(trifid_array));
 		memcpy(vigenere_array,src_msg.vigenere_array,sizeof(vigenere_array));
 	}
@@ -236,16 +238,18 @@ public:
 		if(key_length==-1) key_length=strlen(split_key); //no trans key
 
 		switch(poly_size)
-		{
+		{ 
+			case 0: break;
 			case 5: polybius=polybius5; break;
 			case 6: polybius=polybius6; break;
 			case 8: polybius=polybius8; break;
 			default: return;
 		}
 
-		if(key_length<=(poly_size*poly_size)) 
+		if(!poly_size) cur_map.FromKey(split_key);
+		else if(key_length<=(poly_size*poly_size)) 
 		{
-			memcpy(polybius,split_key,key_length);
+			 memcpy(polybius,split_key,key_length);
 			polybius[key_length]=0;
 		}
 

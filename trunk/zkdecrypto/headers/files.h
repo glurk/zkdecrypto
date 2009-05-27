@@ -79,7 +79,7 @@ int LoadMessage(char *filename, int type)
 
 	//get info
 	szCipher=message.GetCipher();
-	iBestScore=0;
+	siSolveInfo.best_score=0;
 	iCurPat=-1;
 	bMsgLoaded=true;
 	bMapLoaded=false;
@@ -108,7 +108,7 @@ int LoadMessage(char *filename, int type)
 	SetTitle();
 	SetCipher();
 	SetPatterns();
-	SetDlgInfo();
+	SetDlgInfo(); SetKeyEdit();
 	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,message.GetLength(),false);
 
 	return 1;
@@ -136,7 +136,7 @@ int LoadMap(char *filename)
 	GetBaseName(szKeyName,szKeyBase);
 
 	//get info
-	iBestScore=0;
+	siSolveInfo.best_score=0;
 	bMapLoaded=true;
 
 	//setup window
@@ -243,9 +243,9 @@ int LoadINI()
 		if(!stricmp(option,"cipher")) strcpy(szCipherName,value);
 		else if(!stricmp(option,"key")) strcpy(szKeyName,value);
 		else if(!stricmp(option,"plain")) strcpy(szPlainName,value);
-		else if(!stricmp(option,"fail")) siSolveInfo.max_fail=atoi(value);
+		else if(!stricmp(option,"fail")) siSolveInfo.max_tabu=atoi(value);
 		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
-		else if(!stricmp(option,"revert")) siSolveInfo.max_try=atoi(value);
+		else if(!stricmp(option,"revert")) siSolveInfo.max_tol=atoi(value);
 		else if(!stricmp(option,"tabu_syms")) siSolveInfo.tabu_syms=atoi(value);
 		else if(!stricmp(option,"lang")) iLang=atoi(value);
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
@@ -277,9 +277,9 @@ int SaveINI()
 	fprintf(ini_file,"cipher = %s\n",szCipherName);
 	fprintf(ini_file,"key = %s\n",szKeyName);
 	fprintf(ini_file,"plain = %s\n",szPlainName);
-	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_fail);
+	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_tabu);
 	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
-	fprintf(ini_file,"revert = %i\n",siSolveInfo.max_try);
+	fprintf(ini_file,"revert = %i\n",siSolveInfo.max_tol);
 	fprintf(ini_file,"tabu_syms = %i\n",siSolveInfo.tabu_syms);
 	fprintf(ini_file,"lang = %i\n",iLang);
 	fprintf(ini_file,"minword = %i\n",iWordMin);
