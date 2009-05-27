@@ -282,6 +282,7 @@
 #define IDM_CIPHER_UPPER				40118
 #define IDM_EDIT_CRIBS_CLEAR			40119
 #define IDM_VIEW_LOG					40120
+#define	IDM_CIPHER_FROM_PLAIN			40121
 
 // Next default values for new objects
 // 

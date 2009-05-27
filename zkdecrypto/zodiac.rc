@@ -65,6 +65,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Merge Symbols\tCtrl+M",      IDM_CIPHER_MERGE
         MENUITEM "To &Uppercase\tF4",               IDM_CIPHER_UPPER
+		MENUITEM "Set as Plain",               IDM_CIPHER_FROM_PLAIN
         MENUITEM SEPARATOR
         MENUITEM "Flip &Horizontal",            IDM_CIPHER_HORZ
         MENUITEM "Flip &Vertical",              IDM_CIPHER_VERT

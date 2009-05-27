@@ -203,9 +203,9 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_INITDIALOG: //init values
 			//hillclimber parameters
-			SetDlgItemInt(hWnd,IDC_MAXFAIL,siSolveInfo.max_fail,0);
+			SetDlgItemInt(hWnd,IDC_MAXFAIL,siSolveInfo.max_tabu,0);
 			SetDlgItemInt(hWnd,IDC_SWAPS,siSolveInfo.swaps,0);
-			SetDlgItemInt(hWnd,IDC_REVERT,siSolveInfo.max_try,0);
+			SetDlgItemInt(hWnd,IDC_REVERT,siSolveInfo.max_tol,0);
 
 			//language		
 			SendDlgItemMessage(hWnd,IDC_LANG,CB_ADDSTRING,0,(LPARAM)"English");
@@ -229,6 +229,7 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"ADFGX");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"ADFGVX");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"CEMOPRTU");
+			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"SUB + PERM");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_SETCURSEL,iSolveType,0);
 
 			//word length
@@ -269,9 +270,9 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					
 				case IDOK: //get new values
 					//hillclimber parameters
-					siSolveInfo.max_fail=GetDlgItemInt(hWnd,IDC_MAXFAIL,0,0);
+					siSolveInfo.max_tabu=GetDlgItemInt(hWnd,IDC_MAXFAIL,0,0);
 					siSolveInfo.swaps=GetDlgItemInt(hWnd,IDC_SWAPS,0,0);
-					siSolveInfo.max_try=GetDlgItemInt(hWnd,IDC_REVERT,0,0);
+					siSolveInfo.max_tol=GetDlgItemInt(hWnd,IDC_REVERT,0,0);
 
 					//language
 					iPrevLang=iLang;

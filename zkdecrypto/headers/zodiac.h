@@ -45,7 +45,7 @@
 #define ASCIPHER_TYPE	(DEFRACTION_TYPE) //set key as cipher characters
 #define LIMITKEY_TYPE	(iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_BIFID || iSolveType==SOLVE_TRIFID) //key edit is limited to square size
 #define TRANSPOSE_TYPE	(iSolveType==SOLVE_PERMUTE || iSolveType==SOLVE_COLTRANS || iSolveType==SOLVE_DOUBLE)
-#define ALLOW_LOWERCASE (TRANSPOSE_TYPE || iSolveType==SOLVE_CEMOPRTU)
+#define ALLOW_LOWERCASE (TRANSPOSE_TYPE || iSolveType==SOLVE_CEMOPRTU || iSolveType==SOLVE_SUBPERM)
 
 //cipher/key data & files
 Message message; //cipher & main key
@@ -99,7 +99,7 @@ long lRowCol;
 
 //solver data
 SOLVEINFO siSolveInfo;
-int iPriority, iLang, iBestScore=0;
+int iPriority, iLang;
 char szExtraLtr[MAX_EXTRA+1]="";
 int iBruteSymbols, iBatchBestScore;
 char lprgcBatchBestKey[4096];

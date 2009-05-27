@@ -129,6 +129,8 @@ inline int CommandCipher(int cmd_id)
 			delete symbols;
 			return 0;
 
+		case IDM_CIPHER_FROM_PLAIN: message.SetCipher(message.GetPlain()); szCipher=message.GetCipher(); SetDlgInfo(); return 0;
+
 		case IDM_CIPHER_COL_LEFT:
 			if(!bMsgLoaded || iColSel==-1) return 0;
 			if(--iColSel<0) iColSel=iLineChars-1;
@@ -268,12 +270,12 @@ inline int CommandKey(int cmd_id)
 				SetUndo();
 				siSolveInfo.best_key[0]='\0';
 				message.cur_map.Init(lprgiInitKey);
-				SetDlgInfo();
+				SetDlgInfo(); SetKeyEdit();
 			}
 			
 			return 0;
 
-		case IDM_KEY_CT: if(DIGRAPH_MODE) message.digraph_map.AsCipher(); else message.cur_map.AsCipher(); SetDlgInfo(); return 0;
+		case IDM_KEY_CT: if(DIGRAPH_MODE) message.digraph_map.AsCipher(); else message.cur_map.AsCipher(); SetDlgInfo(); SetKeyEdit(); return 0;
 
 		case IDM_KEY_SCRAMBLE:
 			SetUndo();
@@ -287,14 +289,14 @@ inline int CommandKey(int cmd_id)
 				else message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 			}
 
-			SetDlgInfo();
+			SetDlgInfo(); SetKeyEdit();
 			return 0;
 
 		case IDM_KEY_CLEAR:
 			SetUndo();
 			if(DIGRAPH_MODE) message.digraph_map.Clear(CLR_PLAIN);
 			else message.cur_map.Clear(CLR_PLAIN);
-			SetDlgInfo();
+			SetDlgInfo(); SetKeyEdit();
 			return 0;
 
 		case IDM_KEY_LOCK: if(DIGRAPH_MODE) message.digraph_map.SetLock(iCurSymbol,true); else message.cur_map.SetLock(iCurSymbol,true); SetKey(); return 0;
@@ -350,7 +352,7 @@ inline int CommandSolve(int cmd_id)
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_STRING),hMainWnd,(DLGPROC)StringProc))
 			{
 				SetUndo();
-				iBestScore=WordPlug(message,szString);
+				siSolveInfo.best_score=WordPlug(message,szString);
 				SetDlgInfo();
 			}
 			return 0;
@@ -365,6 +367,7 @@ inline int CommandSolve(int cmd_id)
 				SetUndo();
 				message.Insert(iTextSel,szString);
 				SetDlgInfo();
+				SetKeyEdit();
 			}
 			return 0;
 			

@@ -6,6 +6,7 @@
 #include <string>
 
 #define MAX_STRINGS 2048
+#define LOG2 .693147
 
 #define NUM_ROWS(C,R) (C%R? (C/R)+1:(C/R))
 
