@@ -23,29 +23,13 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDC_TS_UP:
-					iCharSize+=float(0.1);
-					SetCharSize();
-					return 0;
+				case IDC_TS_UP: iCharSize+=float(0.1); SetCharSize(); return 0;
+				case IDC_TS_DOWN: iCharSize-=float(0.1); SetCharSize(); return 0;
 
-				case IDC_TS_DOWN:
-					iCharSize-=float(0.1);
-					SetCharSize();
-					return 0;
+				case IDC_RS_UP: SetLineChars(iLineChars+1); return 0;
+				case IDC_RS_DOWN: SetLineChars(iLineChars-1); return 0;
 
-				case IDC_RS_UP:
-					if(iLineChars<message.GetLength()-1) iLineChars++;
-					SetScrollBar();
-					ClearTextAreas();
-					SetText();
-					return 0;
-
-				case IDC_RS_DOWN:
-					if(iLineChars>1) iLineChars--;
-					SetScrollBar();					
-					ClearTextAreas();
-					SetText();
-					return 0;
+				case IDC_LINE_CHARS: if(HIWORD(wParam)==EN_CHANGE) SetLineChars(GetDlgItemInt(hWnd,IDC_LINE_CHARS,false,true),false); return 0;
 			}
 
 		case WM_VSCROLL: //scroll text
@@ -423,6 +407,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.disp_tabu=SetTabuTabInfo;
 	sprintf(siSolveInfo.log_name,"%s\\%s",szExeDir,"log.txt");
 	siSolveInfo.tabu=&tabu_map;
+	siSolveInfo.dictionary=&dictionary;
 	siSolveInfo.tabu_syms=10;
 	SetInfo(&siSolveInfo);
 	Reset();
@@ -437,13 +422,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	else SendDlgItemMessage(hMainWnd,IDC_MAP_VALUE,EM_LIMITTEXT,1,0);
 
 	//sovle parameters
-	message.SetKeyLength(5);
-	message.SetKey(szExtraLtr);
 	message.SetBlockSize(1);
 
 	//show the windows
 	GetWindowRect(hMainWnd,&rMainRect);
-	SetWindowPos(hTextWnd,TEXT_POS,rMainRect.right+10,rMainRect.left,400,rMainRect.bottom-rMainRect.top,0);
+	SetWindowPos(hTextWnd,TEXT_POS,rMainRect.right+10,rMainRect.left,550,rMainRect.bottom-rMainRect.top,0);
 	ShowWindow(hMainWnd,SW_SHOWNORMAL);
 	ShowWindow(hTextWnd,SW_SHOWNORMAL);
 	ShowWindow(hCipher,SW_SHOWNORMAL);
@@ -456,7 +439,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
  
     //setup status bar sections
-    int statwidths[] = {80, 140, 200, 275, -1};
+    int statwidths[] = {125, 225, 325, 425, -1};
     SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
 	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
 

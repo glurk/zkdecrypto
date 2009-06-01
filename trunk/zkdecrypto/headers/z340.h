@@ -36,6 +36,8 @@ struct SOLVEINFO
 	char log_name[2048];
 	std::map<std::string,int> *tabu;
 	std::map<std::string,int>::iterator tabu_end;
+	std::map<std::string,int> *dictionary;
+	int dict_words;
 	int tabu_syms;
 
 	float lang_ioc;
@@ -79,6 +81,7 @@ void			printfrequency(int,int *,char *,int);
 int				hillclimb(Message&,const char *,int,char *,int);
 int				hillclimb2(Message&,int,char*,int);
 void			running_key(Message&,char*);
+void			dictionary_vigenere(Message&);
 
 void 			GetUnigraphs(double*);
 int 			ReadNGraphs(const char*,int);

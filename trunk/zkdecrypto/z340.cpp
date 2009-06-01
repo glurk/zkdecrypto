@@ -202,38 +202,30 @@ EXIT:
 //index lookup for letter indexs 0-25, faster and supports lowercase
 //the fast stat functions only count letters, which helps with ciphers that have other characters in the plain text
 
-char LETTER_INDEXS[256]={
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,
-15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,
--1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,
-15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
--1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+void GetFreqs(const char *string, int length)
+{
+	memset(freqs,0,104);
+	count=unique=0;
+
+	for(int index=0; index<length; index++) //frequency table, and uniques
+	{
+		int letter_index=LETTER_INDEXS[(unsigned char)string[index]];
+		if(letter_index>-1) 
+		{
+			if(!freqs[letter_index]) unique++;
+			freqs[letter_index]++;
+			count++;
+		}
+	}
+}
 
 float FastIoC(const char *string, int length)
 {
-	int index, letter_index, freqs[26], count=0;
 	float ic=0;
 	
-	memset(freqs,0,104);
-	
-	for(index=0; index<length; index++) //frequency table
-	{
-		letter_index=LETTER_INDEXS[(unsigned char)string[index]];
-		if(letter_index>-1) {freqs[letter_index]++; count++;}
-	}
+	GetFreqs(string,length);
 
-	for(index=0; index<26; index++) //calculate ioc
+	for(int index=0; index<26; index++) //calculate ioc
 		if(freqs[index]>1) ic+=(freqs[index])*(freqs[index]-1); 
 
 	ic/=(count)*(count-1);
@@ -243,12 +235,12 @@ float FastIoC(const char *string, int length)
 
 float FastDIoC(const char* string, int length, int step=1)
 {
-	int index, freqs[676], letter1_index, letter2_index, count=0;
+	int freqs[676], letter1_index, letter2_index, count=0;
 	float ic=0;
 	
 	memset(freqs,0,2704);
 	
-	for(index=0; index<length-1; index+=step) //frequency table
+	for(int index=0; index<length-1; index+=step) //frequency table
 	{
 		letter1_index=LETTER_INDEXS[(unsigned char)string[index]];
 		letter2_index=LETTER_INDEXS[(unsigned char)string[index+1]];
@@ -265,18 +257,11 @@ float FastDIoC(const char* string, int length, int step=1)
 
 float FastEntropy(const char *string, int length)
 {
-	int index, letter_index, freqs[26], count=0;
 	float entropy=0, prob_mass;
 	
-	memset(freqs,0,104);
-	
-	for(index=0; index<length; index++) //frequency table
-	{
-		letter_index=LETTER_INDEXS[(unsigned char)string[index]];
-		if(letter_index>-1) {freqs[letter_index]++; count++;}
-	}
+	GetFreqs(string,length);
 
-	for(index=0; index<26; index++) //calculate entropy
+	for(int index=0; index<26; index++) //calculate entropy
 	{
 		if(!freqs[index]) continue;
 		prob_mass=float(freqs[index])/count;
@@ -289,23 +274,11 @@ float FastEntropy(const char *string, int length)
 
 float FastChiSquare(const char *string, int length)
 {
-	int index, letter_index, freqs[26], count=0, unique=0;
 	float chi2=0, prob_mass, cur_calc;
 
-	memset(freqs,0,104);
-	
-	for(index=0; index<length; index++) //frequency table, and uniques
-	{
-		letter_index=LETTER_INDEXS[(unsigned char)string[index]];
-		if(letter_index>-1) 
-		{
-			if(!freqs[letter_index]) unique++;
-			freqs[letter_index]++;
-			count++;
-		}
-	}
+	GetFreqs(string,length);
 
-	for(index=0; index<26; index++) //calculate chi2
+	for(int index=0; index<26; index++) //calculate chi2
 	{
 		if(!freqs[index]) continue;
 		prob_mass=float(count)/unique;
@@ -358,7 +331,16 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1;
 
-	score=pentascore+tetrascore+triscore+biscore;
+	score=pentascore+tetrascore+triscore+biscore;  //score=40000;
+
+	/*int actfreq[26], expfreq[26], diff=0;
+	msg.GetActFreq(actfreq);
+	msg.GetExpFreq(expfreq);
+
+	for(int cur_ltr=0; cur_ltr<26; cur_ltr++)
+		diff+=ABS(actfreq[cur_ltr]-expfreq[cur_ltr]);
+
+	score-=diff<<7;*/
 
 	if(info->ioc_weight) score_mult*=1.05-(info->ioc_weight*ABS(FastIoC(solv,score_len)-info->lang_ioc));
 		
@@ -621,134 +603,24 @@ int WordPlug(Message &msg, const char *word)
 	return best_score;
 }
 
-//K3
-//int key_n[]={ 5<<8 | 40, 4<<8 | 40, 3<<8 | 40, 2<<8 | 40, 1<<8 | 40, 0<<8 | 40, 7<<8 | 41,  6<<8 | 41, 5<<8 | 41,  4<<8 | 41,  3<<8 | 41,  2<<8 | 41, 1<<8 | 41, 	0<<8 | 41};
-	
-//K4 14 cols
-//int key[]={4<<8 | 12, 3<<8 | 12, 2<<8 | 12, 1<<8 | 12, 	0<<8 | 12, 5<<8 | 11, 6<<8 | 13,  5<<8 | 13,  4<<8 | 13,  3<<8 | 13,  2<<8 | 13, 1<<8 | 13, 0<<8 | 13, 5<<8 | 12};
+#define MSG_SWAP	{temp=key[p1]; key[p1]=key[p2]; key[p2]=temp;}
+#define MSG_DECODE	msg.SetKey(key); msg.Decode(); if(solve_type==SOLVE_CEMOPRTU) {strupr(solved);}
 
-//K3 7 Cols
-//int key[]={3<<8 | 6, 10<<8 | 6, 1<<8 | 6, 2<<8 | 6, 8<<8 | 6, 7<<8 | 6, 11<<8 | 6,  6<<8 | 6,  4<<8 | 6,  0<<8 | 6, 5<<8 | 6, 12<<8 | 6,  13<<8 | 6, 9<<8 | 6};	
-
-/*for(int ki=0; ki<14; ki++)
+inline int IN_SAME_KEY(int p1, int p2, int *split_points, int num_splits)
 {
-
-}*/
-
-/*
-void KryptosMatrix4(char *cipher, char *solved, char *key, int enc_dec)
-{
-	int cipher_len=strlen(cipher);
-	int iKeyIndex=0, key_len=6;
-	int iNewIndex=-1;
-	int line_len=cipher_len/key_len;
-	int line_diff;
-	
-	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
+	for(int cur_split=0; cur_split<num_splits; cur_split++)
 	{
-		if(iKeyIndex) line_diff=(key[iKeyIndex]-'0')-(key[iKeyIndex-1]-'0');
-		else line_diff=(key[iKeyIndex]-'0');
-		
-		iNewIndex+=line_len*line_diff;
-		if(iKeyIndex%2) iNewIndex--;
-
-		if(iNewIndex<0) {iNewIndex+=cipher_len; iNewIndex++;}
-		if(iNewIndex>=cipher_len) {iNewIndex-=cipher_len; iNewIndex--;}
-			
-		if(enc_dec) solved[iCipherIndex]=cipher[iNewIndex];
-		else solved[iNewIndex]=cipher[iCipherIndex];
-
-		if(++iKeyIndex==key_len) iKeyIndex=0;
+		if(p1==split_points[cur_split] ||  p2==split_points[cur_split]) return 0;
+		if(IS_BETWEEN(split_points[cur_split],p1,p2)) return 0;
 	}
 
-	solved[cipher_len]='\0';
+	return 1;
 }
-*/
-
-void KryptosMatrix4(char *cipher, char *solved, int *key, int iLineChars, int enc_dec)
-{
-	int cipher_len=strlen(cipher);
-	int iKeyIndex=0, iNewIndex, iLines;
-	int cur_row, cur_col=-1;
-
-	memset(solved,1,cipher_len);
-	
-	if(cipher_len==336) {iLineChars=42;}
-	//if(cipher_len==98) {iLineChars=7;}
-
-	iLines=cipher_len/iLineChars;
-
-	cur_col=key[iKeyIndex] & 0x000000FF;
-	cur_row=key[iKeyIndex]>>8 & 0x000000FF;
-	if(++iKeyIndex==14) iKeyIndex=0;
-	
-	for(int iCipherIndex=0; iCipherIndex<cipher_len; iCipherIndex++)
-	{
-		//set cipher//plain character
-		iNewIndex=iLineChars*cur_row+cur_col;
-
-		if(enc_dec) {if(solved[iNewIndex]!=1) continue; solved[iNewIndex]=cipher[iCipherIndex];}
-		else solved[iCipherIndex]=cipher[iNewIndex];
-
-		if(iLines>8) //K4 7 cols
-		{
-			cur_col--;
-			cur_row-=8;
-			if(cur_row<0) cur_row+=iLines;
-		}
-
-		else //K3
-		{
-			cur_row-=2; cur_col-=2; //move to next hole
-
-			if(cur_row<0) 
-			{
-				cur_row+=iLines;
-				
-				if((iLines%2)) //odd # lines 
-				{
-					if(cur_row==iLines-1) {cur_row--; cur_col--;} //on the last line, go up & left
-					else if(cur_row==iLines-2) {cur_row++; cur_col++;} //on next to last, down & right
-				}
-				
-				else cur_col++;	//just go right on even # rows
-			}
-		}
-
-		if(cur_col<0) //start next shift position
-		{
-			cur_col=key[iKeyIndex] & 0x000000FF;
-			cur_row=key[iKeyIndex]>>8 & 0x000000FF;
-			if(++iKeyIndex==14) iKeyIndex=0;
-		} 
-	}
-
-	solved[cipher_len]='\0';
-}
-
-#define MSG_SWAP  {temp=key[p1]; key[p1]=key[p2]; key[p2]=temp;}
-
-#define MSG_DECODE	switch(solve_type) {	\
-					case SOLVE_DISUB:		msg.digraph_map.FromKey(key); break; \
-					case SOLVE_VIG:			msg.SetKey(key); break; \
-					case SOLVE_BIFID:		\
-					case SOLVE_PLAYFAIR:	strcpy(msg.polybius5,key); break; \
-					case SOLVE_ADFGX:		msg.SetSplitKey(key,5); break; \
-					case SOLVE_ADFGVX:		msg.SetSplitKey(key,6); break; \
-					case SOLVE_CEMOPRTU:	msg.SetSplitKey(key,8); break; \
-					case SOLVE_TRIFID:		strcpy(msg.trifid_array,key); break; \
-					case SOLVE_PERMUTE:		\
-					case SOLVE_COLTRANS:	\
-					case SOLVE_DOUBLE:		msg.SetTransKey(key); break; \
-					case SOLVE_SUBPERM:		msg.SetSplitKey(key,0); break;} \
-					msg.Decode(); if(solve_type==SOLVE_CEMOPRTU) strupr(solved);
-
-
 
 int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 {
 	Message msg; //decoding message
-	int i, p1, p2, clength, temp, use_key_len, full_key_len, split_index;
+	int i, p1, p2, clength, temp, use_key_len, full_key_len;
 	int score=0, last_score=0, improve=0, tolerance=0;
 	long start_time=0, end_time=0;
 	char *cipher, *solved;
@@ -765,12 +637,27 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 	solved=msg.GetPlain();
 	full_key_len=use_key_len=strlen(key);
 
-	split_index=ChrIndex(key,'|');
+	//key sections
+	int split_points[10];
+	int num_splits=0;
+
+	for(int key_start=0; ; key_start++)
+	{
+		int key_length=ChrIndex(key+key_start,'|');
+		if(key_length==-1) break;
+
+		key_start+=key_length;
+
+		split_points[num_splits]=key_start;
+		num_splits++;
+		
+	}
 
 	switch(solve_type)
 	{
 		case SOLVE_VIG: use_key_len=msg.GetKeyLength(); break;
 		case SOLVE_DISUB: use_key_len=msg.digraph_map.GetNumDigraphs()<<1;
+		//case SOLVE_COLVIG: use_key_len=split_points[0];
 	}
  
 	log_file=fopen(info->log_name,"w"); //open log file
@@ -801,10 +688,11 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 				if(p1>use_key_len && p2>use_key_len) continue; //p1&p2 in extra letter area
 				if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
 
-				if(p1==split_index || p2==split_index || (p1<split_index && p2>split_index) || (p2<split_index && p1>split_index)) continue; //in different split keys, or on split
+				if(!IN_SAME_KEY(p1,p2,split_points,num_splits)) continue; //in different split keys, or on split
 			
 				MSG_SWAP; MSG_DECODE; //swap, decode, score
-				if(solve_type==SOLVE_SUBPERM) {key_str.assign(key,msg.cur_map.GetNumSymbols()); key_str.append(key+split_index);}
+				if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(key,msg.cur_map.GetNumSymbols()); key_str.append(key+split_points[0]);}
+				else if(solve_type==SOLVE_COLVIG) {key_str.assign(key,msg.GetKeyLength()); key_str.append(key+split_points[0]);}
 				else key_str.assign(key,use_key_len);
 				if(info->tabu->find(key_str)!=info->tabu_end) score=-100000;
 				else score=calcscore(msg,clength,solved);
@@ -837,7 +725,9 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 
 			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) //blacklist best key and reset best score
 			{
-				if(solve_type==SOLVE_SUBPERM) {key_str.assign(info->best_key,msg.cur_map.GetNumSymbols()); key_str.append(info->best_key+split_index);}
+				if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(info->best_key,msg.cur_map.GetNumSymbols()); key_str.append(info->best_key+split_points[0]);}
+				else if(solve_type==SOLVE_COLVIG) {key_str.assign(info->best_key,msg.GetKeyLength()); key_str.append(info->best_key+split_points[0]);}
+
 				else key_str.assign(info->best_key,use_key_len);
 				(*info->tabu)[key_str]=info->tabu->size();
 				info->tabu_end=info->tabu->end();
@@ -864,13 +754,14 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 		{
 			p1=rand()%use_key_len; p2=rand()%use_key_len;
 			if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
-			if(p1==split_index || p2==split_index || (p1<split_index && p2>split_index) || (p2<split_index && p1>split_index)) continue; //in different split keys, or on split
+			if(!IN_SAME_KEY(p1,p2,split_points,num_splits)) continue; //in different split keys, or on split
 			MSG_SWAP;
 		} 
    
 		MSG_DECODE; //last score at end of iteration
 
-		if(solve_type==SOLVE_SUBPERM) {key_str.assign(key,msg.cur_map.GetNumSymbols()); key_str.append(key+split_index);}
+		if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(key,msg.cur_map.GetNumSymbols()); key_str.append(key+split_points[0]);}
+		else if(solve_type==SOLVE_COLVIG) {key_str.assign(key,msg.GetKeyLength()); key_str.append(key+split_points[0]);}
 		else key_str.assign(key,use_key_len);
 		if(info->tabu->find(key_str)!=info->tabu_end) last_score=-100000;
 		else last_score=calcscore(msg,clength,solved); //last score at end of iteration
@@ -909,9 +800,35 @@ void running_key(Message &msg, char *key_text)
 		if(cur_score>info->best_score)
 		{
 			info->best_score=cur_score;
-			strcpy(info->best_key,msg.GetKey());
+			strcpy(info->best_key,msg.key);
 			if(info->disp_all) info->disp_all();
 		}
 
+	}
+}
+
+void dictionary_vigenere(Message &msg)
+{
+	int msg_len=msg.GetLength();
+	int cur_score=0;
+	std::map<std::string,int>::iterator iter=info->dictionary->begin();
+	info->best_score=-100000;
+	info->cur_tabu=info->dict_words;
+
+	for(info->cur_tol=0; iter!=info->dictionary->end(); info->cur_tol++, ++iter)
+	{
+		if(info->disp_info) info->disp_info();
+
+		if(!info->running) break;
+
+		msg.SetKey(std::string(iter->first).c_str());
+		msg.SetKeyLength(strlen(msg.key));
+		cur_score=calcscore(msg,msg_len,msg.GetPlain());
+		if(cur_score>info->best_score)
+		{
+			info->best_score=cur_score;
+			strcpy(info->best_key,msg.key);
+			if(info->disp_all) info->disp_all();
+		}
 	}
 }

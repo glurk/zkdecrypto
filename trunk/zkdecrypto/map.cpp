@@ -372,7 +372,7 @@ void Map::ToKey(char *key, char *extra)
 	strcat(key,extra);
 }
 
-void Map::FromKey(char *key)
+void Map::FromKey(const char *key)
 {
 	for(int cur_symbol=0; cur_symbol<num_symbols && key[cur_symbol]; cur_symbol++)
 		symbols[cur_symbol].plain=key[cur_symbol];
@@ -505,7 +505,7 @@ void DiMap::ToKey(char *key, char *extra)
 	strcat(key,extra);
 }
 
-void DiMap::FromKey(char *key)
+void DiMap::FromKey(const char *key)
 {
 	for(int cur_digraph=0; cur_digraph<num_digraphs; cur_digraph++)
 	{

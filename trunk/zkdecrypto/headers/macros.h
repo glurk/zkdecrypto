@@ -10,7 +10,9 @@
 #define MIN(X,Y) (X>Y? Y:X)
 #define CLOSER(A,B,C) (ABS((A)-(C))<ABS((B)-(C))) //TRUE if A is closer to C than B is
 #define CLOSE_TO(A,B,T) (ABS((A)-(B))<=ROUNDTOINT((B)*(T))? true:false)
-#define IS_BETWEEN(X,Y,Z) ((X)>=(Y) && (X)<=(Z))
+#define IS_BETWEEN_A(X,Y,Z) ((X)>=(Y) && (X)<=(Z))
+#define IS_BETWEEN(X,Y,Z) (Y<Z? IS_BETWEEN_A(X,Y,Z):IS_BETWEEN_A(X,Z,Y))
+
 #define IS_LOWER_LTR(c) ((c>='a' && c<='z')? 1:0)
 #define IS_UPPER_LTR(c) ((c>='A' && c<='Z')? 1:0)
 

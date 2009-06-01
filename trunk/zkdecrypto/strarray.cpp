@@ -109,7 +109,7 @@ void StringArray::Clear()
 	num_strings=0;
 }
 
-int ChrIndex(char *string, char chr)
+int ChrIndex(const char *string, char chr)
 {
 	char *chr_ptr=strchr(string,chr);
 	if(!chr_ptr) return -1;

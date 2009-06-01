@@ -99,12 +99,11 @@ int LoadMessage(char *filename, int type)
 	
 	iCurSymbol=-1;
 	iTextSel=-1;
-	iLineChars=message.CalcBestWidth(message.GetLength());
 	tabu_map.clear();
+	SetLineChars(message.CalcBestWidth(message.GetLength()));
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
 	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,message.GetLength());
-	ClearTextAreas();
-	SetScrollBar();
+	
 	SetTitle();
 	SetCipher();
 	SetPatterns();
@@ -113,7 +112,6 @@ int LoadMessage(char *filename, int type)
 
 	return 1;
 }
-
 
 int LoadMap(char *filename)
 {

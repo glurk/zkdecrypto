@@ -60,7 +60,7 @@ public:
 	void MergeSymbols(char,char);
 	
 	void ToKey(char*,char*);
-	void FromKey(char*);
+	void FromKey(const char*);
 
 	int GetLock(int index) {return locked[index];}
 	void SetLock(int index, int lock) {locked[index]=lock;}
@@ -133,7 +133,7 @@ public:
 	void SortByFreq();
 
 	void ToKey(char*,char*);
-	void FromKey(char*);
+	void FromKey(const char*);
 
 	//set this map equal to another
 	void operator = (DiMap &src_dimap) 
