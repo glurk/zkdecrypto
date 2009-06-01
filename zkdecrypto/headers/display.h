@@ -207,8 +207,8 @@ void OutputText(int bSection)
 	iLength=message.GetLength();
 		
 	//plain/cipher
-	if(bSection) {hWnd=hPlain; hDC=hPlainDC; szString=szPlain;}
-	else {hWnd=hCipher; hDC=hCipherDC; szString=szCipher;}
+	if(bSection) {hWnd=hPlain; hDC=hPlainDC; szString=message.GetPlain();}
+	else {hWnd=hCipher; hDC=hCipherDC; szString=message.GetCipher();}
 
 	dwBG=GetSysColor(COLOR_WINDOW);
 	crBG=RGB(GetRValue(dwBG),GetGValue(dwBG),GetBValue(dwBG));
@@ -249,6 +249,8 @@ EXIT:
 //refresh text display
 void SetText()
 {
+	if(!bMsgLoaded) return;
+
 	int msg_len=message.GetLength();
 	HWND hStatus;
 	
@@ -392,6 +394,22 @@ void ClearTextAreas()
 	Rectangle(hPlainDC,rTextRect.left,rTextRect.top,rTextRect.right,rTextRect.bottom);
 	EndPath(hPlainDC); 
     SelectClipPath(hPlainDC,RGN_COPY);
+}
+
+void SetLineChars(int new_line_chars, int display=true)
+{
+	if(!bMsgLoaded) return;
+	if(new_line_chars==0) return;
+
+	iLineChars=new_line_chars;
+	if(iLineChars<1) {iLineChars=1; display=true;}
+	if(iLineChars>message.GetLength()) {iLineChars=message.GetLength(); display=true;}
+
+	if(display) SetDlgItemInt(hTextWnd,IDC_LINE_CHARS,iLineChars,false);
+	iLines=message.GetLength()/iLineChars;
+	ClearTextAreas();
+	SetScrollBar();
+	SetText();
 }
 
 //set font size
@@ -768,25 +786,34 @@ inline void SetStatsTabInfo()
 {
 	if(!bMsgLoaded) return;
 
+	char *cipher, *plain;
+	int length;
+
+	cipher=message.GetCipher();
+	plain=message.GetPlain();
+	length=message.GetLength();
+
+	float friedman=(siSolveInfo.lang_ioc-IOC_RAND)/(IoC(cipher,length)-IOC_RAND);
+
 	//cipher text stats
-	sprintf(szText,"Length [N]: %7i",message.GetLength());
+	sprintf(szText,"Length [N]: %7i\t",length);
 	SetDlgItemText(hMainWnd,IDC_STATS_LENGTH,szText);
 	sprintf(szText,"Multiplicity [M]: %.5f",message.Multiplicity());
 	SetDlgItemText(hMainWnd,IDC_STATS_MULTI,szText);
 
-	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetCipher(),message.GetLength()));
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(cipher,length));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2,szText);
-	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetCipher(),message.GetLength()));
+	sprintf(szText,"Entropy [H]: %.5f %.3f",Entropy(cipher,length),friedman);
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO,szText);
-	sprintf(szText,"IoC [IC,DIC,EDIC]: %.5f %.5f %.5f",IoC(message.GetCipher(),message.GetLength()),DIoC(message.GetCipher(),message.GetLength(),1),DIoC(message.GetCipher(),message.GetLength(),2));
+	sprintf(szText,"IoC [IC,DIC,EDIC]: %.5f %.5f %.5f",IoC(cipher,length),DIoC(cipher,length,1),DIoC(cipher,length,2));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC,szText);
 	
 	//plain text stats
-	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(message.GetPlain(),message.GetLength()));
+	sprintf(szText,"Chi^2 [X2]: %.5f",ChiSquare(plain,length));
 	SetDlgItemText(hMainWnd,IDC_STATS_CHI2_P,szText);
-	sprintf(szText,"Entropy [H]: %.5f",Entropy(message.GetPlain(),message.GetLength()));
+	sprintf(szText,"Entropy [H]: %.5f",Entropy(plain,length));
 	SetDlgItemText(hMainWnd,IDC_STATS_ENTRO_P,szText);
-	sprintf(szText,"IoC [IC,DIC,EDIC]: %.5f %.5f %.5f",IoC(message.GetPlain(),message.GetLength()),DIoC(message.GetPlain(),message.GetLength(),1),DIoC(message.GetPlain(),message.GetLength(),2));
+	sprintf(szText,"IoC [IC,DIC,EDIC]: %.5f %.5f %.5f",IoC(plain,length),DIoC(plain,length,1),DIoC(plain,length,2));
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC_P,szText);
 }
 
@@ -818,27 +845,9 @@ void SetKeyEdit()
 
 	SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,0,0);
 
-	switch(iSolveType) //set key text & max length
-	{
-		case SOLVE_HOMO:
-		case SOLVE_DISUB: strcpy(szText,""); SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); break;
-		case SOLVE_VIG: strcpy(szText,message.GetKey()); break;
-		case SOLVE_RUNKEY: iMaxKeyLen=0; strcpy(szText,siSolveInfo.best_key); break;
-		case SOLVE_PLAYFAIR: 
-		case SOLVE_BIFID: iMaxKeyLen=25; strcpy(szText,message.polybius5); break;
-		case SOLVE_TRIFID: iMaxKeyLen=27; strcpy(szText,message.trifid_array); break;
-		case SOLVE_PERMUTE:
-		case SOLVE_COLTRANS: strcpy(szText,message.coltrans_key[0]); break;
-		case SOLVE_DOUBLE: sprintf(szText,"%s|%s",message.coltrans_key[0],message.coltrans_key[1]); break;
-		case SOLVE_ADFGX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius5,message.coltrans_key[0]); break;
-		case SOLVE_ADFGVX: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius6,message.coltrans_key[0]);  break;
-		case SOLVE_CEMOPRTU: iMaxKeyLen=0; sprintf(szText,"%s|%s",message.polybius8,message.coltrans_key[0]);  break;
-		case SOLVE_SUBPERM: iMaxKeyLen=0; message.cur_map.ToKey(szText,""); strcat(szText,"|"); strcat(szText,message.coltrans_key[0]); break;
-	}
-
-	SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText); 
-	if(LIMITKEY_TYPE) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,iMaxKeyLen,0); //limit key edit length
-	else SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,0,0);
+	message.GetKey(szText,"");
+	SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText);
+	if(iSolveType==SOLVE_HOMO || iSolveType==SOLVE_DISUB) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); 
 }
 
 inline void SetDlgInfo()
@@ -848,7 +857,7 @@ inline void SetDlgInfo()
 	if(siSolveInfo.running) //set key to hillclimber best if running
 	{
 		if(iSolveType==SOLVE_HOMO) message.cur_map.FromKey(siSolveInfo.best_key);
-		else SetKeyEdit();
+		SetKeyEdit();
 	}
 		
 	SetPlain();
@@ -863,22 +872,13 @@ void GetKeyEdit()
 {
 	if(siSolveInfo.running) return;
 	GetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText,255);
-					
-	switch(iSolveType)
+	if(iSolveType==SOLVE_VIG) message.SetKeyLength(strlen(szText));
+	if(iSolveType==SOLVE_COLVIG) 
 	{
-		case SOLVE_VIG:		message.SetKeyLength(strlen(szText)); message.SetKey(szText); break;
-		case SOLVE_BIFID: 
-		case SOLVE_PLAYFAIR:memcpy(message.polybius5,szText,25); break;
-		case SOLVE_TRIFID:	memcpy(message.trifid_array,szText,27); break;
-		case SOLVE_PERMUTE: 
-		case SOLVE_COLTRANS: 
-		case SOLVE_DOUBLE:	message.SetTransKey(szText); break;
-		case SOLVE_ADFGX:	message.SetSplitKey(szText,5); break;
-		case SOLVE_ADFGVX:	message.SetSplitKey(szText,6); break;
-		case SOLVE_CEMOPRTU:message.SetSplitKey(szText,8); break;
-		case SOLVE_SUBPERM: message.SetSplitKey(szText,0); break;
+		int vig_key=ChrIndex(szText,'|');
+		if(vig_key>-1) message.SetKeyLength(vig_key); 
 	}
-
+	message.SetKey(szText); //locks up when vig key is one number
 	if(strlen(szText)) SetDlgInfo();
 }
 
@@ -909,7 +909,7 @@ void SetSolveTypeFeatures()
 	//decoding info
 	message.SetDecodeType(iSolveType);
 	if(ASCIPHER_TYPE) message.cur_map.AsCipher();
-	message.InitArrays();
+	message.InitKeys();
 	SetKeyEdit();
 					
 	//key update length
@@ -931,6 +931,10 @@ void SetSolveTypeFeatures()
 		SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,5,false);
 		SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,0,false);
 	}
+
+	if(iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_BIFID) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,25,0); //limit key edit length
+	else if(iSolveType==SOLVE_TRIFID) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,27,0); //limit key edit length
+	else SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,0,0);
 }
 
 //call when the cipher is changed, i.e. symbol merge

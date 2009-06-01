@@ -26,6 +26,7 @@
 #define IOC_FRE		.0777
 #define IOC_POR		.0746
 #define IOC_RUS		.0677
+#define IOC_RAND	.0385
 
 #define DIOC		.0075
 #define CHI			.55
@@ -43,9 +44,8 @@
 #define DIGRAPH_MODE	((iSolveType==SOLVE_DISUB || iSolveType==SOLVE_PLAYFAIR)? 1:0) //digraph key and display
 #define DEFRACTION_TYPE (iSolveType==SOLVE_ADFGX || iSolveType==SOLVE_ADFGVX || iSolveType==SOLVE_CEMOPRTU) //plain text half as long as cipher
 #define ASCIPHER_TYPE	(DEFRACTION_TYPE) //set key as cipher characters
-#define LIMITKEY_TYPE	(iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_BIFID || iSolveType==SOLVE_TRIFID) //key edit is limited to square size
-#define TRANSPOSE_TYPE	(iSolveType==SOLVE_PERMUTE || iSolveType==SOLVE_COLTRANS || iSolveType==SOLVE_DOUBLE)
-#define ALLOW_LOWERCASE (TRANSPOSE_TYPE || iSolveType==SOLVE_CEMOPRTU || iSolveType==SOLVE_SUBPERM)
+#define TRANSPOSE_TYPE	(iSolveType==SOLVE_PERMUTE || iSolveType==SOLVE_COLTRANS || iSolveType==SOLVE_DOUBLE || iSolveType==SOLVE_TRIPPLE)
+#define ALLOW_LOWERCASE (TRANSPOSE_TYPE || iSolveType==SOLVE_CEMOPRTU || iSolveType==SOLVE_SUBPERM || iSolveType==SOLVE_COLVIG)
 
 //cipher/key data & files
 Message message; //cipher & main key

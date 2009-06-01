@@ -31,7 +31,7 @@ class StringArray
 		int num_strings;
 };
 
-int ChrIndex(char*,char);
+int ChrIndex(const char*,char);
 int RadixSort(char*);
 int GetUniques(const char*, char*, int*);
 float IoC(const char*,int);

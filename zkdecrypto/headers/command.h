@@ -228,9 +228,7 @@ inline int CommandCipher(int cmd_id)
 			if(message.Rotate(iLineChars,0)) 
 			{
 				SetUndo();
-				iLines=message.GetLength()/iLineChars;
-				iLineChars=iLines;
-				ClearTextAreas(); SetScrollBar(); SetText();
+				SetLineChars(message.GetLength()/iLineChars);
 				SetPatterns(); SetDlgInfo();
 			}
 			return 0;
@@ -239,9 +237,7 @@ inline int CommandCipher(int cmd_id)
 			if(message.Rotate(iLineChars,1)) 
 			{
 				SetUndo();
-				iLines=message.GetLength()/iLineChars;
-				iLineChars=iLines;
-				ClearTextAreas(); SetScrollBar(); SetText();
+				SetLineChars(message.GetLength()/iLineChars);
 				SetPatterns(); SetDlgInfo();
 			}
 			return 0;
@@ -261,7 +257,7 @@ inline int CommandKey(int cmd_id)
 			if(DIGRAPH_MODE) 
 			{
 				message.digraph_map.Init(74);
-				SetDlgInfo();
+				SetDlgInfo(); SetKeyEdit();
 				return 0;
 			}
 
@@ -344,6 +340,9 @@ inline int CommandKey(int cmd_id)
 
 inline int CommandSolve(int cmd_id)
 {
+	int cur_fact, iSqrt;
+	char szFact[512];
+
 	switch(cmd_id)
 	{
 		case IDM_SOLVE_WORD:
@@ -373,6 +372,30 @@ inline int CommandSolve(int cmd_id)
 			
 		case IDM_SOLVE_RESET: siSolveInfo.best_key[0]='\0'; return 0; //blank best key, so that additional chars are renewed
 			
+		case IDM_FIND_FACTORS: 
+			strcpy(szNumberTitle,"Number to Factor");
+			iNumber=message.GetLength();
+			szFact[0]='\0';
+
+			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
+			{
+				if(iNumber<2) iNumber=2;
+				iSqrt=sqrt(iNumber);
+				
+				for(cur_fact=iNumber; cur_fact>iSqrt; cur_fact--)
+					if(!(iNumber%cur_fact))
+						sprintf(szFact+strlen(szFact),"%8i\t",cur_fact);
+
+				strcat(szFact,"\r\n");
+
+				for(cur_fact=1; cur_fact<iSqrt; cur_fact++)
+					if(!(iNumber%cur_fact))
+						sprintf(szFact+strlen(szFact),"%8i\t",cur_fact);
+	
+				MessageBox(hMainWnd,szFact,"Factors",MB_OK);
+			}
+			return 0;
+		
 		/*case IDM_SOLVE_BRUTE:
 			if(iBruteSymbols) return 0;
 			

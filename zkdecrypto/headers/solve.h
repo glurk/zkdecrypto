@@ -19,10 +19,7 @@ void Undo()
 	redo_message=message;
 	message=undo_message;
 	redo_line_size=iLineChars;
-	iLineChars=undo_line_size;
-	iLines=message.GetLength()/iLineChars;
-	ClearTextAreas();
-	SetText();
+	SetLineChars(undo_line_size);
 	SetPatterns();
 }
 
@@ -33,10 +30,7 @@ void Redo()
 	EnableMenuItem(hMainMenu,IDM_EDIT_REDO,MF_BYCOMMAND | MF_GRAYED);
 	undo_message=message;
 	message=redo_message;
-	iLineChars=redo_line_size;
-	iLines=message.GetLength()/iLineChars;
-	ClearTextAreas();
-	SetText();
+	SetLineChars(redo_line_size);
 	SetPatterns();
 }
 
@@ -159,24 +153,7 @@ void StopSolve()
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Start");
 	MsgEnable(true);
 	MapEnable(true);
-
-	switch(iSolveType)
-	{
-		case SOLVE_HOMO:	message.cur_map.FromKey(siSolveInfo.best_key); break;
-		case SOLVE_DISUB:	message.digraph_map.FromKey(siSolveInfo.best_key); break;
-		case SOLVE_VIG:		message.SetKey(siSolveInfo.best_key); break;
-		case SOLVE_RUNKEY:	message.SetKey(siSolveInfo.best_key); break;
-		case SOLVE_BIFID: 
-		case SOLVE_PLAYFAIR:strcpy(message.polybius5,siSolveInfo.best_key); break;
-		case SOLVE_TRIFID:	strcpy(message.trifid_array,siSolveInfo.best_key); break;
-		case SOLVE_PERMUTE:
-		case SOLVE_COLTRANS: 
-		case SOLVE_DOUBLE:	message.SetTransKey(siSolveInfo.best_key);	break;
-		case SOLVE_ADFGX:	message.SetSplitKey(siSolveInfo.best_key,5); break;
-		case SOLVE_ADFGVX:	message.SetSplitKey(siSolveInfo.best_key,6); break;
-		case SOLVE_CEMOPRTU:message.SetSplitKey(siSolveInfo.best_key,8); break;
-	}
-
+	message.SetKey(siSolveInfo.best_key);
 	SetDlgInfo();
 }
 
@@ -397,27 +374,16 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		delete key_text;
 	}
 
+	else if(iSolveType==SOLVE_DICTVIG)
+	{
+		dictionary_vigenere(message);
+	}
+
 	else 
 	{
-		message.InitArrays();
-
-		switch(iSolveType)
-		{
-			case SOLVE_VIG:		strcpy(key,message.GetKey()); strcat(key,szExtraLtr);break;
-			case SOLVE_DISUB:	message.digraph_map.ToKey(key,szExtraLtr); break;
-			case SOLVE_BIFID: 
-			case SOLVE_PLAYFAIR:strcpy(key,message.polybius5); break;
-			case SOLVE_TRIFID:	strcpy(key,message.trifid_array); break;
-			case SOLVE_PERMUTE:
-			case SOLVE_COLTRANS:strcpy(key,message.coltrans_key[0]); break;
-			case SOLVE_DOUBLE:	sprintf(key,"%s|%s",message.coltrans_key[0],message.coltrans_key[1]); break;
-			case SOLVE_ADFGX:	sprintf(key,"%s|%s",message.polybius5,message.coltrans_key[0]); break;
-			case SOLVE_ADFGVX:	sprintf(key,"%s|%s",message.polybius6,message.coltrans_key[0]); break;
-			case SOLVE_CEMOPRTU:sprintf(key,"%s|%s",message.polybius8,message.coltrans_key[0]); break;
-			case SOLVE_SUBPERM: message.cur_map.ToKey(key,szExtraLtr); strcat(key,"|"); strcat(key,message.coltrans_key[0]); break;
-		}
-
-		hillclimb2(message,iSolveType,key,iLineChars);
+		message.InitKeys();
+		message.GetKey(key,szExtraLtr);
+ 		hillclimb2(message,iSolveType,key,iLineChars);
 	}
 
 	StopSolve(); //reset window state
@@ -512,7 +478,7 @@ int LoadDictionary(char *filename, int show_error)
 	for(int i=0; !feof(dictionary_file); i++) 
 	{
 		fscanf(dictionary_file,"%s",word);
-		for(int x=0; x<(int)strlen(word); x++) word[x]=toupper(word[x]);
+		strupr(word);
 		word_str=word;
 		dictionary[word_str]=i;
 	}
@@ -563,6 +529,7 @@ void SetLanguage()
 	LoadDictionary(szGraphName,true);
 	sprintf(szGraphName,"%s%s\\%s\\%s",szExeDir,LANG_DIR,szLang,"userdict.txt");
 	LoadDictionary(szGraphName,false);
+	siSolveInfo.dict_words=dictionary.size();
 	
 	GetUnigraphs(unigraphs);
 	message.cur_map.SetUnigraphs(unigraphs);
