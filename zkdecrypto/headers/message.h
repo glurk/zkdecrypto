@@ -14,6 +14,7 @@
 #define MAX_PAT_LEN	15
 
 #pragma warning( disable : 4996)  //STOP MSVS2005 WARNINGS
+#pragma warning( disable : 4267)
 
 #define SOLVE_HOMO		0
 #define SOLVE_DISUB		40
@@ -263,8 +264,10 @@ public:
 
 	inline void SetTransKey(int key_num, const char *new_key, int new_key_len) {memcpy(coltrans_key[key_num],new_key,new_key_len); coltrans_key[key_num][new_key_len]='\0';}
 	void SetKey(const char *split_key)
-	{
-		for(int cur_key=0, int key_start=0; cur_key<10; cur_key++, key_start++)
+	{	
+		int cur_key,key_start;
+
+		for(cur_key=0,key_start=0; cur_key<10; cur_key++, key_start++)
 		{
 			int key_length=ChrIndex(split_key+key_start,'|');
 			if(key_length==-1) key_length=strlen(split_key+key_start); //last key

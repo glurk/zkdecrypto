@@ -119,7 +119,8 @@ int ChrIndex(const char *string, char chr)
 int RadixSort(char *string)
 {
 	char array1[4096], array0[4096]; //arrays for the radix sort	
-	int num1, num0, mask=1, int length=strlen(string);
+	int num1, num0, mask=1;
+	int length=(int)strlen(string);
 
 	for(int bit=0; bit<8; bit++) //for each bit of the string type
 	{
