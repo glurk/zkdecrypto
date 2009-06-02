@@ -235,12 +235,12 @@ float FastIoC(const char *string, int length)
 
 float FastDIoC(const char* string, int length, int step=1)
 {
-	int freqs[676], letter1_index, letter2_index, count=0;
+	int freqs[676], letter1_index, letter2_index, index, count=0;
 	float ic=0;
 	
 	memset(freqs,0,2704);
 	
-	for(int index=0; index<length-1; index+=step) //frequency table
+	for(index=0; index<length-1; index+=step) //frequency table
 	{
 		letter1_index=LETTER_INDEXS[(unsigned char)string[index]];
 		letter2_index=LETTER_INDEXS[(unsigned char)string[index+1]];

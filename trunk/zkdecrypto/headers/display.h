@@ -819,7 +819,7 @@ inline void SetStatsTabInfo()
 
 inline void SetTabuTabInfo()
 {
-	int cur_disp;
+//	int cur_disp;
 	szText[26]='\0';
 
 	if(iCurTab!=4) return;
@@ -841,7 +841,7 @@ inline void SetTabuTabInfo()
 
 void SetKeyEdit()
 {
-	int iMaxKeyLen;
+//	int iMaxKeyLen;
 
 	SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,0,0);
 
