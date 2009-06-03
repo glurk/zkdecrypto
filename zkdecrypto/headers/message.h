@@ -243,6 +243,19 @@ public:
 
 	void RotateString(char*,int,int);
 
+	unsigned long IntToGray(unsigned long value, int bits)
+	{
+		int gray=value;
+		for(int shift=1; shift<=bits; shift<<=1) gray^=gray>>shift;
+		return gray;
+	}
+	
+	void EncodeGray()
+	{
+		for(int index=0; index<msg_len; index++)
+			plain[index]=(char)IntToGray(plain[index]-'A',8)+'A';
+	}
+
 	void SetPolybius(int poly_size, const char *new_key, int new_key_len) 
 	{
 		char *polybius;
