@@ -41,7 +41,7 @@
 
 //macros
 #define IN_RECT(X,Y,R)	(IS_BETWEEN(X,R.left,R.right) && IS_BETWEEN(Y,R.top,R.bottom))
-#define DIGRAPH_MODE	((iSolveType==SOLVE_DISUB || iSolveType==SOLVE_PLAYFAIR)? 1:0) //digraph key and display
+#define DIGRAPH_MODE	((iSolveType==SOLVE_DISUB || iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_DBLPLAY)? 1:0) //digraph key and display
 #define DEFRACTION_TYPE (iSolveType==SOLVE_ADFGX || iSolveType==SOLVE_ADFGVX || iSolveType==SOLVE_CEMOPRTU) //plain text half as long as cipher
 #define ASCIPHER_TYPE	(DEFRACTION_TYPE) //set key as cipher characters
 #define TRANSPOSE_TYPE	(iSolveType==SOLVE_PERMUTE || iSolveType==SOLVE_COLTRANS || iSolveType==SOLVE_DOUBLE || iSolveType==SOLVE_TRIPPLE)
@@ -55,14 +55,13 @@ char szCipherName[1024], szKeyName[1024], szPlainName[1024], szGraphName[1024]; 
 char *szCipherBase, *szKeyBase; //file basenames
 char szLanguage[32];
 int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
-const char *szCipher=NULL, *szPlain=NULL; //strings for display
 int iNumber, iCurTab;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
 typedef std::map<std::string,int> STRMAP;
 STRMAP dictionary, tabu_map, word_list;
 
 //GUI data
-char szTitle[64], szText[40960], szExeDir[1024]; 
+char szTitle[64], szText[40960], szExeDir[1024], szOldKey[4096]=""; 
 int iCurSymbol=-1, iCurPat=-1, iCurWord=-1, iTextSel=-1, iRowSel=-1, iColSel=-1; //selections
 int iCharWidth=CHAR_WIDTH, iCharHeight=CHAR_HEIGHT; //font size
 int iSortBy=0, iWordMin=4, iWordMax=20;
@@ -115,6 +114,7 @@ HFONT		hTextFont=NULL, hTempFont=NULL;
 HMENU		hMainMenu, hTextMenu;
 HINSTANCE	hInst;
 HANDLE		hSolveThread=NULL, hTimerThread=NULL;
+HWND		hMainStatus, hTextStatus;
 
 HWND hKeyEdit;
 DWORD lKeyEditStyle;

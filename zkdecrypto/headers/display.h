@@ -107,6 +107,8 @@ void OutlineChars(HDC hDC, HPEN hPen, int iStart, int iEnd, int bOutline=false)
 //draw all the necessary outlines/underlines
 void DrawOutlines()
 {
+	const char *szCipher=message.GetCipher(), *szPlain=message.GetPlain(); //strings for display
+
 	int iStart, iEnd, iFreq, cur_symbol, word_len, iDiIndex;
 	char szPattern[32];
 	const char *word_ptr;
@@ -197,7 +199,7 @@ void DrawOutlines()
 
 void OutputText(int bSection)
 {
-	const char *szString;
+	const char *szString, *szCipher=message.GetCipher();
 	int iIndex, iLength, iXPos, iYPos, iDiIndex;
 	HWND hWnd;
 	HDC hDC;
@@ -251,8 +253,9 @@ void SetText()
 {
 	if(!bMsgLoaded) return;
 
+	const char *szCipher=message.GetCipher();
+
 	int msg_len=message.GetLength();
-	HWND hStatus;
 	
 	iDispStart=iScrollPos*iLineChars;
 	iDispEnd=iDispStart+(iDispLines*iLineChars);
@@ -265,24 +268,19 @@ void SetText()
 	sprintf(szText,"");
 
 	sprintf(szText,"LANG: %s",szLanguage);
-	hStatus = GetDlgItem(hTextWnd, IDC_TEXT_STATUS);
-    SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)szText);
+    SendMessage(hTextStatus, SB_SETTEXT, 0, (LPARAM)szText);
 
-	if(iRowSel+1) sprintf(szText,"ROW: %i",iRowSel+1);
-		else sprintf(szText,"ROW: ");
-	SendMessage(hStatus, SB_SETTEXT, 1, (LPARAM)szText);
+	if(iRowSel+1) sprintf(szText,"ROW: %i",iRowSel+1); else sprintf(szText,"ROW: ");
+	SendMessage(hTextStatus, SB_SETTEXT, 1, (LPARAM)szText);
 
-	if(iColSel+1) sprintf(szText,"COL: %i",iColSel+1);
-		else sprintf(szText,"COL: ");
-	SendMessage(hStatus, SB_SETTEXT, 2, (LPARAM)szText);
+	if(iColSel+1) sprintf(szText,"COL: %i",iColSel+1); else sprintf(szText,"COL: ");
+	SendMessage(hTextStatus, SB_SETTEXT, 2, (LPARAM)szText);
 
-	if(iTextSel+1) sprintf(szText,"CHAR: %i",iTextSel+1);
-		else sprintf(szText,"CHAR: ");
-	SendMessage(hStatus, SB_SETTEXT, 3, (LPARAM)szText);
+	if(iTextSel+1) sprintf(szText,"CHAR: %i",iTextSel+1); else sprintf(szText,"CHAR: ");
+	SendMessage(hTextStatus, SB_SETTEXT, 3, (LPARAM)szText);
 
-	if(iTextSel+1) sprintf(szText,"ASC: %i",(unsigned char)szCipher[iTextSel]);
-		else sprintf(szText,"ASC: ");
-	SendMessage(hStatus, SB_SETTEXT, 4, (LPARAM)szText);
+	if(iTextSel+1) sprintf(szText,"ASC: %i",(unsigned char)szCipher[iTextSel]); else sprintf(szText,"ASC: ");
+	SendMessage(hTextStatus, SB_SETTEXT, 4, (LPARAM)szText);
 
 }
 
@@ -316,6 +314,8 @@ int TextClick(int click_x, int click_y)
 {
 	int text_row, text_col, text_index;
 	char click_char, click_char2;
+
+	const char *szCipher=message.GetCipher();
 
 	//row/column for clicked character
 	text_row=(click_y-iTextBorder)/iCharHeight;
@@ -437,9 +437,7 @@ void SetCharSize()
 //call when key is changed to decode and display plain text
 void SetPlain()
 {
-	szPlain=message.GetPlain();
-	
-	if(!siSolveInfo.running) siSolveInfo.best_score=calcscore(message,message.GetLength(),szPlain);
+	if(!siSolveInfo.running) siSolveInfo.best_score=calcscore(message,message.GetLength(),message.GetPlain());
 	SetDlgItemInt(hMainWnd,IDC_SCORE,siSolveInfo.best_score,true);
 }
 
@@ -679,7 +677,7 @@ void SetFreq()
 	sprintf(szText,"%.2f%%",exp_vowel);
 	SetDlgItemText(hMainWnd,IDC_VOWEL_EXP,szText);
 		
-	sprintf(szText,"%.4f",IoC(szPlain,message.GetLength()));
+	sprintf(szText,"%.4f",IoC(message.GetPlain(),message.GetLength()));
 	SetDlgItemText(hMainWnd,IDC_IOC_ACT,szText);
 	
 	sprintf(szText,"%.4f",siSolveInfo.lang_ioc);
@@ -692,19 +690,23 @@ void SetFreq()
 /*Word List Display*/
 
 //put all dictionary words in text into the StringArray
-void GetWordList(const char *src_text)
+int GetWordList(const char *text)
 {
 	int msg_len, found;
 	std::string word_str;
-	   
-	if(!src_text) return;
+	static int semaphore;
+   
+	if(!text) return 0;
+	if(semaphore) return 0;
+
+	semaphore=true;
 
 	word_list.clear();
 
-	msg_len=strlen(src_text);
-	char *text=new char[msg_len+1];
+	msg_len=strlen(text);
+	/*char *text=new char[msg_len+1];
 	strcpy(text,src_text);
-	strupr(text);
+	strupr(text);*/
 
 	/*for(int index=0; index<msg_len; index++)
 		for(int word_len=iWordMin; word_len<=iWordMax; word_len++)
@@ -743,18 +745,21 @@ void GetWordList(const char *src_text)
 
 	siSolveInfo.num_words=word_list.size();
 
-	delete text;	  
+	//delete text;
+
+	semaphore=false;
+
+	return 1;
 }
 
 //set the word list box
 void SetWordList()
 {
 	int cur_sel, rows=0, col=0;
-  
-	//set list
-	GetWordList(szPlain);
 
 	if(iCurTab!=2) return;
+
+	if(!GetWordList(message.GetPlain())) return; //set list
 	   
 	//clear list
 	cur_sel=SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETCURSEL,0,0);
@@ -780,13 +785,13 @@ inline void SetGraph()
 
 inline void SetSolveTabInfo()		{SetKey(); SetSolve();}
 inline void SetAnalysisTabInfo()	{SetTable(); SetFreq(); }
-inline void SetWordListTabInfo()	{SetWordList();}
+inline void SetWordListTabInfo()	{if(!siSolveInfo.running) SetWordList();}
 
 inline void SetStatsTabInfo()
 {
 	if(!bMsgLoaded) return;
 
-	char *cipher, *plain;
+	const char *cipher, *plain;
 	int length;
 
 	cipher=message.GetCipher();
@@ -839,10 +844,30 @@ inline void SetTabuTabInfo()
 	SetDlgItemText(hMainWnd,IDC_TABU,szText);
 }
 
+void SetMainStatus()
+{
+	char szStatus[32]="KEY LENGTH: "; //set status
+
+	for(int cur_key=0, int key_start=0; cur_key<10; cur_key++, key_start++)
+	{
+		int key_length=ChrIndex(szText+key_start,'|');
+		if(key_length==-1) key_length=strlen(szText+key_start); //last key
+		const char *key_ptr=szText+key_start;
+
+		sprintf(szStatus+strlen(szStatus),"%i",key_length);
+
+		key_start+=key_length;
+		if(!szText[key_start]) break;
+
+		strcat(szStatus,", ");
+	}
+
+	SendMessage(hMainStatus,SB_SETTEXT,0,(LPARAM)szStatus);
+}
+
 void SetKeyEdit()
 {
-//	int iMaxKeyLen;
-
+	if(!bMsgLoaded) return;
 	SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,0,0);
 
 	message.GetKey(szText,"");
@@ -856,7 +881,7 @@ inline void SetDlgInfo()
 	
 	if(siSolveInfo.running) //set key to hillclimber best if running
 	{
-		if(iSolveType==SOLVE_HOMO) message.cur_map.FromKey(siSolveInfo.best_key);
+		if(iSolveType==SOLVE_HOMO) {message.cur_map.FromKey(siSolveInfo.best_key); message.Decode();}
 		SetKeyEdit();
 	}
 		
@@ -871,7 +896,12 @@ inline void SetDlgInfo()
 void GetKeyEdit()
 {
 	if(siSolveInfo.running) return;
+
 	GetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText,255);
+
+	if(!strcmp(szText,szOldKey)) return;
+	strcpy(szOldKey,szText);
+
 	if(iSolveType==SOLVE_VIG) message.SetKeyLength(strlen(szText));
 	if(iSolveType==SOLVE_COLVIG) 
 	{
@@ -879,6 +909,9 @@ void GetKeyEdit()
 		if(vig_key>-1) message.SetKeyLength(vig_key); 
 	}
 	message.SetKey(szText); //locks up when vig key is one number
+
+	SetMainStatus();
+	
 	if(strlen(szText)) SetDlgInfo();
 }
 
@@ -935,6 +968,12 @@ void SetSolveTypeFeatures()
 	if(iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_BIFID) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,25,0); //limit key edit length
 	else if(iSolveType==SOLVE_TRIFID) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,27,0); //limit key edit length
 	else SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,0,0);
+
+	int max_block=message.GetLength();
+	if(iSolveType==SOLVE_DBLPLAY) max_block>>=1;
+	
+	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,max_block);
+	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,max_block,false);
 }
 
 //call when the cipher is changed, i.e. symbol merge
@@ -942,8 +981,6 @@ void SetCipher()
 {	
 	sprintf(szText,"%s",szCipherBase);
 	SetWindowText(hTextWnd,szText);
-
-	szCipher=message.GetCipher();
 	
 	SetPatterns();
 	SetDlgInfo();

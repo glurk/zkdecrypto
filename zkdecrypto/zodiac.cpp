@@ -177,7 +177,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(siSolveInfo.running) return 0;
 					iBlockSize=GetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,false,false);
 					siSolveInfo.best_block=iBlockSize;
-					message.SetBlockSize(iBlockSize); 
+					message.SetBlockSize(iBlockSize); message.Decode(); 
 					SetPlain(); SetText();
 					return 0;
 
@@ -201,7 +201,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(iWordMax<0 || iWordMax>30) iWordMax=20;
                     return 0;
                      
-                case UDM_DISPALL: SetDlgInfo(); return 0;
+                case UDM_DISPALL: SetDlgInfo(); SetWordList(); return 0;
 				case UDM_DISPINFO: SetSolve(); return 0;
 			}
 
@@ -409,6 +409,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.tabu=&tabu_map;
 	siSolveInfo.dictionary=&dictionary;
 	siSolveInfo.tabu_syms=10;
+	siSolveInfo.semaphore=false;
 	SetInfo(&siSolveInfo);
 	Reset();
 
@@ -434,14 +435,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hKeyEdit=GetDlgItem(hMainWnd,IDC_KEY_EDIT);
 	lKeyEditStyle=GetWindowLong(hKeyEdit,GWL_STYLE);
 
-	//create status bar with gripper
-	hStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0,
-        hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
+	//create main status bar with gripper
+	hMainStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hMainWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
  
-    //setup status bar sections
-    int statwidths[] = {80, 140, 200, 275, -1};
-    SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
-	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
+    int MainStatWidths[] = {300, -1};
+    SendMessage(hMainStatus, SB_SETPARTS, sizeof(MainStatWidths)/sizeof(int), (LPARAM)MainStatWidths);
+	SendMessage(hMainStatus, SB_SETTEXT, 0, (LPARAM)"KEY LENGTHS: ");
+
+	//create text status bar with gripper
+	hTextStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
+ 
+    int TextStatWidths[] = {150, 250, 350, 450, -1};
+    SendMessage(hTextStatus, SB_SETPARTS, sizeof(TextStatWidths)/sizeof(int), (LPARAM)TextStatWidths);
+	SendMessage(hTextStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
+
+
 
 	SetSolveTypeFeatures();
 

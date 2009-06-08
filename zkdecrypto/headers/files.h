@@ -78,7 +78,6 @@ int LoadMessage(char *filename, int type)
 	GetBaseName(szCipherName,szCipherBase);
 
 	//get info
-	szCipher=message.GetCipher();
 	siSolveInfo.best_score=0;
 	iCurPat=-1;
 	bMsgLoaded=true;
@@ -102,13 +101,19 @@ int LoadMessage(char *filename, int type)
 	tabu_map.clear();
 	SetLineChars(message.CalcBestWidth(message.GetLength()));
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
-	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,message.GetLength());
+	
 	
 	SetTitle();
 	SetCipher();
 	SetPatterns();
 	SetDlgInfo(); SetKeyEdit();
-	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,message.GetLength(),false);
+
+	//block size
+	int max_block=message.GetLength();
+	if(iSolveType==SOLVE_DBLPLAY) max_block>>=1;
+	
+	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,max_block);
+	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,max_block,false);
 
 	return 1;
 }
@@ -136,6 +141,7 @@ int LoadMap(char *filename)
 	//get info
 	siSolveInfo.best_score=0;
 	bMapLoaded=true;
+	message.Decode();
 
 	//setup window
 	bUndo=false;

@@ -66,7 +66,17 @@ public:
 	void SetLock(int index, int lock) {locked[index]=lock;}
 	void ToggleLock(int index) {locked[index]=!locked[index];}
 	void SetAllLock(int lock) {memset(locked,lock,num_symbols);}
-	const char* GetLocked() {return locked;}	
+	const char* GetLocked() {return locked;}
+	
+	void GetDecoder(char *decoder)
+	{
+		for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+		{
+			SYMBOL *symbol=&symbols[cur_symbol];
+			if(symbol->plain) decoder[(unsigned char)symbol->cipher]=symbol->plain;
+			else decoder[(unsigned char)symbol->cipher]=BLANK;
+		}
+	}
 
 	//set this map equal to another
 	void operator = (Map &src_map) 
