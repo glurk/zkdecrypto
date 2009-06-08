@@ -39,6 +39,7 @@ struct SOLVEINFO
 	std::map<std::string,int> *dictionary;
 	int dict_words;
 	int tabu_syms;
+	int semaphore;
 
 	float lang_ioc;
 	float lang_dioc;
@@ -67,7 +68,7 @@ struct SOLVEINFO
 	void (*disp_all)(void);
 	void (*disp_info)(void);
 	unsigned long (*time_func)(void);
-	void (*get_words)(const char*);
+	int (*get_words)(const char*);
 	void (*disp_tabu)(void);
 };
 

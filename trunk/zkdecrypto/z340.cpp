@@ -36,16 +36,31 @@ void SetInfo(SOLVEINFO *main_info) {info=main_info;}
 
 FILE *log_file;
 
+#define DO_SWAP		std::swap(key[p1],key[p2]);
+#define DECODE_A	{for(y=0; y<clength; y++) solved[y]=*decoder[(unsigned char)cipher[y]];}
+#define DECODE_B	{msg.SetKey(key); solved=msg.GetPlain();}
+
+#define TABU_STR_A(KEY)		key_str.assign(KEY,info->tabu_syms); 
+
+#define TABU_STR_B(KEY)		{if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(KEY,msg.cur_map.GetNumSymbols()); key_str.append(KEY+split_points[0]);} \
+							else if(solve_type==SOLVE_COLVIG) {key_str.assign(KEY,msg.GetKeyLength()); key_str.append(KEY+split_points[0]);} \
+							else key_str.assign(KEY,use_key_len);}
+
+#define ADD_TABU			(*info->tabu)[key_str]=info->tabu->size(); info->tabu_end=info->tabu->end(); info->disp_tabu();
+					
+#define SET_SCORE(SCR,DEC)	if(info->tabu->find(key_str)!=info->tabu_end) SCR=-100000; else {DEC; SCR=calcscore(msg,clength,solved);} 
+
+#define LOG_BEST(SCR)		info->get_words(solved); fprintf(log_file,"%i\t%i\t%i\t%s\t%s\n",SCR,info->num_words,info->stray_letters,key_str.data(),solved); fflush(log_file);
+
+
 int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print)
 {
-	#define	DO_SWAP	{ unsigned char temp=key[p1]; key[p1]=key[p2]; key[p2]=temp; }
-	#define DECODE {for(y=clength;y--;) solved[y]=*decoder[(unsigned char)cipher[y]];}
-
 	int cuniq,keylength,i,j,x,y;
 	int uniq[ASCII_SIZE],uniqarr[ASCII_SIZE];
-	char *solved=new char[clength+1];
 	char uniqstr[ASCII_SIZE];
 	char *decoder[ASCII_SIZE];
+
+	char *solved=new char[clength+1];
 
 	solved[clength]='\0'; 													
 	for(i=0; i<ASCII_SIZE; i++) uniq[i]=uniqstr[i]=uniqarr[i]=0;					//INITIALIZE (ZERO) ARRAYS
@@ -67,24 +82,18 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print
 	
 	//make decoder, array of char* that point to the key plain text values indexed by the ascii value of the cipher symbols
 	for(x=0; x<cuniq; x++) decoder[(unsigned char)uniqstr[x]]=&key[x];
-	DECODE;
+	DECODE_A;
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
-	int score = 0, last_score=0, improve=0, tolerance=0;
-	long start_time=0, end_time=0;
-	std::string key_str;
-
 	//init info
-	info->cur_tol=0;
-	info->cur_tabu=0;
+	info->cur_tabu=info->cur_tol=0;
 	info->tabu_end=info->tabu->end();
-info->tabu_syms=cuniq;
+	info->tabu_syms=cuniq;
 
 	//initial score & feedback
-	last_score=calcscore(msg,clength,solved);
-	info->best_score=last_score;
-	memcpy(info->best_key,key,keylength);
+	cur_best_score=info->best_score=last_score=calcscore(msg,clength,solved);
+	strcpy(info->best_key,key);
 	if(info->disp_all) info->disp_all();
 	
 	log_file=fopen(info->log_name,"w"); //open log file
@@ -98,11 +107,11 @@ info->tabu_syms=cuniq;
 
 		improve=0;
 		
-		for(int p1=0; p1<keylength; p1++) { //do an iteration
+		for(p1=0; p1<keylength; p1++) { //do an iteration
 
 			if(info->locked[p1]) continue; //skip if symbol is locked
 
-			for(int p2=0; p2<keylength; p2++) {
+			for(p2=0; p2<keylength; p2++) {
 			
 				if(!info->running) goto EXIT; //stop
 
@@ -115,11 +124,7 @@ info->tabu_syms=cuniq;
 					if(p2<cuniq && strchr(info->exclude+(27*p2),key[p1])) continue;
 				}
 
-				DO_SWAP; DECODE; //swap, decode, score
-
-				key_str.assign(key,info->tabu_syms); //check for tabu
-				if(info->tabu->find(key_str)!=info->tabu_end) score=-100000;
-				else score=calcscore(msg,clength,solved);
+				DO_SWAP; TABU_STR_A(key); SET_SCORE(score,DECODE_A); //swap, decode, score
 
 				//tolerance of going downhill starts out at max, and decreases with each iteration without improve
 				if(info->max_tol) tolerance=rand()%(info->max_tol-info->cur_tol+1);
@@ -129,13 +134,19 @@ info->tabu_syms=cuniq;
 				{
 					last_score=score; 
 
-					if(score>info->best_score) //this is the new best, save & display
+					if(score>info->best_score) //this is the best seen so far, save & display
 					{						
 						//if (print) printcipher(clength,cipher,solved,score,key);
 						improve=1;
 						info->best_score=score;
-						memcpy(info->best_key,key,keylength);
-						if(info->disp_all) info->disp_all();	
+						strcpy(info->best_key,key);
+						if(info->disp_all) info->disp_all();
+					}
+
+					if(score>cur_best_score) //best since last tabu & restart
+					{
+						cur_best_score=score;
+						strcpy(cur_best_key,key);
 					}
 				}
 			}
@@ -145,38 +156,22 @@ info->tabu_syms=cuniq;
 		{
 			if(++info->cur_tol>=info->max_tol) info->cur_tol=0; //reset downhill score tolerance
 				
-			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) //blacklist best key and reset best score
+			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) //blacklist best key since last restar, reset current best score, 50/50 back to best or random restart
 			{
-				key_str.assign(info->best_key,info->tabu_syms);
-				(*info->tabu)[key_str]=info->tabu->size();
-				info->tabu_end=info->tabu->end();
-				info->disp_tabu();
+				TABU_STR_A(cur_best_key); ADD_TABU;
+				if(log_file) {strcpy(key,cur_best_key); DECODE_A; LOG_BEST(cur_best_score);}
+				cur_best_score=-10000;
 
-				memcpy(key,info->best_key,keylength);
-				
-				if(log_file) //log local optima
-				{
-					DECODE;
-					info->get_words(solved);
-					fprintf(log_file,"%i\t%i\t%i\t%s\t%s\n",info->best_score,info->num_words,info->stray_letters,key_str.data(),solved);
-					fflush(log_file);
-				}
-
-				for(i=0; i<100; i++) shufflekey(key,keylength,cuniq); //random restart hillclimbing 
-				info->best_score=-100000;
+				if(rand()%2) for(i=0; i<100; i++) shufflekey(key,keylength,cuniq); //random restart
+				else strcpy(key,info->best_key); //back to best
 				info->cur_tabu=0;
 			}
 		}
 
 		else info->cur_tol=info->cur_tabu=0; //improvment, reset variables
-
-		// info->swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
-		for(i=0; i<info->swaps; i++) shufflekey(key,keylength,cuniq);  
-		DECODE;
-
-		key_str.assign(key,info->tabu_syms); //check for tabu
-		if(info->tabu->find(key_str)!=info->tabu_end) last_score=-100000;
-		else last_score=calcscore(msg,clength,solved); //last score at end of iteration
+		
+		for(i=0; i<info->swaps; i++) shufflekey(key,keylength,cuniq); //random swaps at end of iteration
+		TABU_STR_A(key); SET_SCORE(last_score,DECODE_A); //score at end of iteration
 
 		if(info->time_func) end_time=info->time_func();
 		if(!info->max_tol) tolerance=0; //reset tolerance
@@ -189,7 +184,155 @@ EXIT:
 	info->tabu->clear();
 	info->tabu_end=info->tabu->end();
 	info->disp_tabu();
+	return 0;
+}
 
+inline int IN_SAME_KEY(int p1, int p2)
+{
+	for(int cur_split=0; cur_split<num_splits; cur_split++)
+	{
+		if(p1==split_points[cur_split] ||  p2==split_points[cur_split]) return 0;
+		if(IS_BETWEEN(split_points[cur_split],p1,p2)) return 0;
+	}
+
+	return 1;
+}
+
+int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
+{
+	msg+=main_msg;
+
+	//init info
+	info->cur_tabu=info->cur_tol=0;
+	info->tabu_end=info->tabu->end();
+	clength=msg.GetLength();
+	cipher=msg.GetCipher();
+	solved=msg.GetPlain();
+	full_key_len=use_key_len=strlen(key);
+
+	//key sections
+	for(int key_start=0; ; key_start++)
+	{
+		int key_length=ChrIndex(key+key_start,'|');
+		if(key_length==-1) break;
+
+		key_start+=key_length;
+		split_points[num_splits]=key_start;
+		num_splits++;
+		
+	}
+
+	switch(solve_type)
+	{
+		case SOLVE_VIG: use_key_len=msg.GetKeyLength(); break;
+		case SOLVE_DISUB: use_key_len=msg.digraph_map.GetNumDigraphs()<<1;
+	}
+ 
+	log_file=fopen(info->log_name,"w"); //open log file
+
+	//initial score, save best, & feedback
+	DECODE_B;
+	cur_best_score=info->best_score=last_score=calcscore(msg,clength,solved);
+	strcpy(info->best_key,key);
+	main_msg+=msg;
+	if(info->disp_all) info->disp_all();
+
+	//go until max number of iterations or stop is pressed
+	while(info->running) {
+
+		//feedback info
+		info->last_time=float(end_time-start_time)/1000;
+		if(info->time_func) start_time=info->time_func();
+		if(info->disp_info) info->disp_info();
+		
+		improve=0;
+		
+		for(p1=0; p1<full_key_len; p1++) {
+			for(p2=0; p2<full_key_len; p2++) {
+			
+				if(!info->running) goto EXIT; //stopped
+				if(key[p1]==key[p2]) continue; //same character in key
+				if(p1>use_key_len && p2>use_key_len) continue; //p1&p2 in extra letter area
+				if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
+				if(!IN_SAME_KEY(p1,p2)) continue; //in different split keys, or on split
+			
+				DO_SWAP; TABU_STR_B(key); SET_SCORE(score,DECODE_B); //swap, decode, score
+
+				//tolerance of going downhill starts out at max, and decreases with each iteration without improve
+				if(info->max_tol) tolerance=rand()%(info->max_tol-info->cur_tol+1);
+				else tolerance=0;
+
+				if(score<(last_score-tolerance)) {DO_SWAP;} //undo if change made it worse than last score
+				else //change is better or same as last score
+				{
+					last_score=score; 
+							
+					if(score>info->best_score) //this is the new best, save & display
+					{
+						//save best, & feedback info
+						main_msg+=msg;
+						improve=1;
+						info->best_score=score;
+						strcpy(info->best_key,key);
+						if(info->disp_all) info->disp_all();
+					}
+
+					if(score>cur_best_score) //best since last tabu & restart
+					{
+						cur_best_score=score;
+						strcpy(cur_best_key,key);
+					}
+				} 
+			}
+		}
+
+		if(!improve)
+		{
+			if(++info->cur_tol>=info->max_tol) //reset downhill score tolerance
+			{
+				info->cur_tol=0; 
+			}
+
+			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) ///blacklist best key since last restart, reset current best score, 50/50 back to best or random restart
+			{
+				TABU_STR_B(cur_best_key); ADD_TABU; 
+				if(log_file) {strcpy(key,cur_best_key); DECODE_B; LOG_BEST(cur_best_score);}
+				cur_best_score=-10000;
+				
+				if(rand()%2) for(i=0; i<100; i++) // random restart
+				{
+					p1=rand()%use_key_len; p2=rand()%use_key_len;
+					if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
+					if(!IN_SAME_KEY(p1,p2)) continue; //in different split keys, or on split
+					DO_SWAP;
+				}
+
+				else strcpy(key,info->best_key); //back to best
+				info->cur_tabu=0;
+			}
+		}
+
+		else {info->cur_tol=info->cur_tabu=0;} //improvment, reset variables
+
+		for(i=0; i<info->swaps; i++) // random swaps at end of iteration
+		{
+			p1=rand()%use_key_len; p2=rand()%use_key_len;
+			if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
+			if(!IN_SAME_KEY(p1,p2)) continue; //in different split keys, or on split
+			DO_SWAP;
+		} 
+   
+		TABU_STR_B(key); SET_SCORE(last_score,DECODE_B); //score at end of iteration
+		
+		if(info->time_func) end_time=info->time_func();
+		if(!info->max_tol) tolerance=0; //reset tolerance
+	}	
+	
+EXIT:
+	if(log_file) fclose(log_file);
+	info->tabu->clear();
+	info->tabu_end=info->tabu->end();
+	info->disp_tabu();
 	return 0;
 }
 
@@ -219,11 +362,9 @@ void GetFreqs(const char *string, int length)
 	}
 }
 
-float FastIoC(const char *string, int length)
+float FastIoC()
 {
 	float ic=0;
-	
-	GetFreqs(string,length);
 
 	for(int index=0; index<26; index++) //calculate ioc
 		if(freqs[index]>1) ic+=(freqs[index])*(freqs[index]-1); 
@@ -255,11 +396,9 @@ float FastDIoC(const char* string, int length, int step=1)
 	return ic;
 }
 
-float FastEntropy(const char *string, int length)
+float FastEntropy()
 {
 	float entropy=0, prob_mass;
-	
-	GetFreqs(string,length);
 
 	for(int index=0; index<26; index++) //calculate entropy
 	{
@@ -272,11 +411,9 @@ float FastEntropy(const char *string, int length)
 	return (-1*entropy);
 }
 
-float FastChiSquare(const char *string, int length)
+float FastChiSquare()
 {
 	float chi2=0, prob_mass, cur_calc;
-
-	GetFreqs(string,length);
 
 	for(int index=0; index<26; index++) //calculate chi2
 	{
@@ -331,7 +468,7 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 
 	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1;
 
-	score=pentascore+tetrascore+triscore+biscore;  //score=40000;
+	score=pentascore+tetrascore+triscore+biscore; //score=40000;
 
 	/*int actfreq[26], expfreq[26], diff=0;
 	msg.GetActFreq(actfreq);
@@ -342,7 +479,10 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 
 	score-=diff<<7;*/
 
-	if(info->ioc_weight) score_mult*=1.05-(info->ioc_weight*ABS(FastIoC(solv,score_len)-info->lang_ioc));
+	//Stats
+	GetFreqs(solv,score_len);
+
+	if(info->ioc_weight) score_mult*=1.05-(info->ioc_weight*ABS(FastIoC()-info->lang_ioc));
 		
 	if(info->dioc_weight) //DIC, EDIC
 	{
@@ -350,8 +490,8 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 		score_mult*=1.05-((info->dioc_weight>>1)*ABS(FastDIoC(solv,score_len,2)-info->lang_dioc));
 	}
     	
-	if(info->chi_weight) score_mult*=1.05-(info->chi_weight*ABS(FastChiSquare(solv,score_len)-info->lang_chi))/60.0;
-	if(info->ent_weight) score_mult*=1.05-(info->ent_weight*ABS(FastEntropy(solv,score_len)-info->lang_ent))/150.0;
+	if(info->chi_weight) score_mult*=1.05-(info->chi_weight*ABS(FastChiSquare()-info->lang_chi))/60.0;
+	if(info->ent_weight) score_mult*=1.05-(info->ent_weight*ABS(FastEntropy()-info->lang_ent))/150.0;
 
 	//Cribs
 	for(int cur_crib=0; cur_crib<info->num_cribs; cur_crib++)
@@ -514,7 +654,7 @@ int ReadNGraphs(const char *filename, int n)
 		
 		//set ngraph
 		if(n==1) unigraphs[index]=percent;
-		//else ngraphs[index]=int(10*log((double)freq));
+		//else ngraphs[index]=int(log((double)freq));
 		else ngraphs[index]=freq;
 	}
 
@@ -603,181 +743,6 @@ int WordPlug(Message &msg, const char *word)
 	return best_score;
 }
 
-#define MSG_SWAP	{temp=key[p1]; key[p1]=key[p2]; key[p2]=temp;}
-#define MSG_DECODE	msg.SetKey(key); msg.Decode(); if(solve_type==SOLVE_CEMOPRTU) {strupr(solved);}
-
-inline int IN_SAME_KEY(int p1, int p2, int *split_points, int num_splits)
-{
-	for(int cur_split=0; cur_split<num_splits; cur_split++)
-	{
-		if(p1==split_points[cur_split] ||  p2==split_points[cur_split]) return 0;
-		if(IS_BETWEEN(split_points[cur_split],p1,p2)) return 0;
-	}
-
-	return 1;
-}
-
-int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
-{
-	Message msg; //decoding message
-	int i, p1, p2, clength, temp, use_key_len, full_key_len;
-	int score=0, last_score=0, improve=0, tolerance=0;
-	long start_time=0, end_time=0;
-	char *cipher, *solved;
-	std::string key_str;
-
-	msg+=main_msg;
-
-	//init info
-	info->cur_tol=0;
-	info->cur_tabu=0;
-	info->tabu_end=info->tabu->end();
-	clength=msg.GetLength();
-	cipher=msg.GetCipher();
-	solved=msg.GetPlain();
-	full_key_len=use_key_len=strlen(key);
-
-	//key sections
-	int split_points[10];
-	int num_splits=0;
-
-	for(int key_start=0; ; key_start++)
-	{
-		int key_length=ChrIndex(key+key_start,'|');
-		if(key_length==-1) break;
-
-		key_start+=key_length;
-
-		split_points[num_splits]=key_start;
-		num_splits++;
-		
-	}
-
-	switch(solve_type)
-	{
-		case SOLVE_VIG: use_key_len=msg.GetKeyLength(); break;
-		case SOLVE_DISUB: use_key_len=msg.digraph_map.GetNumDigraphs()<<1;
-		//case SOLVE_COLVIG: use_key_len=split_points[0];
-	}
- 
-	log_file=fopen(info->log_name,"w"); //open log file
-
-	//initial score, save best, & feedback
-	MSG_DECODE;
-	last_score=calcscore(msg,clength,solved);
-	info->best_score=last_score;
-	strcpy(info->best_key,key);
-	main_msg+=msg;
-	if(info->disp_all) info->disp_all();
-
-	//go until max number of iterations or stop is pressed
-	while(info->running) {
-
-		//feedback info
-		info->last_time=float(end_time-start_time)/1000;
-		if(info->time_func) start_time=info->time_func();
-		if(info->disp_info) info->disp_info();
-		
-		improve=0;
-		
-		for(p1=0; p1<full_key_len; p1++) {
-			for(p2=0; p2<full_key_len; p2++) {
-			
-				if(!info->running) goto EXIT; //stopped
-				if(key[p1]==key[p2]) continue; //same character in key
-				if(p1>use_key_len && p2>use_key_len) continue; //p1&p2 in extra letter area
-				if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
-
-				if(!IN_SAME_KEY(p1,p2,split_points,num_splits)) continue; //in different split keys, or on split
-			
-				MSG_SWAP; MSG_DECODE; //swap, decode, score
-				if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(key,msg.cur_map.GetNumSymbols()); key_str.append(key+split_points[0]);}
-				else if(solve_type==SOLVE_COLVIG) {key_str.assign(key,msg.GetKeyLength()); key_str.append(key+split_points[0]);}
-				else key_str.assign(key,use_key_len);
-				if(info->tabu->find(key_str)!=info->tabu_end) score=-100000;
-				else score=calcscore(msg,clength,solved);
-
-				//tolerance of going downhill starts out at max, and decreases with each iteration without improve
-				if(info->max_tol) tolerance=rand()%(info->max_tol-info->cur_tol+1);
-
-				if(score<(last_score-tolerance)) {MSG_SWAP;} //undo if change made it worse than last score
-				else //change is better or same as last score
-				{
-					last_score=score; 
-							
-					if(score>info->best_score) //this is the new best, save & display
-					{
-						//save best, & feedback info
-						main_msg+=msg;
-						main_msg.Decode();
-						improve=1;
-						info->best_score=score;
-						strcpy(info->best_key,key);
-						if(info->disp_all) info->disp_all();	
-					}
-				}
-			}
-		}
-
-		if(!improve)
-		{
-			if(++info->cur_tol>=info->max_tol) info->cur_tol=0; //reset downhill score tolerance
-
-			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) //blacklist best key and reset best score
-			{
-				if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(info->best_key,msg.cur_map.GetNumSymbols()); key_str.append(info->best_key+split_points[0]);}
-				else if(solve_type==SOLVE_COLVIG) {key_str.assign(info->best_key,msg.GetKeyLength()); key_str.append(info->best_key+split_points[0]);}
-
-				else key_str.assign(info->best_key,use_key_len);
-				(*info->tabu)[key_str]=info->tabu->size();
-				info->tabu_end=info->tabu->end();
-				info->disp_tabu();
-
-				memcpy(key,info->best_key,full_key_len);
-				
-				if(log_file) //log local optima
-				{
-					MSG_DECODE;
-					info->get_words(solved);
-					fprintf(log_file,"%i\t%i\t%i\t%s\t%s\n",info->best_score,info->num_words,info->stray_letters,key_str.data(),solved);
-					fflush(log_file);
-				}
-
-				info->best_score=-100000;
-				info->cur_tabu=0;
-			}
-		}
-
-		else info->cur_tol=info->cur_tabu=0; //improvment, reset variables
-
-		for(i=0; i<info->swaps; i++) // info->swaps IS INITIALIZED TO 5, WHICH IS ARBITRARY, BUT SEEMS TO WORK WELL
-		{
-			p1=rand()%use_key_len; p2=rand()%use_key_len;
-			if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
-			if(!IN_SAME_KEY(p1,p2,split_points,num_splits)) continue; //in different split keys, or on split
-			MSG_SWAP;
-		} 
-   
-		MSG_DECODE; //last score at end of iteration
-
-		if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(key,msg.cur_map.GetNumSymbols()); key_str.append(key+split_points[0]);}
-		else if(solve_type==SOLVE_COLVIG) {key_str.assign(key,msg.GetKeyLength()); key_str.append(key+split_points[0]);}
-		else key_str.assign(key,use_key_len);
-		if(info->tabu->find(key_str)!=info->tabu_end) last_score=-100000;
-		else last_score=calcscore(msg,clength,solved); //last score at end of iteration
-		
-		if(info->time_func) end_time=info->time_func();
-		if(!info->max_tol) tolerance=0; //reset tolerance
-	}	
-	
-EXIT:
-	if(log_file) fclose(log_file);
-	info->tabu->clear();
-	info->tabu_end=info->tabu->end();
-	info->disp_tabu();
-	return 0;
-}
-
 void running_key(Message &msg, char *key_text)
 {
 	int key_text_len=strlen(key_text);
@@ -800,7 +765,7 @@ void running_key(Message &msg, char *key_text)
 		if(cur_score>info->best_score)
 		{
 			info->best_score=cur_score;
-			strcpy(info->best_key,msg.key);
+			msg.GetKey(info->best_key,"");
 			if(info->disp_all) info->disp_all();
 		}
 
@@ -822,12 +787,12 @@ void dictionary_vigenere(Message &msg)
 		if(!info->running) break;
 
 		msg.SetKey(std::string(iter->first).c_str());
-		msg.SetKeyLength(strlen(msg.key));
+		msg.SetKeyLength(strlen(std::string(iter->first).c_str()));
 		cur_score=calcscore(msg,msg_len,msg.GetPlain());
 		if(cur_score>info->best_score)
 		{
 			info->best_score=cur_score;
-			strcpy(info->best_key,msg.key);
+			msg.GetKey(info->best_key,"");
 			if(info->disp_all) info->disp_all();
 		}
 	}

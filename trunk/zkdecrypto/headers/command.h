@@ -129,7 +129,7 @@ inline int CommandCipher(int cmd_id)
 			delete symbols;
 			return 0;
 
-		case IDM_CIPHER_FROM_PLAIN: message.SetCipher(message.GetPlain()); szCipher=message.GetCipher(); SetDlgInfo(); return 0;
+		case IDM_CIPHER_FROM_PLAIN: strcpy(szText,message.GetPlain()); message.SetCipher(szText); SetPatterns(); SetDlgInfo(); return 0;
 
 		case IDM_CIPHER_COL_LEFT:
 			if(!bMsgLoaded || iColSel==-1) return 0;
@@ -167,8 +167,7 @@ inline int CommandCipher(int cmd_id)
 
 		case IDM_CIPHER_UPPER:
 			SetUndo();
-			strupr(message.GetCipher());
-			message.SetInfo(true);
+			message.ToUpper();
 			SetKey(); SetPatterns(); SetDlgInfo();
 			return 0;
 
@@ -198,13 +197,13 @@ inline int CommandCipher(int cmd_id)
 			if(lRowCol) DialogBox(hInst,MAKEINTRESOURCE(IDD_GRAPHS),hMainWnd,(DLGPROC)GraphsProc);
 			return 0;
 
-		case IDM_CIPHER_RANDOM: message.DecodeElgar(); SetDlgInfo(); return 0;
-			
 		case IDM_CIPHER_SEQHOMO:
 			if(hHomoWnd) return 0;
 			hHomoWnd=CreateDialog(hInst,MAKEINTRESOURCE(IDD_SEQHOMO),hMainWnd,(DLGPROC)HomoProc);
 			ShowWindow(hHomoWnd,SW_SHOWNORMAL);
 			return 0;
+
+		case IDM_CIPHER_RANDOM: message.Defractionate(6); SetDlgInfo(); SetPatterns(); ClearTextAreas(); SetText(); break;
 
 		case IDM_CIPHER_HORZ: 
 			SetUndo();
@@ -254,7 +253,7 @@ inline int CommandKey(int cmd_id)
 	switch(cmd_id)
 	{
 		case IDM_KEY_INIT:
-			if(DIGRAPH_MODE) 
+			if(iSolveType==SOLVE_DISUB) 
 			{
 				message.digraph_map.Init(74);
 				SetDlgInfo(); SetKeyEdit();
@@ -266,12 +265,13 @@ inline int CommandKey(int cmd_id)
 				SetUndo();
 				siSolveInfo.best_key[0]='\0';
 				message.cur_map.Init(lprgiInitKey);
+				message.Decode();
 				SetDlgInfo(); SetKeyEdit();
 			}
 			
 			return 0;
 
-		case IDM_KEY_CT: if(DIGRAPH_MODE) message.digraph_map.AsCipher(); else message.cur_map.AsCipher(); SetDlgInfo(); SetKeyEdit(); return 0;
+		case IDM_KEY_CT: if(DIGRAPH_MODE) message.digraph_map.AsCipher(); else message.cur_map.AsCipher(); message.Decode(); SetDlgInfo(); SetKeyEdit(); return 0;
 
 		case IDM_KEY_SCRAMBLE:
 			SetUndo();
@@ -284,7 +284,8 @@ inline int CommandKey(int cmd_id)
 				if(DIGRAPH_MODE) message.digraph_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 				else message.cur_map.SwapSymbols(rand()%num_symbols,rand()%num_symbols);
 			}
-
+			
+			message.Decode();
 			SetDlgInfo(); SetKeyEdit();
 			return 0;
 
@@ -292,6 +293,7 @@ inline int CommandKey(int cmd_id)
 			SetUndo();
 			if(DIGRAPH_MODE) message.digraph_map.Clear(CLR_PLAIN);
 			else message.cur_map.Clear(CLR_PLAIN);
+			message.Decode();
 			SetDlgInfo(); SetKeyEdit();
 			return 0;
 
@@ -388,7 +390,7 @@ inline int CommandSolve(int cmd_id)
 
 				strcat(szFact,"\r\n");
 
-				for(cur_fact=1; cur_fact<iSqrt; cur_fact++)
+				for(cur_fact=1; cur_fact<=iSqrt; cur_fact++)
 					if(!(iNumber%cur_fact))
 						sprintf(szFact+strlen(szFact),"%8i\t",cur_fact);
 	

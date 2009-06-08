@@ -95,7 +95,7 @@ BEGIN
         MENUITEM "&Dictionary Matching\tF6",    IDM_WORD_FIND
         MENUITEM "&Word Plug\tCtrl+W",          IDM_SOLVE_WORD
         MENUITEM "&Reset Extra Letters\tCtrl+R", IDM_SOLVE_RESET
-		MENUITEM "&Factor Number", 				IDM_FIND_FACTORS
+        MENUITEM "&Factor Number",              IDM_FIND_FACTORS
         MENUITEM SEPARATOR
         POPUP "&Thread Priority"
         BEGIN
@@ -161,10 +161,10 @@ END
 // Dialog
 //
 
-IDD_MAIN DIALOGEX 0, 0, 280, 303
+IDD_MAIN DIALOGEX 0, 0, 280, 316
 STYLE DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 MENU IDR_MAIN_MENU
-FONT 9, "ZKDfont", 0, 0, 0x1
+FONT 9, "ZKDfont"
 BEGIN
     GROUPBOX        "Patterns",IDC_PAT_TITLE,9,24,114,245,BS_CENTER
     LISTBOX         IDC_PATTERNS,15,36,102,232,LBS_SORT | WS_VSCROLL | 
@@ -178,7 +178,7 @@ BEGIN
     CTEXT           "",IDC_TIME,207,52,56,11,SS_CENTERIMAGE
     CTEXT           "Iterations",IDC_TRY_TITLE,207,75,56,11,SS_CENTERIMAGE
     CTEXT           "",IDC_TRY,207,87,56,11,SS_CENTERIMAGE
-    CTEXT           "Tabu",IDC_FAIL_TITLE,208,110,56,11,SS_CENTERIMAGE
+    CTEXT           "Restart",IDC_FAIL_TITLE,208,110,56,11,SS_CENTERIMAGE
     CTEXT           "",IDC_FAIL,204,122,63,11,SS_CENTERIMAGE
     CTEXT           "Best Score",IDC_SCORE_TITLE,207,145,56,11,
                     SS_CENTERIMAGE
@@ -265,7 +265,7 @@ CAPTION "Options"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Algorithm Parameters",IDC_STATIC,7,7,196,76,BS_CENTER
-    LTEXT           "Failures Until Tabu Key",IDC_STATIC,16,25,131,8
+    LTEXT           "Failures Until Random Restart",IDC_STATIC,16,25,131,8
     LTEXT           "Number of Random Swaps per Iteration",IDC_STATIC,16,45,
                     131,8
     LTEXT           "Lower Score Tolerance",IDC_STATIC,16,65,131,8

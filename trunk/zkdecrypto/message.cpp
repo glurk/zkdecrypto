@@ -17,13 +17,7 @@ int Message::Read(const char *filename)
 	size=ftell(msgfile)+1;
 	fseek(msgfile,0,SEEK_SET);
 
-	//allocate text arrays
-	if(cipher) delete[] cipher;
-	if(plain) delete[] plain;
-	if(msg_temp) delete[] msg_temp;
-	cipher=new char[size];
-	plain=new char[size];
-	msg_temp=new char[size<<1];
+	AllocateBuffers(size);
 
 	if(!cipher || !plain) return 0;
 
@@ -60,13 +54,7 @@ int Message::ReadNumeric(const char *filename)
 	size=ftell(msgfile)+1;
 	fseek(msgfile,0,SEEK_SET);
 
-	//allocate text arrays
-	if(cipher) delete[] cipher;
-	if(plain) delete[] plain;
-	if(msg_temp) delete[] msg_temp;
-	cipher=new char[size];
-	plain=new char[size];
-	msg_temp=new char[size<<1];
+	AllocateBuffers(size);
 
 	if(!cipher || !plain) return 0;
 
@@ -111,35 +99,6 @@ int Message::Write(const char *filename)
 	return 1;
 }
 
-void Message::SetCipher(const char *new_cipher)
-{
-	msg_len=(int)strlen(new_cipher);
-	
-	if(cipher) delete[] cipher;
-	cipher=new char[msg_len+1];
-
-	strcpy(cipher,new_cipher);
-	SetInfo();
-}
-
-void Message::Insert(int position, const char *string)
-{
-	int length, sym_index;
-	SYMBOL symbol;
-	
-	length=(int)strlen(string);
-	
-	for(int cur_char=0; cur_char<length; cur_char++)
-	{
-		sym_index=cur_map.FindByCipher(cipher[position+cur_char]);
-		cur_map.GetSymbol(sym_index,&symbol);
-		symbol.plain=string[cur_char];
-		cur_map.SetLock(sym_index,false);
-		cur_map.AddSymbol(symbol,false);
-		cur_map.SetLock(sym_index,true);
-	}
-}
-
 void Message::SetExpFreq() //set expected frequencies
 {
 	for(int letter=0; letter<26; letter++)
@@ -157,7 +116,7 @@ void Message::SetInfo(int set_maps)
 	SetExpFreq(); //expected letter frequencies
 	FindPatterns(true); //patterns
 
-	if(!set_maps) return;
+	if(!set_maps) {Decode(); return;}
 	
 	memset(&symbol,0,sizeof(SYMBOL)); //monograph map
 	cur_map.Clear(CLR_ALL);
@@ -190,6 +149,8 @@ void Message::SetInfo(int set_maps)
 
 	cur_map.SortByFreq(); //sort maps
 	digraph_map.SortByFreq();
+
+	Decode();
 }
 
 //put the specifed row in dest, according to the specifiec line length 
@@ -260,33 +221,61 @@ void Message::GetActFreq(int *freq)
 	}
 }
 
+
+//cipher modifing functions
+
+void Message::SetCipher(const char *new_cipher)
+{
+	msg_len=(int)strlen(new_cipher);
+	if(strlen(new_cipher)>msg_len) {DeleteBuffers(); AllocateBuffers(msg_len);}
+	strcpy(cipher,new_cipher);
+	SetInfo(true);
+}
+
+void Message::Insert(int position, const char *string)
+{
+	int length, sym_index;
+	SYMBOL symbol;
+	
+	length=(int)strlen(string);
+	
+	for(int cur_char=0; cur_char<length; cur_char++)
+	{
+		sym_index=cur_map.FindByCipher(cipher[position+cur_char]);
+		cur_map.GetSymbol(sym_index,&symbol);
+		symbol.plain=string[cur_char];
+		cur_map.SetLock(sym_index,false);
+		cur_map.AddSymbol(symbol,false);
+		cur_map.SetLock(sym_index,true);
+	}
+
+	SetInfo();
+}
+
 void Message::Flip(int flip_dir, int row_len)
 {
 	unsigned long *xfm=new unsigned long[msg_len<<1];
 	int num_xfm=0;
 
-	if(flip_dir == 3)
+	if(flip_dir == 3) Reverse(cipher);
+		
+	else 
 	{
-		Reverse(cipher);
-		delete[] xfm;
-		FindPatterns(true);
-		return;
+		if(msg_len % row_len)
+		{
+		//	MessageBox(hMainWnd,"Cipher MUST be rectangular to perform flip!","Cipher Transform Status",MB_ICONINFORMATION);
+			delete[] xfm;
+			return;
+		} 
+
+		if(flip_dir == 1) FlipHorz(xfm,num_xfm,msg_len,row_len);
+		if(flip_dir == 2) FlipVert(xfm,num_xfm,msg_len,row_len);
+
+		Transform(cipher,xfm,num_xfm);
 	}
 
-	if(msg_len % row_len)
-	{
-	//	MessageBox(hMainWnd,"Cipher MUST be rectangular to perform flip!","Cipher Transform Status",MB_ICONINFORMATION);
-		delete[] xfm;
-		return;
-	} 
-
-	if(flip_dir == 1) FlipHorz(xfm,num_xfm,msg_len,row_len);
-	if(flip_dir == 2) FlipVert(xfm,num_xfm,msg_len,row_len);
-
-	Transform(cipher,xfm,num_xfm);
-
 	delete[] xfm;
-	FindPatterns(true);
+	SetInfo(true);
 }
 
 void Message::RotateString(char *string, int row_len, int direction)
@@ -301,8 +290,9 @@ void Message::RotateString(char *string, int row_len, int direction)
 		for(col=0; col<row_len; col++)
 			if(direction) msg_temp[col*lines+(lines-row-1)]=string[row*row_len+col]; //right
 			else msg_temp[(row_len-col-1)*lines+row]=string[row*row_len+col]; //left
-
-	memcpy(string,msg_temp,msg_len);
+	
+	msg_temp[msg_len]='\0';
+	strcpy(string,msg_temp);
 }
 
 int Message::Rotate(int row_len, int direction)
@@ -310,7 +300,7 @@ int Message::Rotate(int row_len, int direction)
 	if(msg_len % row_len) return 0;
 
 	RotateString(cipher,row_len,direction);
-	FindPatterns(true); 
+	SetInfo(); 
 	return 1;
 }
 
@@ -349,12 +339,14 @@ void Message::SwapColumns(int iColumnA, int iColumnB, int iLineChars)
 {
 	SwapStringColumns(cipher,iColumnA,iColumnB,iLineChars);
 	SwapStringColumns(plain,iColumnA,iColumnB,iLineChars);
+	SetInfo();
 }
 
 void Message::SwapRows(int iRowA, int iRowB, int iLineChars)
 {
 	SwapStringRows(cipher,iRowA,iRowB,iLineChars);
 	SwapStringRows(plain,iRowA,iRowB,iLineChars);
+	SetInfo();
 }
 
 //replace all instances of symbol2 with symbol1, and update map
@@ -371,6 +363,7 @@ void Message::MergeSymbols(char symbol1, char symbol2, int do_near)
 	cur_map.MergeSymbols(symbol1,symbol2);
 	FindPatterns(do_near);
 }
+
 
 //try to identify homophones and merge them
 int Message::Simplify(char *dest)
@@ -655,7 +648,7 @@ void Message::FindPatterns(int do_near)
 			
 			for(int index1=0; index1<msg_len-length+1; index1++)
 			{
-				for(int index2=index1+length; index2<msg_len-length; index2++)
+				for(int index2=index1+length; index2<msg_len-length && num_patterns<10000; index2++)
 					if(pat_match(cipher+index1,cipher+index2,pattern.string,length))
 					{
 						pattern.positions[0]=index2;
@@ -1049,17 +1042,8 @@ void Message::DecodeHomo()
 	char decoder[256];
 	SYMBOL symbol;
 
-	num_symbols=cur_map.GetNumSymbols();
+	cur_map.GetDecoder(decoder);
 
-	//setup decoding table
-	for(cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
-	{
-		cur_map.GetSymbol(cur_symbol,&symbol);
-		if(symbol.plain) decoder[(unsigned char)symbol.cipher]=symbol.plain;
-		else decoder[(unsigned char)symbol.cipher]=BLANK;
-	}
-
-	//decode string
 	for(cur_symbol=0; cur_symbol<msg_len; cur_symbol++)
 		plain[cur_symbol]=decoder[(unsigned char)cipher[cur_symbol]];
 
@@ -1112,8 +1096,8 @@ void Message::DecodeDigraphic()
 void Message::DecodePlayfair()
 {
 	int cur_digraph, num_digraphs;
-	int c1, c2, c1X, c1Y, c2X, c2Y;
-	int p1, p2, p1X, p1Y, p2X, p2Y;
+	int c1X, c1Y, c2X, c2Y;
+	int p1X, p1Y, p2X, p2Y;
 	DIGRAPH digraph;
 
 	num_digraphs=digraph_map.GetNumDigraphs();
@@ -1122,26 +1106,62 @@ void Message::DecodePlayfair()
 	{
 		digraph_map.GetDigraph(cur_digraph,&digraph);
 
-		c1=(int)strchr(polybius5,digraph.cipher1);
-		c2=(int)strchr(polybius5,digraph.cipher2);
-
-		if(!c1 || !c2) continue; //digraph contains an invalid character
-		
-		c1-=(int)polybius5; c2-=(int)polybius5; //cipher idexes into array
-		c1Y=c1/5; c1X=c1%5; c2Y=c2/5; c2X=c2%5; //cipher x,y in square
+		if(!FindPolybiusIndex(5,digraph.cipher1,c1Y,c1X)) continue;
+		if(!FindPolybiusIndex(5,digraph.cipher2,c2Y,c2X)) continue;
 		
 		if(c1Y==c2Y)		{p1Y=p2Y=c1Y; p1X=(c1X>0? c1X-1:4); p2X=(c2X>0? c2X-1:4);} //same row, one left
 		else if(c1X==c2X)	{p1X=p2X=c1X; p1Y=(c1Y>0? c1Y-1:4); p2Y=(c2Y>0? c2Y-1:4);} //same column, one up
 		else				{p1X=c2X; p1Y=c1Y; p2X=c1X; p2Y=c2Y;} //square, opposite corners
 		
-		p1=p1Y*5+p1X; p2=p2Y*5+p2X; //set digraph plain letters
-		digraph.plain1=polybius5[p1];
-		digraph.plain2=polybius5[p2];
+		digraph.plain1=polybius5a[p1Y*5+p1X]; //set digraph plain letters
+		digraph.plain2=polybius5a[p2Y*5+p2X];
 		digraph_map.AddDigraph(digraph,0);
 	}
 
 	DecodeDigraphic();
 }
+
+void Message::DecodeDoublePlayfair()
+{
+	int index, half_len, block_start=0, block_index=0, full_block_size=block_size<<1;
+	int c1X, c1Y, c2X, c2Y;
+	int p1X, p1Y, p2X, p2Y;
+	DIGRAPH digraph;
+
+	half_len=msg_len>>1;
+	memset(plain,BLANK,msg_len);
+	plain[msg_len]='\0';
+
+	for(index=0; index<half_len; index++)
+	{
+		digraph.cipher1=cipher[index<<1];
+		digraph.cipher2=cipher[(index<<1)+1];
+
+		for(int decode=0; decode<2; decode++) //two decodings of digraph
+		{
+			if(!FindPolybiusIndex(7,digraph.cipher1,c1Y,c1X)) continue;
+			if(!FindPolybiusIndex(5,digraph.cipher2,c2Y,c2X)) continue;
+
+			if(c1Y==c2Y)		{p1Y=p2Y=c1Y; p2X=(c1X<4? c1X+1:0); p1X=(c2X<4? c2X+1:0);} //same row, one left
+			else				{p1X=c2X; p1Y=c1Y; p2X=c1X; p2Y=c2Y;} //square, opposite corners
+
+			digraph.cipher1=polybius5a[p1Y*5+p1X]; 
+			digraph.cipher2=polybius5b[p2Y*5+p2X];
+		}
+
+		plain[block_start+block_index]=digraph.cipher1; //set plain
+		plain[block_start+block_index+(full_block_size>>1)]=digraph.cipher2;
+
+		if(++block_index>=(full_block_size>>1))
+		{
+			block_index=0;
+			block_start+=full_block_size;
+			if(msg_len-block_start<full_block_size) //adjust for last block
+				full_block_size=msg_len-block_start;
+		}
+	}
+}
+
 /*
 void Message::DecodeVigenere(char *string) //any tableau can be used
 {
@@ -1232,23 +1252,33 @@ void Message::DecodeVigenere(char *string) //any tableau can be used
 
 	msg_temp[msg_len]='\0';
 
-	strcpy(plain,msg_temp);
+	FlipPlainBuffer();
 }
 
-int Message::FindPolybius5Index(char symbol, int &x, int &y)
+int Message::FindPolybiusIndex(int poly_size, char symbol, int &x, int &y)
 {
-	for(x=0; x<5; x++)
-		for(y=0; y<5; y++)
-			if(symbol==polybius5[5*x+y]) return 1;
+	char *polybius;
 
-	return 0;
-}
+	switch(poly_size)
+	{
+		case 5: polybius=polybius5a; break;
+		case 7: polybius=polybius5b; poly_size=5; break;
+		case 6: polybius=polybius6; break;
+		case 8: polybius=polybius8; break;
+		default: return 0;
+	}
 
-int Message::FindPolybius6Index(char symbol, int &x, int &y)
-{
-	for(x=0; x<6; x++)
-		for(y=0; y<6; y++)
-			if(symbol==polybius6[6*x+y]) return 1;
+	for(x=0; x<poly_size; x++)
+		for(y=0; y<poly_size; y++)
+			if(symbol==polybius[poly_size*x+y]) return 1;
+
+	/*c1=(int)strchr(polybius5a,digraph.cipher1);
+		c2=(int)strchr(polybius5a,digraph.cipher2);
+
+		if(!c1 || !c2) continue; //digraph contains an invalid character
+		
+		c1-=(int)polybius5a; c2-=(int)polybius5a; //cipher idexes into array
+		c1Y=c1/5; c1X=c1%5; c2Y=c2/5; c2X=c2%5; //cipher x,y in square*/
 
 	return 0;
 }
@@ -1269,7 +1299,7 @@ void Message::DecodeXfid(int fract_size)
 	char cCurSymbol, *index_string;
 
 	//init plain string
-	memset(plain,'-',msg_len);
+	memset(plain,BLANK,msg_len);
 	plain[msg_len]='\0';
 
 	if(block_size<2) return;
@@ -1280,7 +1310,7 @@ void Message::DecodeXfid(int fract_size)
 	{
 		cCurSymbol=cipher[iCipherIndex]; //find cipher symbol in array
 
-		if(fract_size==2) bFound=FindPolybius5Index(cCurSymbol,x,y);
+		if(fract_size==2) bFound=FindPolybiusIndex(5,cCurSymbol,x,y);
 		else bFound=FindTrifidIndex(cCurSymbol,x,y,z);
 
 		if(!bFound) {plain[iCipherIndex]=cipher[iCipherIndex]; continue;}
@@ -1296,11 +1326,11 @@ void Message::DecodeXfid(int fract_size)
 		{
 			for(iBlockIndex=0; iBlockIndex<block_size; iBlockIndex++)
 			{
-				while(iPlainIndex<msg_len && plain[iPlainIndex]!='-') 	iPlainIndex++;
+				while(iPlainIndex<msg_len && plain[iPlainIndex]!=BLANK) iPlainIndex++;
 				if(iPlainIndex>=msg_len) break;
 
 				x=index_string[iBlockIndex]; y=index_string[iBlockIndex+block_size];
-				if(fract_size==2) plain[iPlainIndex++]=polybius5[5*x+y];
+				if(fract_size==2) plain[iPlainIndex++]=polybius5a[5*x+y];
 				else {z=index_string[iBlockIndex+(block_size<<1)]; plain[iPlainIndex++]=trifid_array[9*x+3*z+y];}
 			}
 
@@ -1355,7 +1385,9 @@ void Message::ColumnarStage(char *key) //supports incomplete columnar
 
 	for(int key_index=0; key_index<key_length; key_index++) //read columns in key order
 	{
-		cur_col=ChrIndex(key,temp_key[key_index]); //which column to read into
+		if(key_index && temp_key[key_index]==temp_key[key_index-1]) cur_col+=ChrIndex(key+cur_col+1,temp_key[key_index])+1; //duplicate key symbol, find next column
+
+		else cur_col=ChrIndex(key,temp_key[key_index]); //which column to read into
 
 		for(cur_row=0; cur_row<num_rows; cur_row++)
 		{
@@ -1370,7 +1402,7 @@ void Message::ColumnarStage(char *key) //supports incomplete columnar
 	}
 
 	msg_temp[plain_index]='\0';
-	strcpy(plain,msg_temp);
+	FlipPlainBuffer();
 }
 
 void Message::DecodeColumnar(int stages) {for(int cur_stage=0; cur_stage<stages; cur_stage++) ColumnarStage(coltrans_key[stages-cur_stage-1]);}

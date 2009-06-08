@@ -63,6 +63,7 @@ void ChangePlain()
 	}
 
 	//update info
+	message.Decode(); 
 	SetPlain(); SetText();
 	SetTable(); SetFreq();
 	SetWordList();
@@ -353,7 +354,7 @@ DWORD WINAPI FindSolution(LPVOID lpVoid)
 		siSolveInfo.locked=(char*)message.cur_map.GetLocked();
 		siSolveInfo.exclude=exclude;
 		
-		hillclimb(message,szCipher,message.GetLength(),key,false);
+		hillclimb(message,message.GetCipher(),message.GetLength(),key,false);
 	}
 
 	else if(iSolveType==SOLVE_RUNKEY) //read running key text file
@@ -405,7 +406,7 @@ void StartSolve()
 	SetDlgItemText(hMainWnd,IDC_SOLVE,"Stop");
 	MsgEnable(false);
 	MapEnable(false);
-	hSolveThread=CreateThread(0,2048,FindSolution,0,0,0);
+	hSolveThread=CreateThread(0,4096,FindSolution,0,0,0);
 	hTimerThread=CreateThread(0,128,Timer,0,0,0);
 }
 
@@ -564,6 +565,9 @@ void LockWord(int lock)
 	const char *word_ptr;
 
 	if(iCurWord<0) return;
+
+	const char *szCipher=message.GetCipher();
+	const char *szPlain=message.GetPlain();
 
 	SendDlgItemMessage(hMainWnd,IDC_WORD_LIST,LB_GETTEXT,iCurWord,(LPARAM)szText);
 	
