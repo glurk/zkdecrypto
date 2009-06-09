@@ -227,7 +227,7 @@ void Message::GetActFreq(int *freq)
 void Message::SetCipher(const char *new_cipher)
 {
 	msg_len=(int)strlen(new_cipher);
-	if(strlen(new_cipher)>msg_len) {DeleteBuffers(); AllocateBuffers(msg_len);}
+	if((int)strlen(new_cipher)>msg_len) {DeleteBuffers(); AllocateBuffers(msg_len);}
 	strcpy(cipher,new_cipher);
 	SetInfo(true);
 }
@@ -1038,9 +1038,9 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 //decode cipher into plain
 void Message::DecodeHomo()
 {
-	int cur_symbol, num_symbols;
+	int cur_symbol;
 	char decoder[256];
-	SYMBOL symbol;
+//	SYMBOL symbol;
 
 	cur_map.GetDecoder(decoder);
 
@@ -1223,10 +1223,11 @@ char LETTER_INDEXS2[256]={
 
 void Message::DecodeVigenere(char *string) //any tableau can be used
 {
-	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
-	char *lpcCipherInKeyRow;
+	int iCipherIndex, iKeyIndex=0;
+//	char *lpcCipherInKeyRow;
 
-	char cCipher, cKey, cPlain;
+	char cCipher, cKey;
+//	char cPlain;
 
 	if(!vig_key_len) return;
 	if(!strlen(key)) return;
@@ -1245,7 +1246,7 @@ void Message::DecodeVigenere(char *string) //any tableau can be used
 
 		//cPlain=cCipher 0x0D;
 
-		msg_temp[iCipherIndex]=cPlain+'A';
+//		msg_temp[iCipherIndex]=cPlain+'A';
 	
 		if(++iKeyIndex>=vig_key_len) iKeyIndex=0;
 	}
@@ -1371,7 +1372,7 @@ void Message::DecodePermutation(char *key)
 
 void Message::ColumnarStage(char *key) //supports incomplete columnar
 {
-	int key_length, extra, num_rows, num_cols, cur_row, cur_col, read_row, cipher_index, plain_index=0;
+	int key_length, extra, num_rows, cur_row, cur_col, read_row, cipher_index, plain_index=0;
 	char temp_key[512];
 
 	if((key_length=strlen(key))<2) return;

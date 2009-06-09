@@ -847,8 +847,9 @@ inline void SetTabuTabInfo()
 void SetMainStatus()
 {
 	char szStatus[32]="KEY LENGTH: "; //set status
+	int cur_key,key_start;
 
-	for(int cur_key=0, int key_start=0; cur_key<10; cur_key++, key_start++)
+	for(cur_key=0, key_start=0; cur_key<10; cur_key++, key_start++)
 	{
 		int key_length=ChrIndex(szText+key_start,'|');
 		if(key_length==-1) key_length=strlen(szText+key_start); //last key

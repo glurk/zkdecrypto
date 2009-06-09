@@ -279,8 +279,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	char filename[1024];
 	
 	hInst=hInstance;
-	HWND hStatus;
-	
+
 	srand(time(0));
 
 	/*setup directories*/
@@ -435,8 +434,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hKeyEdit=GetDlgItem(hMainWnd,IDC_KEY_EDIT);
 	lKeyEditStyle=GetWindowLong(hKeyEdit,GWL_STYLE);
 
-	//create main status bar with gripper
-	hMainStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hMainWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
+	//create main status bar
+	hMainStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hMainWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
  
     int MainStatWidths[] = {300, -1};
     SendMessage(hMainStatus, SB_SETPARTS, sizeof(MainStatWidths)/sizeof(int), (LPARAM)MainStatWidths);
@@ -445,7 +444,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//create text status bar with gripper
 	hTextStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
  
-    int TextStatWidths[] = {150, 250, 350, 450, -1};
+    int TextStatWidths[] = {80, 140, 200, 275, -1};
     SendMessage(hTextStatus, SB_SETPARTS, sizeof(TextStatWidths)/sizeof(int), (LPARAM)TextStatWidths);
 	SendMessage(hTextStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
 
