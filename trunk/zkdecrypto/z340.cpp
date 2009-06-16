@@ -40,18 +40,23 @@ FILE *log_file;
 #define DECODE_A	{for(y=0; y<clength; y++) solved[y]=*decoder[(unsigned char)cipher[y]];}
 #define DECODE_B	{msg.SetKey(key); solved=msg.GetPlain();}
 
-#define TABU_STR_A(KEY)		key_str.assign(KEY,info->tabu_syms); 
+#define TABU_STR_A(KEY)		key_str.assign(KEY,cuniq); 
 
 #define TABU_STR_B(KEY)		{if(solve_type==SOLVE_SUBPERM || solve_type==SOLVE_SUBCOL) {key_str.assign(KEY,msg.cur_map.GetNumSymbols()); key_str.append(KEY+split_points[0]);} \
 							else if(solve_type==SOLVE_COLVIG) {key_str.assign(KEY,msg.GetKeyLength()); key_str.append(KEY+split_points[0]);} \
 							else key_str.assign(KEY,use_key_len);}
 
-#define ADD_TABU			(*info->tabu)[key_str]=info->tabu->size(); info->tabu_end=info->tabu->end(); info->disp_tabu();
+#define ADD_TEMP_TABU		temp_tabu[key_str]=temp_tabu.size(); temp_tabu_end=temp_tabu.end();
+#define CLEAR_TEMP_TABU		temp_tabu.clear(); temp_tabu_end=temp_tabu.end();
+
+#define ADD_OPTIMA_TABU		(*(info->optima_tabu))[key_str]=info->optima_tabu->size(); optima_tabu_end=info->optima_tabu->end();
+#define CLEAR_OPTIMA_TABU	info->optima_tabu->clear(); optima_tabu_end=info->optima_tabu->end();
 					
-#define SET_SCORE(SCR,DEC)	if(info->tabu->find(key_str)!=info->tabu_end) SCR=-100000; else {DEC; SCR=calcscore(msg,clength,solved);} 
+#define SET_SCORE(SCR,DEC)	if(temp_tabu.find(key_str)!=temp_tabu_end || info->optima_tabu->find(key_str)!=optima_tabu_end) SCR=-100000; else {DEC; SCR=calcscore(msg,clength,solved);} 
 
 #define LOG_BEST(SCR)		info->get_words(solved); fprintf(log_file,"%i\t%i\t%i\t%s\t%s\n",SCR,info->num_words,info->stray_letters,key_str.data(),solved); fflush(log_file);
 
+#define CLEAR_TABU_PROB 80
 
 int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print)
 {
@@ -82,18 +87,20 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print
 	
 	//make decoder, array of char* that point to the key plain text values indexed by the ascii value of the cipher symbols
 	for(x=0; x<cuniq; x++) decoder[(unsigned char)uniqstr[x]]=&key[x];
-	DECODE_A;
 
 /****************************** START_MAIN_HILLCLIMBER_ALGORITHM **********************************/
 
 	//init info
 	info->cur_tabu=info->cur_tol=0;
-	info->tabu_end=info->tabu->end();
-	info->tabu_syms=cuniq;
+
+	CLEAR_TEMP_TABU; //CLEAR_OPTIMA_TABU; //clear tabu lists
+	optima_tabu_end=info->optima_tabu->end();
 
 	//initial score & feedback
+	DECODE_A;
 	cur_best_score=info->best_score=last_score=calcscore(msg,clength,solved);
 	strcpy(info->best_key,key);
+	strcpy(cur_best_key,key);
 	if(info->disp_all) info->disp_all();
 	
 	log_file=fopen(info->log_name,"w"); //open log file
@@ -124,7 +131,7 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print
 					if(p2<cuniq && strchr(info->exclude+(27*p2),key[p1])) continue;
 				}
 
-				DO_SWAP; TABU_STR_A(key); SET_SCORE(score,DECODE_A); //swap, decode, score
+				DO_SWAP; TABU_STR_A(key); SET_SCORE(score,DECODE_A); ADD_TEMP_TABU; //swap, decode, score
 
 				//tolerance of going downhill starts out at max, and decreases with each iteration without improve
 				if(info->max_tol) tolerance=rand()%(info->max_tol-info->cur_tol+1);
@@ -156,9 +163,9 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print
 		{
 			if(++info->cur_tol>=info->max_tol) info->cur_tol=0; //reset downhill score tolerance
 				
-			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) //blacklist best key since last restar, reset current best score, 50/50 back to best or random restart
-			{
-				TABU_STR_A(cur_best_key); ADD_TABU;
+			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) //blacklist best key since last restart, reset current best score, 50/50 back to best or random restart
+			{	
+				TABU_STR_A(cur_best_key); ADD_OPTIMA_TABU;
 				if(log_file) {strcpy(key,cur_best_key); DECODE_A; LOG_BEST(cur_best_score);}
 				cur_best_score=-10000;
 
@@ -173,6 +180,8 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print
 		for(i=0; i<info->swaps; i++) shufflekey(key,keylength,cuniq); //random swaps at end of iteration
 		TABU_STR_A(key); SET_SCORE(last_score,DECODE_A); //score at end of iteration
 
+		if(!(rand()%CLEAR_TABU_PROB)) CLEAR_TEMP_TABU; //clear tabu memory
+
 		if(info->time_func) end_time=info->time_func();
 		if(!info->max_tol) tolerance=0; //reset tolerance
 	}
@@ -181,9 +190,6 @@ EXIT:
 	delete solved;
 	info->running=0;
 	if(log_file) fclose(log_file);
-	info->tabu->clear();
-	info->tabu_end=info->tabu->end();
-	info->disp_tabu();
 	return 0;
 }
 
@@ -204,13 +210,15 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 
 	//init info
 	info->cur_tabu=info->cur_tol=0;
-	info->tabu_end=info->tabu->end();
 	clength=msg.GetLength();
 	cipher=msg.GetCipher();
 	solved=msg.GetPlain();
 	full_key_len=use_key_len=strlen(key);
+	CLEAR_TEMP_TABU; //CLEAR_OPTIMA_TABU; //clear tabu lists
+	optima_tabu_end=info->optima_tabu->end();
 
 	//key sections
+	num_splits=0;
 	for(int key_start=0; ; key_start++)
 	{
 		int key_length=ChrIndex(key+key_start,'|');
@@ -234,6 +242,7 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 	DECODE_B;
 	cur_best_score=info->best_score=last_score=calcscore(msg,clength,solved);
 	strcpy(info->best_key,key);
+	strcpy(cur_best_key,key);
 	main_msg+=msg;
 	if(info->disp_all) info->disp_all();
 
@@ -256,7 +265,7 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 				if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
 				if(!IN_SAME_KEY(p1,p2)) continue; //in different split keys, or on split
 			
-				DO_SWAP; TABU_STR_B(key); SET_SCORE(score,DECODE_B); //swap, decode, score
+				DO_SWAP; TABU_STR_B(key); SET_SCORE(score,DECODE_B); ADD_TEMP_TABU; //swap, decode, score 
 
 				//tolerance of going downhill starts out at max, and decreases with each iteration without improve
 				if(info->max_tol) tolerance=rand()%(info->max_tol-info->cur_tol+1);
@@ -265,7 +274,7 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 				if(score<(last_score-tolerance)) {DO_SWAP;} //undo if change made it worse than last score
 				else //change is better or same as last score
 				{
-					last_score=score; 
+					last_score=score;
 							
 					if(score>info->best_score) //this is the new best, save & display
 					{
@@ -295,11 +304,12 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 
 			if(info->max_tabu && ++info->cur_tabu>=info->max_tabu) ///blacklist best key since last restart, reset current best score, 50/50 back to best or random restart
 			{
-				TABU_STR_B(cur_best_key); ADD_TABU; 
+				TABU_STR_B(cur_best_key); ADD_OPTIMA_TABU; 
 				if(log_file) {strcpy(key,cur_best_key); DECODE_B; LOG_BEST(cur_best_score);}
 				cur_best_score=-10000;
 				
-				if(rand()%2) for(i=0; i<100; i++) // random restart
+				if(rand()%2) 
+				for(i=0; i<full_key_len<<2; i++) // random restart
 				{
 					p1=rand()%use_key_len; p2=rand()%use_key_len;
 					if(solve_type==SOLVE_DISUB) if(msg.digraph_map.GetLock(p1>>1) || msg.digraph_map.GetLock(p2>>1)) continue;
@@ -323,16 +333,15 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 		} 
    
 		TABU_STR_B(key); SET_SCORE(last_score,DECODE_B); //score at end of iteration
-		
+	
+		if(!(rand()%CLEAR_TABU_PROB)) CLEAR_TEMP_TABU; //clear tabu memory
+
 		if(info->time_func) end_time=info->time_func();
 		if(!info->max_tol) tolerance=0; //reset tolerance
 	}	
 	
 EXIT:
 	if(log_file) fclose(log_file);
-	info->tabu->clear();
-	info->tabu_end=info->tabu->end();
-	info->disp_tabu();
 	return 0;
 }
 
@@ -360,6 +369,8 @@ void GetFreqs(const char *string, int length)
 			count++;
 		}
 	}
+
+	prob_mass=float(count)/unique;
 }
 
 float FastIoC()
@@ -413,12 +424,12 @@ float FastEntropy()
 
 float FastChiSquare()
 {
-	float chi2=0, prob_mass, cur_calc;
+	float chi2=0, cur_calc;
 
 	for(int index=0; index<26; index++) //calculate chi2
 	{
 		if(!freqs[index]) continue;
-		prob_mass=float(count)/unique;
+		
 		cur_calc=freqs[index]-prob_mass;
 		cur_calc*=cur_calc;
 		cur_calc/=prob_mass;

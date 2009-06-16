@@ -196,7 +196,7 @@
 #define IDC_DIOC_WEIGHT_TITLE			1157
 #define IDC_DIOC_WEIGHT_EDIT			1158
 #define IDC_DIOC_WEIGHT_SPIN			1159
-#define IDC_TABU						1160
+#define IDC_CONTACT						1160
 #define IDC_TRANS_TYPE					1161
 #define IDC_LINE_CHARS					1162
 
@@ -285,6 +285,11 @@
 #define IDM_VIEW_LOG					40120
 #define	IDM_CIPHER_FROM_PLAIN			40121
 #define IDM_FIND_FACTORS				40122
+#define IDM_CIPHER_DEFRACT				40123
+#define IDM_CIPHER_PASTE				40124
+#define IDM_SOLVE_AUTOEXCLUDE			40125
+#define IDM_FILE_OPEN_TABU				40126
+#define IDM_FILE_SAVE_TABU				40127
 
 // Next default values for new objects
 // 

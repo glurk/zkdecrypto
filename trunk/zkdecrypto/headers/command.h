@@ -62,6 +62,16 @@ inline int CommandFile(int cmd_id)
 			SavePlain(NULL);
 			return 0;
 
+		case IDM_FILE_OPEN_TABU:
+			if(!GetFilename(filename,szCipherName,0)) return 0;
+			LoadTabu(filename);				
+			return 0;
+
+		case IDM_FILE_SAVE_TABU:
+			if(GetFilename(filename,szCipherName,1)!=1) return 0;
+			SaveTabu(filename);				
+			return 0;
+
 		case IDM_FILE_EXIT: SendMessage(hMainWnd,WM_CLOSE,0,0); return 0;
 	}
 
@@ -129,7 +139,7 @@ inline int CommandCipher(int cmd_id)
 			delete symbols;
 			return 0;
 
-		case IDM_CIPHER_FROM_PLAIN: strcpy(szText,message.GetPlain()); message.SetCipher(szText); SetPatterns(); SetDlgInfo(); return 0;
+		case IDM_CIPHER_FROM_PLAIN: strcpy(szText,message.GetPlain()); message.SetCipher(szText); SetPatterns(); SetContactTabInfo(); SetDlgInfo(); return 0;
 
 		case IDM_CIPHER_COL_LEFT:
 			if(!bMsgLoaded || iColSel==-1) return 0;
@@ -137,7 +147,7 @@ inline int CommandCipher(int cmd_id)
 			message.SwapColumns(iColSel,iColSel+1,iLineChars);
 			SetTextSel(iTextSel-1);
 			message.SetInfo();
-			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
+			SetKey(); SetText(); SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_COL_RIGHT:
@@ -145,7 +155,7 @@ inline int CommandCipher(int cmd_id)
 			message.SwapColumns(iColSel,iColSel+1,iLineChars);
 			SetTextSel(iTextSel+1);
 			message.SetInfo();
-			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
+			SetKey(); SetText(); SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_UP:
@@ -154,7 +164,7 @@ inline int CommandCipher(int cmd_id)
 			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
 			SetTextSel(iTextSel-iLineChars);
 			message.SetInfo();
-			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
+			SetKey(); SetText(); SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_ROW_DOWN:
@@ -162,19 +172,19 @@ inline int CommandCipher(int cmd_id)
 			message.SwapRows(iRowSel,iRowSel+1,iLineChars);
 			SetTextSel(iTextSel+iLineChars);
 			message.SetInfo();
-			SetKey(); SetText(); SetPatterns(); SetDlgInfo();
+			SetKey(); SetText(); SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_UPPER:
 			SetUndo();
 			message.ToUpper();
-			SetKey(); SetPatterns(); SetDlgInfo();
+			SetKey(); SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_RAND_TRANS:
 			for(trans=0; trans<1000; trans++) 
 				message.SwapColumns(rand()%iLineChars,rand()%iLineChars,iLineChars);
-			SetPatterns(); SetDlgInfo();
+			SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			return 0;
 
 		case IDM_CIPHER_POLYIC:
@@ -203,24 +213,43 @@ inline int CommandCipher(int cmd_id)
 			ShowWindow(hHomoWnd,SW_SHOWNORMAL);
 			return 0;
 
-		case IDM_CIPHER_RANDOM: message.Defractionate(6); SetDlgInfo(); SetPatterns(); ClearTextAreas(); SetText(); break;
+		case IDM_CIPHER_DEFRACT: 
+			strcpy(szNumberTitle,"Fraction Size");
+			iNumber=2;
+
+			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
+			{
+				SetUndo();
+				message.Defractionate(iNumber); 
+				SetDlgInfo(); SetPatterns(); SetContactTabInfo(); 
+				ClearTextAreas(); SetText();
+			}
+			break;
+
+		case IDM_CIPHER_PASTE:
+			GetClipboardText(szText);
+			StripWS(szText);
+			message.SetCipher(szText);
+			sprintf(szText,"%s\%s",szExeDir,"untitled.txt");
+			NewMessageInfo(szText);
+			return 0;
 
 		case IDM_CIPHER_HORZ: 
 			SetUndo();
 			message.Flip(1,iLineChars);
-			SetDlgInfo(); SetPatterns();
+			SetDlgInfo(); SetPatterns(); SetContactTabInfo(); 
 			return 0;
 
 		case IDM_CIPHER_VERT:
 			SetUndo();
 			message.Flip(2,iLineChars);
-			SetDlgInfo(); SetPatterns();
+			SetDlgInfo(); SetPatterns(); SetContactTabInfo(); 
 			return 0;
 
 		case IDM_CIPHER_REV:
 			SetUndo();
 			message.Flip(3,iLineChars);
-			SetDlgInfo(); SetPatterns();
+			SetDlgInfo(); SetPatterns(); SetContactTabInfo(); 
 			return 0;
 
 		case IDM_CIPHER_ROT_LEFT:
@@ -228,7 +257,7 @@ inline int CommandCipher(int cmd_id)
 			{
 				SetUndo();
 				SetLineChars(message.GetLength()/iLineChars);
-				SetPatterns(); SetDlgInfo();
+				SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			}
 			return 0;
 
@@ -237,7 +266,7 @@ inline int CommandCipher(int cmd_id)
 			{
 				SetUndo();
 				SetLineChars(message.GetLength()/iLineChars);
-				SetPatterns(); SetDlgInfo();
+				SetPatterns(); SetContactTabInfo(); SetDlgInfo();
 			}
 			return 0;
 	}
@@ -347,6 +376,8 @@ inline int CommandSolve(int cmd_id)
 
 	switch(cmd_id)
 	{
+		case IDM_SOLVE_AUTOEXCLUDE: message.AutoExclude(); SendMessage(hMainWnd,WM_COMMAND,IDM_VIEW_EXCLUSIONS,0); break;
+		
 		case IDM_SOLVE_WORD:
 			strcpy(szStringTitle,"Text to Plug");
 			szString[0]='\0';

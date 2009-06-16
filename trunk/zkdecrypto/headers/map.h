@@ -24,13 +24,26 @@
 
 #pragma warning( disable : 4996)  //STOP MSVS2005 WARNINGS
 
+
+struct CONTACT
+{
+	void *symbol;
+	int freq;
+};
+
 struct SYMBOL
 {
 	char cipher;
 	char plain; 
 	int freq;
 	char exclude[27];
+
+	CONTACT precedes[MAX_SYM];
+	CONTACT follows[MAX_SYM];
+	int num_precedes, num_follows, num_contacts;
 };
+
+
 
 class Map
 {
@@ -47,6 +60,7 @@ public:
 	int GetSymbol(int,SYMBOL*);
 	int FindByCipher(char);
 	int GetNumSymbols() {return num_symbols;}
+	void AddContact(char,char);
 
 	void SortByFreq();
 	void SetUnigraphs(double *ug) {memcpy(unigraphs,ug,26*sizeof(float));}

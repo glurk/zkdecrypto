@@ -56,23 +56,8 @@ void OpenWith(char *szFileName)
 	ShellExecuteEx(&seiShellExec);
 }
 
-int LoadMessage(char *filename, int type)
+void NewMessageInfo(char *filename)
 {
-	int loaderror=false;
-
-	switch(type) 
-	{
-		case 0: if(!message.Read(filename)) loaderror=true; break; //read as ascii
-		case 1: if(!message.ReadNumeric(filename)) loaderror=true; break; //read as numeric
-	}
-
-	if(loaderror) //error loading file
-	{
-		sprintf(szText,"Cannot open %s",(const char*)filename);
-		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
-		return 0;
-	}
-
 	//get message filename
 	strcpy(szCipherName,filename);
 	GetBaseName(szCipherName,szCipherBase);
@@ -98,7 +83,6 @@ int LoadMessage(char *filename, int type)
 	
 	iCurSymbol=-1;
 	iTextSel=-1;
-	tabu_map.clear();
 	SetLineChars(message.CalcBestWidth(message.GetLength()));
 	SendDlgItemMessage(hMainWnd,IDC_MAP,LB_SETCURSEL,iCurSymbol,0);
 	
@@ -106,6 +90,7 @@ int LoadMessage(char *filename, int type)
 	SetTitle();
 	SetCipher();
 	SetPatterns();
+	SetContactTabInfo();
 	SetDlgInfo(); SetKeyEdit();
 
 	//block size
@@ -115,14 +100,36 @@ int LoadMessage(char *filename, int type)
 	SendDlgItemMessage(hMainWnd,IDC_BLOCK_SPIN,UDM_SETRANGE,1,max_block);
 	SetDlgItemInt(hMainWnd,IDC_BLOCK_EDIT,max_block,false);
 
+	tabu_list.clear();
+}
+
+int LoadMessage(char *filename, int type)
+{
+	int loaderror=false;
+
+	switch(type) 
+	{
+		case 0: if(!message.Read(filename)) loaderror=true; break; //read as ascii
+		case 1: if(!message.ReadNumeric(filename)) loaderror=true; break; //read as numeric
+	}
+
+	if(loaderror) //error loading file
+	{
+		sprintf(szText,"Cannot open %s",(const char*)filename);
+		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
+		return 0;
+	}
+
+	NewMessageInfo(filename);
+
 	return 1;
 }
 
 int LoadMap(char *filename)
 {
-	Map temp_map;
+	//Map temp_map;
 	
-	if(!temp_map.Read(filename))
+	if(!message.cur_map.Read(filename))
 	{
 		sprintf(szText,"Cannot open %s",filename);
 		MessageBox(hMainWnd,szText,"Error",MB_OK | MB_ICONERROR);
@@ -132,7 +139,7 @@ int LoadMap(char *filename)
 	siSolveInfo.best_key[0]='\0';
 	
 	//update symbols from loaded map
-	message.cur_map+=temp_map;
+	//message.cur_map+=temp_map;
 
 	//get map filename
 	strcpy(szKeyName,filename);
@@ -224,6 +231,39 @@ void LoadCribs()
 
 }
 
+int LoadTabu(char *filename)
+{
+	FILE *ini_file;
+	std::string tabu_str;
+	char tabu[512];
+
+	if(!(ini_file=fopen(filename,"r"))) return 0;
+
+	while(fscanf(ini_file,"%s\n",tabu)!=EOF)
+	{
+		tabu_str=tabu;
+		tabu_list[tabu_str]=tabu_list.size();
+	}
+
+	fclose(ini_file);
+
+	return 1;
+}
+
+int SaveTabu(char *filename)
+{
+	FILE *ini_file; 
+
+	if(!(ini_file=fopen(filename,"w"))) return 0;
+
+	for(STRMAP::iterator iter=tabu_list.begin(); iter!=tabu_list.end(); ++iter)
+		fprintf(ini_file,"%s\n",std::string(iter->first).c_str());
+
+	fclose(ini_file);
+
+	return 1;
+}
+
 //read configuration file
 int LoadINI()
 {
@@ -250,7 +290,6 @@ int LoadINI()
 		else if(!stricmp(option,"fail")) siSolveInfo.max_tabu=atoi(value);
 		else if(!stricmp(option,"swap")) siSolveInfo.swaps=atoi(value);
 		else if(!stricmp(option,"revert")) siSolveInfo.max_tol=atoi(value);
-		else if(!stricmp(option,"tabu_syms")) siSolveInfo.tabu_syms=atoi(value);
 		else if(!stricmp(option,"lang")) iLang=atoi(value);
 		else if(!stricmp(option,"minword")) iWordMin=atoi(value);
 		else if(!stricmp(option,"maxword")) iWordMax=atoi(value);
@@ -284,7 +323,6 @@ int SaveINI()
 	fprintf(ini_file,"fail = %i\n",siSolveInfo.max_tabu);
 	fprintf(ini_file,"swap = %i\n",siSolveInfo.swaps);
 	fprintf(ini_file,"revert = %i\n",siSolveInfo.max_tol);
-	fprintf(ini_file,"tabu_syms = %i\n",siSolveInfo.tabu_syms);
 	fprintf(ini_file,"lang = %i\n",iLang);
 	fprintf(ini_file,"minword = %i\n",iWordMin);
 	fprintf(ini_file,"maxword = %i\n",iWordMax);

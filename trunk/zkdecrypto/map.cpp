@@ -158,10 +158,45 @@ int Map::AddSymbol(SYMBOL &symbol, int inc_freq)
 	symbols[num_symbols].cipher=symbol.cipher;
 	symbols[num_symbols].plain=symbol.plain;
 	symbols[num_symbols].freq=1;
+	symbols[num_symbols].num_precedes=symbols[num_symbols].num_follows=0;
 	strcpy(symbols[num_symbols].exclude,symbol.exclude);
 	num_symbols++;
 
 	return 1;
+}
+
+void Map::AddContact(char cipher_a, char cipher_b)
+{
+	int index;
+	int symbol_a, symbol_b;
+	CONTACT *contact;
+
+	symbol_a=FindByCipher(cipher_a);
+	symbol_b=FindByCipher(cipher_b);
+
+	//precedes in symbol a
+	for(index=0; index<symbols[symbol_a].num_precedes; index++)
+		if(symbols[symbol_a].precedes[index].symbol==&symbols[symbol_b]) //precedes contact exists
+			{symbols[symbol_a].precedes[index].freq++; break;}
+
+	if(index==symbols[symbol_a].num_precedes) //add new precedes contact
+	{
+		symbols[symbol_a].precedes[index].symbol=&symbols[symbol_b];
+		symbols[symbol_a].precedes[index].freq=1;
+		symbols[symbol_a].num_precedes++;
+	}
+
+	//follows in symbol b
+	for(index=0; index<symbols[symbol_b].num_follows; index++)
+		if(symbols[symbol_b].follows[index].symbol==&symbols[symbol_a]) //precedes contact exists
+			{symbols[symbol_b].follows[index].freq++; break;}
+
+	if(index==symbols[symbol_b].num_follows) //add new precedes contact
+	{
+		symbols[symbol_b].follows[index].symbol=&symbols[symbol_a];
+		symbols[symbol_b].follows[index].freq=1;
+		symbols[symbol_b].num_follows++;
+	}
 }
 
 //return index of symbol with specified cipher character

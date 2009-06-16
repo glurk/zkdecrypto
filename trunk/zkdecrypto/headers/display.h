@@ -38,6 +38,18 @@ void SetClipboardText(const char *szClipText)
 	CloseClipboard();
 }
 
+//set given text to clipboard
+void GetClipboardText(char *szClipText)
+{
+	HGLOBAL hgClipboard;
+
+	//get clipboard
+	OpenClipboard(hMainWnd);
+	hgClipboard=GetClipboardData(CF_TEXT);
+	strcpy(szClipText,(const char*)hgClipboard);
+	CloseClipboard();
+}
+
 //set window title
 void SetTitle() {sprintf(szTitle, "%s %s",PROG_NAME,PROG_VER); SetWindowText(hMainWnd,szTitle);}
 
@@ -437,6 +449,7 @@ void SetCharSize()
 //call when key is changed to decode and display plain text
 void SetPlain()
 {
+	if(!bMsgLoaded) return;
 	if(!siSolveInfo.running) siSolveInfo.best_score=calcscore(message,message.GetLength(),message.GetPlain());
 	SetDlgItemInt(hMainWnd,IDC_SCORE,siSolveInfo.best_score,true);
 }
@@ -822,26 +835,42 @@ inline void SetStatsTabInfo()
 	SetDlgItemText(hMainWnd,IDC_STATS_IOC_P,szText);
 }
 
-inline void SetTabuTabInfo()
+inline void SetContactTabInfo()
 {
-//	int cur_disp;
-	szText[26]='\0';
-
-	if(iCurTab!=4) return;
-	if(tabu_map.size()>200) return;
-
-	STRMAP::iterator iter=tabu_map.begin();
+	SYMBOL symbol, *symbol_ptr;
+	int cur_symbol, cur_contact;
+	char szContact[512]="\0";
 
 	szText[0]='\0';
-	
-	if(iter!=tabu_map.end())
-		for(; iter!=tabu_map.end(); ++iter) 
+
+	for(cur_symbol=0; cur_symbol<message.cur_map.GetNumSymbols(); cur_symbol++)
+	{
+		message.cur_map.GetSymbol(cur_symbol,&symbol);
+
+		sprintf(szContact,"%c(%i) (%i,%i) [BEFORE] ",symbol.cipher,symbol.freq,symbol.num_precedes,symbol.num_follows);
+		strcat(szText,szContact);
+
+		for(cur_contact=0; cur_contact<symbol.num_precedes; cur_contact++) //precedes
 		{
-			strcat(szText,std::string(iter->first).c_str());
-			strcat(szText,"\r\n");
+			symbol_ptr=(SYMBOL*)symbol.precedes[cur_contact].symbol;
+			sprintf(szContact,"%c(%i)%i ",symbol_ptr->cipher,symbol_ptr->freq,symbol.precedes[cur_contact].freq); 
+			strcat(szText,szContact);
 		}
-	
-	SetDlgItemText(hMainWnd,IDC_TABU,szText);
+
+		sprintf(szContact,"[AFTER] ");
+		strcat(szText,szContact);
+
+		for(cur_contact=0; cur_contact<symbol.num_follows; cur_contact++) //follows
+		{
+			symbol_ptr=(SYMBOL*)symbol.follows[cur_contact].symbol;
+			sprintf(szContact,"%c(%i)%i ",symbol_ptr->cipher,symbol_ptr->freq,symbol.follows[cur_contact].freq); 
+			strcat(szText,szContact);
+		}
+
+		strcat(szText,"\r\n");
+	}
+
+	SetDlgItemText(hMainWnd,IDC_CONTACT,szText);
 }
 
 void SetMainStatus()
@@ -955,7 +984,7 @@ void SetSolveTypeFeatures()
 		SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,0,false);
 		SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,0,false);
 		SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,0,false);
-		SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,5,false);
+		//SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,0,false);
 	}
 	
 	else
@@ -963,7 +992,7 @@ void SetSolveTypeFeatures()
 		SetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,5,false);
 		SetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,5,false);
 		SetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,5,false);
-		SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,0,false);
+		//SetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,0,false);
 	}
 
 	if(iSolveType==SOLVE_PLAYFAIR || iSolveType==SOLVE_BIFID) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETLIMITTEXT,25,0); //limit key edit length
@@ -1030,7 +1059,7 @@ void ShowTab(int iTab)
 	int iShowAnalysis=SW_HIDE;
 	int iShowWord=SW_HIDE;
 	int iShowStats=SW_HIDE;
-	int iShowTabu=SW_HIDE;
+	int iShowContact=SW_HIDE;
 	
 	iCurTab=iTab;
 
@@ -1040,7 +1069,7 @@ void ShowTab(int iTab)
 		case 1: iShowAnalysis=SW_SHOW; SetAnalysisTabInfo(); break;
 		case 2: iShowWord=SW_SHOW; SetWordListTabInfo(); break;
 		case 3: iShowStats=SW_SHOW; SetStatsTabInfo(); break;
-		case 4: iShowTabu=SW_SHOW; SetTabuTabInfo(); break;
+		case 4: iShowContact=SW_SHOW; /*SetContactTabInfo();*/ break;
 	}
 
 	//solve
@@ -1050,15 +1079,15 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_VALUE),iShowSolve);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_MAP_CHANGE),iShowSolve);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve | iShowStats | iShowWord | iShowTabu);
-	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve | iShowStats | iShowWord | iShowTabu);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SOLVE_TITLE),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME_TITLE),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TIME),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY_TITLE),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_TRY),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL_TITLE),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_FAIL),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE_TITLE),iShowSolve | iShowStats | iShowWord | iShowContact);
+	ShowWindow(GetDlgItem(hMainWnd,IDC_SCORE),iShowSolve | iShowStats | iShowWord | iShowContact);
 
 	//analysis
 	ShowWindow(GetDlgItem(hMainWnd,IDC_TABLE_TITLE),iShowAnalysis);
@@ -1117,8 +1146,8 @@ void ShowTab(int iTab)
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_EDIT),iShowStats);
 	ShowWindow(GetDlgItem(hMainWnd,IDC_BLOCK_SPIN),iShowStats);
 
-	//Tabu Tab
-	ShowWindow(GetDlgItem(hMainWnd,IDC_TABU),iShowTabu);
+	//Contact Tab
+	ShowWindow(GetDlgItem(hMainWnd,IDC_CONTACT),iShowContact);
 
 }
 
