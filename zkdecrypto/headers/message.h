@@ -145,6 +145,8 @@ public:
 	Map cur_map;
 	DiMap digraph_map;
 
+	void AutoExclude();
+
 	void operator += (Message &src_msg)
 	{
 		//src message is longer, must reallocate
@@ -206,18 +208,15 @@ public:
 		FRACTMAP mapping;
 		FRACTMAP::iterator iter;
 
+		if(size>msg_len) return;
+
 		for(int index=0; index<msg_len; index+=size)
 		{
 			if(msg_len-index<size) break;
 
 			fraction.assign(cipher+index,size);
-
 			iter=mapping.find(fraction); 
-			if(iter!=mapping.end()) //already in map
-			{
-				msg_temp[index/size]=iter->second;
-			}
-
+			if(iter!=mapping.end()) msg_temp[index/size]=iter->second; //already in map
 			else mapping[fraction]=msg_temp[index/size]=char(mapping.size()+'A');
 		}
 

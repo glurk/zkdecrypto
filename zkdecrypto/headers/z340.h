@@ -34,12 +34,9 @@ struct SOLVEINFO
 	char cribs[512][128];
 	int num_cribs;
 	char log_name[2048];
-	std::map<std::string,int> *tabu;
-	std::map<std::string,int>::iterator tabu_end;
 	std::map<std::string,int> *dictionary;
+	std::map<std::string,int> *optima_tabu;
 	int dict_words;
-	int tabu_syms;
-	int semaphore;
 
 	float lang_ioc;
 	float lang_dioc;
@@ -69,7 +66,6 @@ struct SOLVEINFO
 	void (*disp_info)(void);
 	unsigned long (*time_func)(void);
 	int (*get_words)(const char*);
-	void (*disp_tabu)(void);
 };
 
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////

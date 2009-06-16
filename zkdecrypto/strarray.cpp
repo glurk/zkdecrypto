@@ -291,10 +291,11 @@ float ChiSquare(const char *string, int length)
 		freqs[(unsigned char)string[index]]++;
 	}
 
+	prob_mass=float(length)/unique;
+
 	for(index=32; index<256; index++) //calculate chi2
 	{
 		if(!freqs[index]) continue;
-		prob_mass=float(length)/unique;
 		cur_calc=freqs[index]-prob_mass;
 		cur_calc*=cur_calc;
 		cur_calc/=prob_mass;

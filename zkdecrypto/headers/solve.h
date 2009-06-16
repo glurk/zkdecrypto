@@ -21,6 +21,8 @@ void Undo()
 	redo_line_size=iLineChars;
 	SetLineChars(undo_line_size);
 	SetPatterns();
+	SetContactTabInfo();
+	SetKeyEdit();
 }
 
 void Redo()
@@ -32,6 +34,8 @@ void Redo()
 	message=redo_message;
 	SetLineChars(redo_line_size);
 	SetPatterns();
+	SetContactTabInfo();
+	SetKeyEdit();
 }
 
 //change letter mapped to symbol
@@ -86,6 +90,8 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_MAP,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_MAP,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_PLAIN,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_FILE_OPEN_TABU,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_FILE_SAVE_TABU,MF_BYCOMMAND | menu_state);
 		if(iSolveType==SOLVE_HOMO) EnableMenuItem(hMainMenu,IDM_SOLVE_INSERT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_MERGE,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_SIMPLIFY,MF_BYCOMMAND | menu_state);
@@ -93,6 +99,7 @@ void MsgEnable(int enabled)
 		EnableMenuItem(hMainMenu,IDM_CIPHER_RC_IOC,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_SEQHOMO,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_UPPER,MF_BYCOMMAND | menu_state);
+		EnableMenuItem(hMainMenu,IDM_CIPHER_DEFRACT,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_FROM_PLAIN,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_HORZ,MF_BYCOMMAND | menu_state);
 		EnableMenuItem(hMainMenu,IDM_CIPHER_VERT,MF_BYCOMMAND | menu_state);
@@ -310,9 +317,21 @@ int FormatKey(char *key)
 		temp[temp_index++]=cur_char;
 	}
 
-	temp[temp_index]='\0';
-	strcpy(key,temp);
-	delete temp;
+	temp[temp_index]='\0'; 	strcpy(key,temp); delete temp;
+
+	return temp_index;
+}
+
+//only include letters, and convert to upper case
+int StripWS(char *string)
+{
+	int length=strlen(string), temp_index=0;
+	char *temp=new char[length+1];
+
+	for(int index=0; index<length; index++)
+		if(string[index]!=' ' && string[index]!='\r' && string[index]!='\n') temp[temp_index++]=string[index];
+
+	temp[temp_index]='\0'; strcpy(string,temp); delete temp;
 
 	return temp_index;
 }
@@ -418,6 +437,7 @@ void Reset() //init solve info
 	SetDlgItemText(hMainWnd,IDC_TIME,"00:00:00");
 	siSolveInfo.best_score=0;
 	SetDlgInfo();
+	tabu_list.clear();
 }
 
 //set thread priority

@@ -40,6 +40,9 @@ BEGIN
         MENUITEM "Save &Plain Text",            IDM_FILE_SAVE_PLAIN
         MENUITEM "&Copy Plain",                 IDM_FILE_COPY_PLAIN
         MENUITEM SEPARATOR
+		//MENUITEM "Open &Tabu",                  IDM_FILE_OPEN_TABU
+        //MENUITEM "Save Ta&bu",                  IDM_FILE_SAVE_TABU
+        //MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",               IDM_FILE_EXIT
     END
     POPUP "&Edit"
@@ -50,6 +53,7 @@ BEGIN
         MENUITEM "&Insert Text\tInsert",        IDM_SOLVE_INSERT
         MENUITEM SEPARATOR
         MENUITEM "Edit &Cipher",                IDM_EDIT_MSG
+		MENUITEM "From Clipboard",				IDM_CIPHER_PASTE
         MENUITEM "Edit &Key",                   IDM_EDIT_MAP
         MENUITEM SEPARATOR
         MENUITEM "Edit Cribs\tF2",              IDM_EDIT_CRIBS
@@ -64,6 +68,7 @@ BEGIN
         MENUITEM "Se&quential Analysis",        IDM_CIPHER_SEQHOMO
         MENUITEM SEPARATOR
         MENUITEM "&Merge Symbols\tCtrl+M",      IDM_CIPHER_MERGE
+		MENUITEM "&Defractionate"				IDM_CIPHER_DEFRACT
         MENUITEM "To &Uppercase\tF4",           IDM_CIPHER_UPPER
         MENUITEM "Set as Plain",                IDM_CIPHER_FROM_PLAIN
         MENUITEM SEPARATOR
@@ -92,6 +97,7 @@ BEGIN
     END
     POPUP "&Solve"
     BEGIN
+		MENUITEM "&Auto Exclude",				IDM_SOLVE_AUTOEXCLUDE
         MENUITEM "&Dictionary Matching\tF6",    IDM_WORD_FIND
         MENUITEM "&Word Plug\tCtrl+W",          IDM_SOLVE_WORD
         MENUITEM "&Reset Extra Letters\tCtrl+R", IDM_SOLVE_RESET
@@ -171,8 +177,7 @@ BEGIN
                     WS_TABSTOP
     GROUPBOX        "Key",IDC_MAP_TITLE,126,24,73,245,BS_CENTER
     LISTBOX         IDC_MAP,133,36,59,210,WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_MAP_VALUE,133,247,21,15,ES_UPPERCASE | 
-                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAP_VALUE,133,247,21,15,ES_AUTOHSCROLL
     GROUPBOX        "Solver",IDC_SOLVE_TITLE,202,24,66,153,BS_CENTER
     CTEXT           "Time",IDC_TIME_TITLE,207,40,56,11,SS_CENTERIMAGE
     CTEXT           "",IDC_TIME,207,52,56,11,SS_CENTERIMAGE
@@ -255,7 +260,7 @@ BEGIN
     LTEXT           "Entropy [H]: ",IDC_STATS_ENTRO_P,71,147,120,11
     LTEXT           "IoC [IC,DIC,EDIC]: ",IDC_STATS_IOC_P,15,162,175,11
     EDITTEXT        IDC_KEY_EDIT,5,279,270,15,ES_CENTER | ES_AUTOHSCROLL
-    EDITTEXT        IDC_TABU,8,25,190,250,ES_MULTILINE | ES_READONLY | 
+    EDITTEXT        IDC_CONTACT,8,25,190,250,ES_MULTILINE | ES_READONLY | 
                     WS_VSCROLL | WS_HSCROLL
 END
 
@@ -589,7 +594,7 @@ BEGIN
     "S",            IDM_FILE_SAVE_MAP,      VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK,         VIRTKEY, CONTROL, NOINVERT
     "U",            IDM_KEY_UNLOCK_ALL,     VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+                                                    NOINVERT													
     "V",            IDM_KEY_INVERT_LOCK,    VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     VK_F1,          IDM_HELP_CONT,          VIRTKEY, NOINVERT

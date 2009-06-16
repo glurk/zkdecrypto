@@ -154,21 +154,25 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_IOC_WEIGHT_EDIT:
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					siSolveInfo.ioc_weight=GetDlgItemInt(hMainWnd,IDC_IOC_WEIGHT_EDIT,false,false);
+					SetPlain();
 					return 0;
 
 				case IDC_ENT_WEIGHT_EDIT:
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					siSolveInfo.ent_weight=GetDlgItemInt(hMainWnd,IDC_ENT_WEIGHT_EDIT,false,false);
+					SetPlain();
 					return 0;
 
 				case IDC_CHI_WEIGHT_EDIT: 
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					siSolveInfo.chi_weight=GetDlgItemInt(hMainWnd,IDC_CHI_WEIGHT_EDIT,false,false);
+					SetPlain();
 					return 0;
 
 				case IDC_DIOC_WEIGHT_EDIT:
 					if(HIWORD(wParam)!=EN_CHANGE) return 0;
 					siSolveInfo.dioc_weight=GetDlgItemInt(hMainWnd,IDC_DIOC_WEIGHT_EDIT,false,false);
+					SetPlain();
 					return 0;
 
 				case IDC_BLOCK_EDIT:
@@ -319,15 +323,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	tciTabItem.mask=TCIF_TEXT;
 	tciTabItem.cchTextMax=15;
 
-	tciTabItem.pszText="Solve";
+	tciTabItem.pszText="Solver";
 	SendMessage(hMainTab,TCM_INSERTITEM,0,(LPARAM)&tciTabItem);
-	tciTabItem.pszText="Analysis";
+	tciTabItem.pszText="Frequency Analysis";
 	SendMessage(hMainTab,TCM_INSERTITEM,1,(LPARAM)&tciTabItem);
 	tciTabItem.pszText="Word List";
 	SendMessage(hMainTab,TCM_INSERTITEM,2,(LPARAM)&tciTabItem);
 	tciTabItem.pszText="Statistics";
 	SendMessage(hMainTab,TCM_INSERTITEM,3,(LPARAM)&tciTabItem);
-	tciTabItem.pszText="Tabu";
+	tciTabItem.pszText="Contact Analysis";
 	SendMessage(hMainTab,TCM_INSERTITEM,4,(LPARAM)&tciTabItem);
 	ShowTab(0);
 
@@ -403,12 +407,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	siSolveInfo.disp_info=disp_info;
 	siSolveInfo.time_func=GetTime;
 	siSolveInfo.get_words=GetWordList;
-	siSolveInfo.disp_tabu=SetTabuTabInfo;
 	sprintf(siSolveInfo.log_name,"%s\\%s",szExeDir,"log.txt");
-	siSolveInfo.tabu=&tabu_map;
 	siSolveInfo.dictionary=&dictionary;
-	siSolveInfo.tabu_syms=10;
-	siSolveInfo.semaphore=false;
+	siSolveInfo.optima_tabu=&tabu_list;
 	SetInfo(&siSolveInfo);
 	Reset();
 
@@ -444,11 +445,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//create text status bar with gripper
 	hTextStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
  
-    int TextStatWidths[] = {80, 140, 200, 275, -1};
+    int TextStatWidths[] = {125, 225, 325, 425, -1}; //those old widths were too small, text was being cut off
     SendMessage(hTextStatus, SB_SETPARTS, sizeof(TextStatWidths)/sizeof(int), (LPARAM)TextStatWidths);
 	SendMessage(hTextStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
-
-
 
 	SetSolveTypeFeatures();
 

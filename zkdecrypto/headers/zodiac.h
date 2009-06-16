@@ -58,7 +58,7 @@ int bMsgLoaded=false, bMapLoaded=false, bUndo=false;
 int iNumber, iCurTab;
 char szString[128], szStringTitle[128], szNumberTitle[128]; //word, exclude string
 typedef std::map<std::string,int> STRMAP;
-STRMAP dictionary, tabu_map, word_list;
+STRMAP dictionary, tabu_list, word_list;
 
 //GUI data
 char szTitle[64], szText[40960], szExeDir[1024], szOldKey[4096]=""; 
