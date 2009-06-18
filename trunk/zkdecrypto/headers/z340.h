@@ -70,7 +70,7 @@ struct SOLVEINFO
 
 /////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
 
-inline int		calcscore(Message&,const int,const char *);
+int				calcscore(Message&,const int,const char *);
 inline void		shufflekey(char *,const int,const int);
 
 void			printcipher(int,const char *,char *,int,char *);

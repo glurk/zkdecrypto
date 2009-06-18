@@ -37,7 +37,37 @@ int Message::Read(const char *filename)
 
 	return msg_len;
 }
+/*
+int Message::Read(const char *filename)
+{
+	FILE *msgfile;
+	int size;
+	char cur;
 
+	if(!(msgfile=fopen(filename,"rb"))) return 0;
+
+	//get file size
+	fseek(msgfile,0,SEEK_END);
+	size=ftell(msgfile)+1;
+	fseek(msgfile,0,SEEK_SET);
+
+	AllocateBuffers(size);
+
+	if(!cipher || !plain) return 0;
+
+	//read from file
+	msg_len=size;
+
+	fread(cipher,1,msg_len,msgfile);
+
+	cipher[msg_len]='\0';
+	fclose(msgfile);
+	
+	SetInfo(true);
+
+	return msg_len;
+}
+*/
 int Message::ReadNumeric(const char *filename)
 {
 	FILE *msgfile;
@@ -150,6 +180,8 @@ void Message::SetInfo(int set_maps)
 	cur_map.SortByFreq(); //sort maps
 	digraph_map.SortByFreq();
 
+	for(chr=0; chr<msg_len-1; chr++) cur_map.AddContact(cipher[chr],cipher[chr+1]); //contact analysis
+
 	Decode();
 }
 
@@ -226,8 +258,16 @@ void Message::GetActFreq(int *freq)
 
 void Message::SetCipher(const char *new_cipher)
 {
-	msg_len=(int)strlen(new_cipher);
-	if((int)strlen(new_cipher)>msg_len) {DeleteBuffers(); AllocateBuffers(msg_len);}
+	int new_len=(int)strlen(new_cipher);
+	
+	if(new_len>msg_len) //realloacte buffers 
+	{
+		DeleteBuffers(); 
+		AllocateBuffers(new_len);
+	}
+
+	msg_len=new_len;
+
 	strcpy(cipher,new_cipher);
 	SetInfo(true);
 }
@@ -1033,6 +1073,67 @@ long Message::SeqHomo(wchar *dest, char *clip, float occur_pcnt, int max_len)
 	return (rows+2)<<16 | (cols*8)+6;
 }
 
+void Message::AutoExclude()
+{
+	SYMBOL symbol, *symbol_ptr;
+	int cur_contact, num_contacts;
+	char szExclude[512], szFind[8];
+	float freq, contacts_avg_freq;
+	int num_symbols=cur_map.GetNumSymbols();
+
+	float very_hi_freq_th=.06;	//very high letter frequency %
+	float hi_freq_th=.04;		//high letter frequency %
+	float lo_freq_th=.02;		//low letter frequency %
+	float contact_freq_th=.058;	//lowest average frequency of contact symbols 
+	float contact_diff_th=.35;	//lowest % diffferce of # of preceeding & following letters
+	char vowel_exc[]="BCDFGHJKLMNPQRSTVWXZ"; //exclusions for different categories
+	char vhfreq_exc[]="FGPWY";
+	char hfreq_exc[]="BJKQVXZ";
+	char double_exc[]="ABGIJKQUVWXYZ";
+		
+	for(int cur_symbol=0; cur_symbol<num_symbols; cur_symbol++)
+	{
+		cur_map.GetSymbol(cur_symbol,&symbol);
+		strcpy(szExclude,symbol.exclude);
+
+		freq= float(symbol.freq)/msg_len;
+
+		if(freq >= very_hi_freq_th) strcat(szExclude,vhfreq_exc); //very high frequency
+		if(freq >= hi_freq_th) strcat(szExclude,hfreq_exc);	 //high frequency
+
+		sprintf(szFind,"%c%c",symbol.cipher,symbol.cipher);	 //doubles
+		if(strstr(cipher,szFind)) strcat(szExclude,hfreq_exc);
+			
+		//vowel check: many contacts, many low freq contacts
+		contacts_avg_freq=0;
+		num_contacts=0;//symbol.num_precedes+symbol.num_follows;
+
+		for(cur_contact=0; cur_contact<symbol.num_precedes; cur_contact++)
+		{
+			symbol_ptr=(SYMBOL*)symbol.precedes[cur_contact].symbol;
+			contacts_avg_freq+=symbol_ptr->freq*symbol.precedes[cur_contact].freq;
+			num_contacts+=symbol.precedes[cur_contact].freq;
+		}
+
+		for(cur_contact=0; cur_contact<symbol.num_follows; cur_contact++)
+		{
+			symbol_ptr=(SYMBOL*)symbol.follows[cur_contact].symbol;
+			contacts_avg_freq+=symbol_ptr->freq*symbol.precedes[cur_contact].freq;
+			num_contacts+=symbol.precedes[cur_contact].freq;
+		}
+
+		contacts_avg_freq/=num_contacts;
+		contacts_avg_freq/=msg_len; //average frequency of symbols this contacts with
+
+		if(freq >= lo_freq_th) //frequency is not very low
+			if(contacts_avg_freq<contact_freq_th) //average frequency of contacts is lower than consonents
+				if(ABS(symbol.num_precedes-symbol.num_follows)<contact_diff_th*(symbol.num_precedes+symbol.num_follows)/2) //lower difference in # of preceeding & folling letters
+					strcat(szExclude,vowel_exc); //add vowel exclusions
+			
+		GetUniques(szExclude,symbol.exclude,NULL);
+		cur_map.AddSymbol(symbol,false);
+	}
+}
 
 
 //decode cipher into plain
@@ -1162,7 +1263,7 @@ void Message::DecodeDoublePlayfair()
 	}
 }
 
-/*
+
 void Message::DecodeVigenere(char *string) //any tableau can be used
 {
 	int iCipherIndex, iKeyIndex=0, iCipherCol, iKeyRow;
@@ -1201,7 +1302,7 @@ void Message::DecodeVigenere(char *string) //any tableau can be used
 
 	strcpy(plain,msg_temp);
 }
-*/
+/*
 
 char LETTER_INDEXS2[256]={
 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
@@ -1255,7 +1356,7 @@ void Message::DecodeVigenere(char *string) //any tableau can be used
 
 	FlipPlainBuffer();
 }
-
+*/
 int Message::FindPolybiusIndex(int poly_size, char symbol, int &x, int &y)
 {
 	char *polybius;

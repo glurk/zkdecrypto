@@ -413,7 +413,7 @@ inline int CommandSolve(int cmd_id)
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
 			{
 				if(iNumber<2) iNumber=2;
-				iSqrt=sqrt((double)iNumber);
+				iSqrt=(int)sqrt(double(iNumber));
 				
 				for(cur_fact=iNumber; cur_fact>iSqrt; cur_fact--)
 					if(!(iNumber%cur_fact))
