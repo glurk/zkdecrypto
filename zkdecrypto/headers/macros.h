@@ -3,7 +3,7 @@
 
 #define ROUNDTOINT(F) (DECIMAL(F)>=.5? int(F)+1:int(F))
 #define ROUNDUP(F) (DECIMAL(F)>0? int(F)+1:int(F))
-#define IS_ASCII(C) (((unsigned char)C)>=0x20 && ((unsigned char)C)<=0xFF)
+#define IS_ASCII(C) (((unsigned char)C)>=0x20 && ((unsigned char)C)<=0xFE)
 #define DECIMAL(N) (N-int(N))
 #define ABS(X) ((X)<0? (-1*(X)):(X))
 #define MAX(X,Y) (X>Y? X:Y)

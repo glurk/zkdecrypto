@@ -584,3 +584,4 @@ void DiMap::SortByFreq()
 	} 
 	while(next);
 }
+

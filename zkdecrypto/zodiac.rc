@@ -68,7 +68,7 @@ BEGIN
         MENUITEM "Se&quential Analysis",        IDM_CIPHER_SEQHOMO
         MENUITEM SEPARATOR
         MENUITEM "&Merge Symbols\tCtrl+M",      IDM_CIPHER_MERGE
-		MENUITEM "&Defractionate"				IDM_CIPHER_DEFRACT
+		MENUITEM "&Defractionate",				IDM_CIPHER_DEFRACT
         MENUITEM "To &Uppercase\tF4",           IDM_CIPHER_UPPER
         MENUITEM "Set as Plain",                IDM_CIPHER_FROM_PLAIN
         MENUITEM SEPARATOR
