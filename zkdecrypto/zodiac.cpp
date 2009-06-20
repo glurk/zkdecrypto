@@ -325,7 +325,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	tciTabItem.pszText="Solver";
 	SendMessage(hMainTab,TCM_INSERTITEM,0,(LPARAM)&tciTabItem);
-	tciTabItem.pszText="Frequency Analysis";
+	tciTabItem.pszText="Freq. Analysis";
 	SendMessage(hMainTab,TCM_INSERTITEM,1,(LPARAM)&tciTabItem);
 	tciTabItem.pszText="Word List";
 	SendMessage(hMainTab,TCM_INSERTITEM,2,(LPARAM)&tciTabItem);

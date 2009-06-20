@@ -169,7 +169,7 @@ void Map::AddContact(char cipher_a, char cipher_b)
 {
 	int index;
 	int symbol_a, symbol_b;
-	CONTACT *contact;
+//	CONTACT *contact;
 
 	symbol_a=FindByCipher(cipher_a);
 	symbol_b=FindByCipher(cipher_b);
