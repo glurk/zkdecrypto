@@ -1,6 +1,7 @@
 #pragma warning( disable : 4244)	// STOP MSVS2005 WARNINGS
 #pragma warning( disable : 4311)
 #pragma warning( disable : 4267)
+#pragma warning( disable : 4305)
 
 #include "headers/message.h"
 

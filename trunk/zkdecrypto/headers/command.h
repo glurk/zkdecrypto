@@ -230,7 +230,7 @@ inline int CommandCipher(int cmd_id)
 			GetClipboardText(szText);
 			StripWS(szText);
 			message.SetCipher(szText);
-			sprintf(szText,"%s\%s",szExeDir,"untitled.txt");
+			sprintf(szText,"%s\\%s",szExeDir,"untitled.txt");
 			NewMessageInfo(szText);
 			return 0;
 
