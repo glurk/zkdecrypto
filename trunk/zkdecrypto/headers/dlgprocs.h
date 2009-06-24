@@ -118,7 +118,7 @@ LRESULT CALLBACK NumberProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_INITDIALOG:
 			SetFocus(GetDlgItem(hWnd,IDC_NUMBER));
-			SendDlgItemMessage(hWnd,IDC_NUMBER,EM_LIMITTEXT,3,0);
+			SendDlgItemMessage(hWnd,IDC_NUMBER,EM_LIMITTEXT,10,0);
 			SetDlgItemInt(hWnd,IDC_NUMBER,iNumber,0);
 			SetWindowText(hWnd,szNumberTitle);
 			return 0;
@@ -235,6 +235,7 @@ LRESULT CALLBACK OptionsProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Substitution + Permutation");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Substitution + Double Transposition");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Vigenere + Double Transposition");
+			//SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_ADDSTRING,0,(LPARAM)"Lorenz SZ40/42");
 			SendDlgItemMessage(hWnd,IDC_SOLVE_TYPE,CB_SETCURSEL,iSolveType,0);
 
 			//word length
