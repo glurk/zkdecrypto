@@ -37,6 +37,7 @@
 #define SOLVE_SUBPERM	15
 #define SOLVE_SUBCOL	16
 #define SOLVE_COLVIG	17
+#define SOLVE_LORENZ	18
 
 typedef std::map<std::string,char> FRACTMAP;
 
@@ -185,6 +186,7 @@ public:
 		strcpy(polybius8,src_msg.polybius8);
 		memcpy(trifid_array,src_msg.trifid_array,sizeof(trifid_array));
 		memcpy(vigenere_array,src_msg.vigenere_array,sizeof(vigenere_array));
+		memset(lorenz,0,sizeof(lorenz));
 
 		Decode();
 	}
@@ -247,6 +249,7 @@ public:
 			case SOLVE_SUBPERM: DecodeHomo(); DecodePermutation(coltrans_key[0]); break; 
 			case SOLVE_SUBCOL:	DecodeHomo(); DecodeColumnar(2); break;
 			case SOLVE_COLVIG:	DecodeHomo(); DecodeColumnar(2); DecodeVigenere(plain); break;
+			case SOLVE_LORENZ:	DecodeLorenz(); break;
 		}
 	}
 
@@ -286,16 +289,19 @@ public:
 		polybius[length]=0; 
 	}
 
-	void SetTransKey(int key_num, const char *new_key, int new_key_len) {memcpy(coltrans_key[key_num],new_key,new_key_len); coltrans_key[key_num][new_key_len]='\0';}
+	void SetColtransKey(char *key, int key_len, int key_num) {memcpy(coltrans_key[key_num],key,key_len); coltrans_key[key_num][key_len]='\0';}
 	void SetKey(const char *split_key)
 	{	
 		int cur_key,key_start;
+		char sub_key[512];
 
-		for(cur_key=0,key_start=0; cur_key<10; cur_key++, key_start++)
+		for(cur_key=0,key_start=0; cur_key<20; cur_key++, key_start++)
 		{
 			int key_length=ChrIndex(split_key+key_start,'|');
 			if(key_length==-1) key_length=strlen(split_key+key_start); //last key
 			const char *key_ptr=split_key+key_start;
+
+			memcpy(sub_key,key_ptr,key_length);
 
 			switch(decode_type)
 			{
@@ -314,19 +320,14 @@ public:
 				case SOLVE_PERMUTE:	
 				case SOLVE_COLTRANS: 	
 				case SOLVE_DOUBLE:	
-				case SOLVE_TRIPPLE:	SetTransKey(cur_key,key_ptr,key_length); break;
-				case SOLVE_ADFGX:	if(cur_key==0) SetPolybius(5,key_ptr,key_length); else SetTransKey(cur_key-1,key_ptr,key_length); break;
-				case SOLVE_ADFGVX:	if(cur_key==0) SetPolybius(6,key_ptr,key_length); else SetTransKey(cur_key-1,key_ptr,key_length); break;
-				case SOLVE_CEMOPRTU:if(cur_key==0) SetPolybius(8,key_ptr,key_length); else SetTransKey(cur_key-1,key_ptr,key_length); break;
+				case SOLVE_TRIPPLE:	if(cur_key<10) SetColtransKey(sub_key,key_length,cur_key); break;
+				case SOLVE_ADFGX:	if(cur_key==0) SetPolybius(5,key_ptr,key_length); else if(cur_key<2) SetColtransKey(sub_key,key_length,cur_key-1); break;
+				case SOLVE_ADFGVX:	if(cur_key==0) SetPolybius(6,key_ptr,key_length); else if(cur_key<2) SetColtransKey(sub_key,key_length,cur_key-1); break;
+				case SOLVE_CEMOPRTU:if(cur_key==0) SetPolybius(8,key_ptr,key_length); else if(cur_key<2) SetColtransKey(sub_key,key_length,cur_key-1); break;
 				case SOLVE_SUBPERM:
-				case SOLVE_SUBCOL:
-					if(cur_key==0) cur_map.FromKey(key_ptr); 
-					else SetTransKey(cur_key-1,key_ptr,key_length);
-					break;
-				case SOLVE_COLVIG:
-					if(cur_key==0) {memcpy(key,key_ptr,vig_key_len); strupr(key);}
-					else SetTransKey(cur_key-1,key_ptr,key_length);
-					break;
+				case SOLVE_SUBCOL: 	if(cur_key==0) cur_map.FromKey(key_ptr); else if(cur_key<2) SetColtransKey(sub_key,key_length,cur_key-1); break;
+				case SOLVE_COLVIG:  if(cur_key==0) {memcpy(key,key_ptr,vig_key_len); strupr(key);} else if(cur_key<2) SetColtransKey(sub_key,key_length,cur_key-1); break;
+				case SOLVE_LORENZ: lorenz[cur_key]=atoi(sub_key); break;
 			}
 
 			key_start+=key_length;
@@ -360,6 +361,7 @@ public:
 			case SOLVE_SUBPERM: cur_map.ToKey(string,extra); strcat(string,"|"); strcat(string,coltrans_key[0]); break;
 			case SOLVE_SUBCOL: cur_map.ToKey(string,extra); strcat(string,"|"); strcat(string,coltrans_key[0]); strcat(string,"|"); strcat(string,coltrans_key[1]); break;
 			case SOLVE_COLVIG: sprintf(string,"%s%s|%s|%s",key,extra,coltrans_key[0],coltrans_key[1]); break;
+			case SOLVE_LORENZ: sprintf(string,"%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i",lorenz[0],lorenz[1],lorenz[2],lorenz[3],lorenz[4],lorenz[5],lorenz[6],lorenz[7],lorenz[8],lorenz[9],lorenz[10],lorenz[11]); break;
 		}
 	}
 
@@ -395,6 +397,7 @@ private:
 	void ColumnarStage(char*);
 	void DecodeColumnar(int);
 	void DecodeADFGX(int,char*);
+	void DecodeLorenz();
 
 	//decoding keys
 	char key[4096];
@@ -405,6 +408,7 @@ private:
 	char polybius8[65];
 	char trifid_array[28];
 	char vigenere_array[26][27];
+	int lorenz[12];
 
 	//decoding variables
 	int decode_type;
@@ -417,4 +421,6 @@ private:
 
 void SwapStringColumns(char*,int,int,int);
 void SwapStringRows(char*,int,int,int);
+void Ascii2Baudot(const char*,char*);
+void Baudot2Ascii(const char*,char*);
 #endif

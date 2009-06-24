@@ -1303,7 +1303,7 @@ void Message::DecodeVigenere(char *string) //any tableau can be used
 
 	strcpy(plain,msg_temp);
 }
-/*
+
 
 char LETTER_INDEXS2[256]={
 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
@@ -1322,7 +1322,7 @@ char LETTER_INDEXS2[256]={
 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
-
+/*
 void Message::DecodeVigenere(char *string) //any tableau can be used
 {
 	int iCipherIndex, iKeyIndex=0;
@@ -1524,6 +1524,147 @@ void Message::DecodeADFGX(int square_size, char *polybius)
 	}
 
 	plain[(msg_len>>1)]='\0';
+}
+
+ /*
+#define BD_E3 0x01
+#define BD_LF 0x02
+#define BD_A- 0x03
+#define BD_SP 0x04
+#define BD_S' 0x05
+#define BD_I8 0x06
+#define BD_U7 0x07
+#define BD_CR 0x08
+#define BD_D$ 0x09
+#define BD_R4 0x0A
+#define BD_J' 0x0B
+#define BD_N, 0x0C
+#define BD_F!% 0x0D
+#define BD_C: 0x0E
+#define BD_K( 0x0F
+#define BD_T5 0x10
+#define BD_Z*+ 0x11
+#define BD_L) 0x12
+#define BD_W2 0x13
+#define BD_H# 0x14
+#define BD_Y6 0x15
+#define BD_P0 0x16
+#define BD_Q1 0x17
+#define	BD_O9 0x18
+#define BD_B? 0x19
+#define BD_G&@ 0x1A
+#define BD_FG 0x1B
+#define BD_M. 0x1C
+#define BD_X/ 0x1D
+#define BD_V;= 0x1E
+#define BD_LT 0x1F
+*/
+
+char ASCII2BAUDOT[256]={
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x05,0x04,0x04,0x02,0x04,0x04,0x08,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+0x04,0x0D,0x04,0x14,0x09,0x0D,0x1A,0x05,0x0F,0x12,0x11,0x11,0x0C,0x03,0x1C,0x1D,
+0x16,0x17,0x13,0x01,0x0A,0x10,0x15,0x07,0x06,0x18,0x0E,0x1E,0x04,0x1E,0x04,0x19,
+0x1A,0x03,0x19,0x0E,0x09,0x01,0x0D,0x1A,0x14,0x06,0x0B,0x0F,0x12,0x1C,0x0C,0x18,
+0x16,0x17,0x0A,0x05,0x10,0x07,0x1E,0x13,0x1D,0x15,0x11,0x04,0x04,0x04,0x04,0x04,
+0x04,0x03,0x19,0x0E,0x09,0x01,0x0D,0x1A,0x14,0x06,0x0B,0x0F,0x12,0x1C,0x0C,0x18,
+0x16,0x17,0x0A,0x05,0x10,0x07,0x1E,0x13,0x1D,0x15,0x11,0x04,0x04,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x14,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04};
+
+char BAUDOT2ASCII_LT[]={" E\nA SIU\rDRJNFCKTZLWHYPQOBG MXV "};
+char BAUDOT2ASCII_FG[]={" 3\n- '87\r$4',%:(5+)2#6019?& ./= "};
+
+void Ascii2Baudot(const char *szAscii, char *szBaudot)
+{
+	int ascii_len=strlen(szAscii);
+	int ascii_index, baudot_index=0, lt_fg=0;
+
+	for(ascii_index=0; ascii_index<ascii_len; ascii_index++)
+	{
+		char cAscii=szAscii[ascii_index];
+
+		if(LETTER_INDEXS2[cAscii]==-1 && cAscii!='\r' && cAscii!='\n' && cAscii!=' ') 
+			{if(lt_fg==0) szBaudot[baudot_index++]=0x1B; lt_fg=1;} //change to figure
+		else {if(lt_fg==1) szBaudot[baudot_index++]=0x1F; lt_fg=0;} //change to letter
+		
+		szBaudot[baudot_index++]=ASCII2BAUDOT[cAscii];
+	}
+
+	szBaudot[baudot_index]='\0';
+}
+
+void Baudot2Ascii(const  char *szBaudot, char *szAscii)
+{
+	int baudot_len=strlen(szBaudot);
+	int baudot_index, ascii_index=0, lt_fg=0;
+	
+	for(baudot_index=0; baudot_index<baudot_len; baudot_index++)
+	{
+		char cBaudot=szBaudot[baudot_index];
+
+		if(cBaudot==0x1F) {lt_fg=0; continue;}
+		if(cBaudot==0x1B) {lt_fg=1; continue;}
+
+		if(lt_fg==0) szAscii[ascii_index++]=BAUDOT2ASCII_LT[cBaudot];
+		else szAscii[ascii_index++]=BAUDOT2ASCII_FG[cBaudot];
+	}
+
+	szAscii[ascii_index]='\0';
+}
+
+void Message::DecodeLorenz()
+{
+	#define WHEEL_BIT(Wn,iWn) (Wn[iWn]=='x'? 1:0) 
+	
+	char K1[]="..xxxx.xx....xxx..x.x...x.xxxx.x.xxx...x."; //41
+	char K2[]="..xx.xx..x..xx..xxxx.x...xxx..x"; //31
+	char K3[]=".xx.xx..xx...xx...xxx.x..xx.."; //29
+	char K4[]="..x....xxx.xx..xxxx..x..xx"; //26
+	char K5[]="..x.x..x.xxxx....xx..xx"; //23
+	char M1[]="...xxxx.xxx.xxxx.xxxx.xxxx.xxxx.xxx....xx.xxxx.xxx.xxxx.xxxx."; //61
+	char M2[]="....x.x...x.x.x...x.x.x...x.x.x.x.x.x"; //37
+	char S1[]="x.xx.x..x.x.x.x.x.xxxx.x.x.xxx..x.x.xx...x."; //43
+	char S2[]="x..x.x.x.xx.x....x.xxx.x.xx.x..x.x.x..xxx.x.xx."; //47
+	char S3[]="x.x.x..xx.x.x..x.x.xxx..x.x.x.xx.x.x....xxx..x.x.x."; //51
+	char S4[]=".x.x.x.x.x.x..x.xx.x.x..x.x.xx.x...xx.x.x.xxxx...xx."; //53
+	char S5[]=".x..x.xx...x.x.xxxx..xx.x.x.x.x.x.x.x.x...x.xx.x..x.xx...xx"; //59
+
+	int iK1, iK2, iK3, iK4, iK5, iM1, iM2, iS1, iS2, iS3, iS4, iS5;
+
+	iK1=lorenz[0]; iK2=lorenz[1]; iK3=lorenz[2]; iK4=lorenz[3]; iK5=lorenz[4];
+	iM1=lorenz[5]; iM2=lorenz[6];
+	iS1=lorenz[7]; iS2=lorenz[8]; iS3=lorenz[9]; iS4=lorenz[10]; iS5=lorenz[11];
+	
+	Ascii2Baudot(cipher,plain);
+	int length=strlen(plain);
+
+	for(int index=0; index<length; index++)
+	{
+		//char K=WHEEL_BIT(K5,iK5)<<4 | WHEEL_BIT(K4,iK4)<<3 | WHEEL_BIT(K3,iK3)<<2 | WHEEL_BIT(K2,iK2)<<1 | WHEEL_BIT(K1,iK1);
+		//char S=WHEEL_BIT(S5,iS5)<<4 | WHEEL_BIT(S4,iS4)<<3 | WHEEL_BIT(S3,iS3)<<2 | WHEEL_BIT(S2,iS2)<<1 | WHEEL_BIT(S1,iS1);
+
+		char K=WHEEL_BIT(K5,iK5) | WHEEL_BIT(K4,iK4)<<1 | WHEEL_BIT(K3,iK3)<<2 | WHEEL_BIT(K2,iK2)<<3 | WHEEL_BIT(K1,iK1)<<4;
+		char S=WHEEL_BIT(S5,iS5) | WHEEL_BIT(S4,iS4)<<1 | WHEEL_BIT(S3,iS3)<<2 | WHEEL_BIT(S2,iS2)<<3 | WHEEL_BIT(S1,iS1)<<4;
+		
+		msg_temp[index]=plain[index] ^ K ^ S; if(!msg_temp[index]) msg_temp[index]=0x04; //xor with key
+
+		if(M2[iM2]=='.') {iS1=(iS1+1)%43; iS2=(iS2+1)%47; iS3=(iS3+1)%51; iS4=(iS4+1)%53; iS5=(iS5+1)%59;} //step psi wheels
+		if(M1[iM1]=='x') iM2=(iM2+1)%37; iM1=(iM1+1)%61; //step motor wheels
+		iK1=(iK1+1)%41; iK2=(iK2+1)%31; iK3=(iK3+1)%29; iK4=(iK4+1)%26; iK5=(iK5+1)%23; //step chi wheels
+	}
+
+	msg_temp[length]='\0';
+
+	msg_temp[6]==msg_temp[8];
+
+	Baudot2Ascii(msg_temp,plain);
 }
 
 char elgar[2][25]={{"ABCDEFGHIKLMNOPQRSTUWXYZ"},{"NOPQRSTUWXYZABCDEFGHIKLM"}};

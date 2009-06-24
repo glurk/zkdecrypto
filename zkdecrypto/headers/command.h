@@ -371,7 +371,7 @@ inline int CommandKey(int cmd_id)
 
 inline int CommandSolve(int cmd_id)
 {
-	int cur_fact, iSqrt;
+	int cur_fact, iSqrt, nFact;
 	char szFact[512];
 
 	switch(cmd_id)
@@ -408,6 +408,7 @@ inline int CommandSolve(int cmd_id)
 		case IDM_FIND_FACTORS: 
 			strcpy(szNumberTitle,"Number to Factor");
 			iNumber=message.GetLength();
+			nFact=0;
 			szFact[0]='\0';
 
 			if(DialogBox(hInst,MAKEINTRESOURCE(IDD_NUMBER),hMainWnd,(DLGPROC)NumberProc))
@@ -416,16 +417,15 @@ inline int CommandSolve(int cmd_id)
 				iSqrt=(int)sqrt(double(iNumber));
 				
 				for(cur_fact=iNumber; cur_fact>iSqrt; cur_fact--)
-					if(!(iNumber%cur_fact))
-						sprintf(szFact+strlen(szFact),"%8i\t",cur_fact);
+					if(!(iNumber%cur_fact)) {sprintf(szFact+strlen(szFact),"%8i\t",cur_fact); nFact++;}
 
 				strcat(szFact,"\r\n");
 
 				for(cur_fact=1; cur_fact<=iSqrt; cur_fact++)
-					if(!(iNumber%cur_fact))
-						sprintf(szFact+strlen(szFact),"%8i\t",cur_fact);
+					if(!(iNumber%cur_fact)) {sprintf(szFact+strlen(szFact),"%8i\t",cur_fact); nFact++;}
 	
-				MessageBox(hMainWnd,szFact,"Factors",MB_OK);
+				if(nFact==2) sprintf(szFact,"%i is prime",iNumber);
+				MessageBox(hMainWnd,szFact,"Factors",MB_OK); 
 			}
 			return 0;
 		

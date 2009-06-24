@@ -295,9 +295,8 @@ BEGIN
     PUSHBUTTON      "Clear All",IDC_EXTRA_ALPHABET_C,107,213,60,14
     DEFPUSHBUTTON   "Apply",IDOK,52,238,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,107,238,50,14
-    PUSHBUTTON      "",IDC_TRANS_TYPE,120,158,75,14
-    LTEXT           "Columnar Transposition Direction",IDC_STATIC,12,161,100,
-                    11
+    //PUSHBUTTON      "",IDC_TRANS_TYPE,120,158,75,14
+    //LTEXT           "Columnar Transposition Direction",IDC_STATIC,12,161,100, 11
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 168, 102

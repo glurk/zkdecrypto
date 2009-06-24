@@ -875,10 +875,10 @@ inline void SetContactTabInfo()
 
 void SetMainStatus()
 {
-	char szStatus[32]="KEY LENGTH: "; //set status
+	char szStatus[128]="KEY LENGTH: "; //set status
 	int cur_key,key_start;
 
-	for(cur_key=0, key_start=0; cur_key<10; cur_key++, key_start++)
+	for(cur_key=0, key_start=0; cur_key<20; cur_key++, key_start++)
 	{
 		int key_length=ChrIndex(szText+key_start,'|');
 		if(key_length==-1) key_length=strlen(szText+key_start); //last key
@@ -900,7 +900,7 @@ void SetKeyEdit()
 	if(!bMsgLoaded) return;
 	SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,0,0);
 
-	message.GetKey(szText,"");
+	message.GetKey(szText,""); 
 	SetDlgItemText(hMainWnd,IDC_KEY_EDIT,szText);
 	if(iSolveType==SOLVE_HOMO || iSolveType==SOLVE_DISUB) SendDlgItemMessage(hMainWnd,IDC_KEY_EDIT,EM_SETREADONLY,1,0); 
 }
