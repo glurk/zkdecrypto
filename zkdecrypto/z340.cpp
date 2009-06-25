@@ -93,7 +93,7 @@ int hillclimb(Message &msg, const char cipher[],int clength,char key[],int print
 	//init info
 	info->cur_tabu=info->cur_tol=0;
 
-	CLEAR_TEMP_TABU; //CLEAR_OPTIMA_TABU; //clear tabu lists
+	CLEAR_TEMP_TABU; CLEAR_OPTIMA_TABU; //clear tabu lists
 	optima_tabu_end=info->optima_tabu->end();
 
 	//initial score & feedback
@@ -214,7 +214,7 @@ int hillclimb2(Message &main_msg, int solve_type, char *key , int iLineChars)
 	cipher=msg.GetCipher();
 	solved=msg.GetPlain();
 	full_key_len=use_key_len=strlen(key);
-	CLEAR_TEMP_TABU; //CLEAR_OPTIMA_TABU; //clear tabu lists
+	CLEAR_TEMP_TABU; CLEAR_OPTIMA_TABU; //clear tabu lists
 	optima_tabu_end=info->optima_tabu->end();
 
 	//key sections
