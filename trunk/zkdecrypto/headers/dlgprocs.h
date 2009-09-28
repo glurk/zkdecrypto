@@ -517,7 +517,10 @@ inline int MatchStringTemplate(std::string sTemp, std::string sWord)
 			{
 				if(sTemp.at(j)<'0' || sTemp.at(j)>'9') continue; //not a pattern number
 				if(sTemp.at(j)==sTemp.at(i) && sWord.at(j)!=sWord.at(i)) return 0; //same pattern number, different word letter
-				if(sTemp.at(j)!=sTemp.at(i) && sWord.at(j)==sWord.at(i)) return 0; //different pattern number, same word letter
+				
+			//  REMOVING THE LINE BELOW ALLOWS FOR BETTER PATTERN MATCHING FOR HOMOPHONICS, perhaps better as an option.
+			//	if(sTemp.at(j)!=sTemp.at(i) && sWord.at(j)==sWord.at(i)) return 0; //different pattern number, same word letter
+			
 			}
 
 		else if(sTemp.at(i)!=sWord.at(i)) return 0; //exact letter	
