@@ -12,7 +12,10 @@
 #include "headers/dlgprocs.h"
 #include "headers/command.h"
 
-//message handler for text window
+////////////////////////////////////////////////////////////////////////////////
+//          Callback Message Handler for Ciphertext/Plaintext Window          //
+////////////////////////////////////////////////////////////////////////////////
+
 LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int iWidth, iHeight;
@@ -71,11 +74,12 @@ LRESULT CALLBACK TextWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
+////////////////////////////////////////////////////////////////////////////////
+//               Callback Message Handler for Main Program Window             //
+////////////////////////////////////////////////////////////////////////////////
 
-//message handler for main window
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-//	char *key_split;
 	POINT ptClick;
 	HWND hList;
 
@@ -273,6 +277,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//                         WinMain for Entire Program                         //
+////////////////////////////////////////////////////////////////////////////////
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				   LPSTR lpszCmdLine, int nCmdShow)
 {
@@ -325,13 +333,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	tciTabItem.pszText="Solver";
 	SendMessage(hMainTab,TCM_INSERTITEM,0,(LPARAM)&tciTabItem);
-	tciTabItem.pszText="Freq. Analysis";
+	tciTabItem.pszText="Freqs";
 	SendMessage(hMainTab,TCM_INSERTITEM,1,(LPARAM)&tciTabItem);
-	tciTabItem.pszText="Word List";
+	tciTabItem.pszText="Words";
 	SendMessage(hMainTab,TCM_INSERTITEM,2,(LPARAM)&tciTabItem);
-	tciTabItem.pszText="Statistics";
+	tciTabItem.pszText="Stats";
 	SendMessage(hMainTab,TCM_INSERTITEM,3,(LPARAM)&tciTabItem);
-	tciTabItem.pszText="Contact Analysis";
+	tciTabItem.pszText="Contacts";
 	SendMessage(hMainTab,TCM_INSERTITEM,4,(LPARAM)&tciTabItem);
 	ShowTab(0);
 
@@ -440,7 +448,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
  
     int MainStatWidths[] = {300, -1};
     SendMessage(hMainStatus, SB_SETPARTS, sizeof(MainStatWidths)/sizeof(int), (LPARAM)MainStatWidths);
-	SendMessage(hMainStatus, SB_SETTEXT, 0, (LPARAM)"KEY LENGTHS: ");
+	SendMessage(hMainStatus, SB_SETTEXT, 0, (LPARAM)"KEY LENGTH: ");
 
 	//create text status bar with gripper
 	hTextStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hTextWnd, (HMENU)IDC_TEXT_STATUS, GetModuleHandle(NULL), NULL);
@@ -450,8 +458,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SendMessage(hTextStatus, SB_SETTEXT, 0, (LPARAM)"LANG: ");
 
 	SetSolveTypeFeatures();
+	
+////////////////////////////////////////////////////////////////////////////////
+//                   Primary Message Loop for Entire Program                  //
+////////////////////////////////////////////////////////////////////////////////
 
-	//message loop
 	while(GetMessage(&Msg,NULL,0,0))
 		if(!TranslateAccelerator(hMainWnd,hAccel,&Msg))
 			if(!IsDialogMessage(hMainWnd,&Msg))
