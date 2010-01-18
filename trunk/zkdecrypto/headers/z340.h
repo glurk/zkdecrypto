@@ -1,6 +1,8 @@
 #pragma once
 
-//////////////////////////////////////////////////////////////////////// INCLUDES /////////////////////////////////////////////////////////////////
+////////////////
+/// INCLUDES ///
+////////////////
 
 #include 		<stdio.h>
 #include 		<string.h>
@@ -11,7 +13,9 @@
 #include		<string>
 #include		"message.h"
 
-//////////////////////////////////////////////////////////////////////// DEFINES //////////////////////////////////////////////////////////////////
+///////////////
+/// DEFINES ///
+///////////////
 
 #define		ASCII_SIZE 					256
 #define		KEY_SIZE					512
@@ -21,6 +25,10 @@
 #define TRI_SIZE	17576		//26*26*26
 #define TETRA_SIZE	456976		//26*26*26*26
 #define PENTA_SIZE	11881376	//26*26*26*26*26
+
+/////////////////
+/// STUCTURES ///
+/////////////////
 
 //parameters for solve function
 struct SOLVEINFO
@@ -68,13 +76,13 @@ struct SOLVEINFO
 	int (*get_words)(const char*);
 };
 
-/////////////////////////////////////////////////////////////////////// FUNCTIONS /////////////////////////////////////////////////////////////////
+/////////////////
+/// FUNCTIONS ///
+/////////////////
 
 int				calcscore(Message&,const int,const char *);
 inline void		shufflekey(char *,const int,const int);
 
-void			printcipher(int,const char *,char *,int,char *);
-void			printfrequency(int,int *,char *,int);
 int				hillclimb(Message&,const char *,int,char *,int);
 int				hillclimb2(Message&,int,char*,int);
 void			running_key(Message&,char*);

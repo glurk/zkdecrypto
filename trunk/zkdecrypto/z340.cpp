@@ -54,7 +54,7 @@ FILE *log_file;
 					
 #define SET_SCORE(SCR,DEC)	if(temp_tabu.find(key_str)!=temp_tabu_end || info->optima_tabu->find(key_str)!=optima_tabu_end) SCR=-100000; else {DEC; SCR=calcscore(msg,clength,solved);} 
 
-#define LOG_BEST(SCR)		info->get_words(solved); fprintf(log_file,"%i\t%i\t%i\t%s\t%s\n",SCR,info->num_words,info->stray_letters,key_str.data(),solved); fflush(log_file);
+#define LOG_BEST(SCR)		info->get_words(solved); fprintf(log_file,"*****\nScore: %i\t NumWords: %i\t WTF: %i\t\nKEY: %s\nSolution: %s\n\n",SCR,info->num_words,info->stray_letters,key_str.data(),solved); fflush(log_file);
 
 #define CLEAR_TABU_PROB 80
 
@@ -473,13 +473,17 @@ int calcscore(Message &msg, const int length_of_cipher,const char *solv)
 			}
 		}
 		
-		t1=t2; t2=t3; t3=t4; t4=t5; t5=LETTER_INDEXS[(unsigned char)solv[c+5]]; //shift letters & get next
+		/****************************************************/
+		/*  Shift Letters and Get Next - Saves Many Lookups */
+		/****************************************************/
+
+		t1=t2; t2=t3; t3=t4; t4=t5; t5=LETTER_INDEXS[(unsigned char)solv[c+5]];
 		remaining--; 
 	}
 
-	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1;
+//	biscore=biscore>>3; triscore=triscore>>2; tetrascore=tetrascore>>1; // retained for reference - DO NOT DELETE
 
-	score=pentascore+tetrascore+triscore+biscore; //score=40000;
+	score=pentascore+(tetrascore>>1)+(triscore>>2)+(biscore>>3);
 
 	/*int actfreq[26], expfreq[26], diff=0;
 	msg.GetActFreq(actfreq);
@@ -541,87 +545,6 @@ inline void shufflekey(char *key,const int keylength,const int cuniq) {
 
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//                        Print the cipher "block" and the solution "block"                     //
-//----------------------------------------------------------------------------------------------//
-//  ALSO:             Calculate and print the percentage of vowels in the solution              //
-//                   NOTE: Normal English text normally contains approx. 40% vowels             //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-void printcipher(int length_of_cipher,const char *ciph,char *solv,int bestscore,char *key) {
-
-	int c=0;
-	int s=0;
-	int i,x,y;
-	int width,height;
-
-	switch(length_of_cipher) {
-		case 153: { width=17; height=9;  } break;
-		case 318: { width=53; height=6;  } break;
-		case 330: { width=30; height=11; } break;
-		case 340: { width=17; height=20; } break;
-		case 378: { width=18; height=21; } break;
-		case 408: { width=17; height=24; } break;
-		default: { return; } }
-
-	printf("\n--------------------------------------------------------------------------------------------------------------------\n\n");
-
-	for(y=0;y<height;y++) { 
-		for(x=0;x<width;x++) printf("%c",ciph[c++]);
-		printf("   =   ");
-		for(x=0;x<width;x++) printf("%c",solv[s++]);
-		printf("\n"); }
-
-//	printvowels section
-
-	int diff_tot=0;
-	int	freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	for(i=0;i<26;i++) freqs[i]=(int)(unigraphs[i]*length_of_cipher)/100;					// CALCULATE EXPECTED LETT. FREQS
-	int solv_freqs[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	for(i=0;i<length_of_cipher;i++) solv_freqs[solv[i]-'A']++;								// CALCULATE ACTUAL LETT. FREQS
-
-	printf("\n\n              'A   B   C   D  'E   F   G   H  'I   J   K   L   M   N  'O   P   Q   R   S   T  'U   V   W   X   Y   Z");
-	printf("\n  Expected: ");	for(i=0;i<26;i++) printf("%4d",freqs[i]);
-	printf("\n     Found: ");	for(i=0;i<26;i++) printf("%4d",solv_freqs[i]);
-	printf("\nDifference: ");	for(i=0;i<26;i++) { y=abs(freqs[i]-solv_freqs[i]); printf("%4d",y); diff_tot+=y; }
-
-	printf("\n\nDifference Total: %d    --    Deviation From Expected: %f",diff_tot,100*((float)diff_tot/length_of_cipher));
-	printf("\n\nVowel Pcg. = %f    --    ",100*((solv_freqs[0]+solv_freqs[4]+solv_freqs[8]+solv_freqs[14]+solv_freqs[20])/(float)length_of_cipher));
-	printf("Longest String Of Consonants: %d\n\n",calclsoc(length_of_cipher,solv));
-	printf("Best Score = %d\n",bestscore);
-	printf("\nKey: '%s'\n\n",key); 
-
-}
-*/
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//            Print the character frequency table of the cipher and a few statistics            //
-//////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-void printfrequency(int length_of_cipher, int *unique_array,char *unique_string,int cipher_uniques) {
-
-	int i, f=0;
-	int z=(int)strlen(unique_string);
-	char zee[10];
-
-	printf("Cipher Length:  %d characters\n",length_of_cipher);									//PRINT CIPHER LENGTH
-	printf("Cipher Uniques: %d unique characters\n\n",cipher_uniques);							//PRINT NUMBER OF UNIQUE CHARACTERS
-
-	printf("Frequency Table for Cipher:\n");
-	for(i=0;i<z;i++) printf("-"); printf("\n");
-	for(i=0;i<z;i++) if(unique_array[i]/100 != 0) printf("%1d",unique_array[i]/100); if(unique_array[0]>=100) printf("\n");
-	for(i=0;i<z;i++) { sprintf(zee,"%d",unique_array[i]); if(unique_array[i]/10 != 0) printf("%c",zee[strlen(zee)-2]); } printf("\n");
-	for(i=0;i<z;i++) { printf("%1d",unique_array[i] % 10); f = f + (unique_array[i] * (unique_array[i]-1)); } printf("\n");
-	for(i=0;i<z;i++) printf("-");
-
-	printf("\n%s\n\n",unique_string);
-
-	printf("Phi(O) = %i\n",f);
-	printf("Phi(P) = %f\n",(.0675) * length_of_cipher * (length_of_cipher - 1));
-	printf("Phi(R) = %f\n\n",(.0385) * length_of_cipher * (length_of_cipher - 1));
-	printf("DeltIC = %f\n\n",f/((.0385) * length_of_cipher * (length_of_cipher - 1)));
-
-}
-*/
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //           Return the value of a unigraph for use in other areas of the program               //
 //////////////////////////////////////////////////////////////////////////////////////////////////
